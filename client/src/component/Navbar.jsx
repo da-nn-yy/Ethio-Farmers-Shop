@@ -1,4 +1,6 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext.jsx'
 
 const Navbar = () => {
   return (
@@ -21,22 +23,28 @@ const Navbar = () => {
               by
             </a>
             {/*<LanguageSwitcher />*/}
-            {/*{user ? (*/}
-            {/*  // <UserMenu />*/}
-            {/*) : (*/}
-              <>
-                <button >
-                  loginn
-                </button>
-                <button className={""}>
-                  login
-                </button>
-              </>
-            {/*)}*/}
+            <AuthButtons />
           </nav>
         </div>
       </div>
     </header>
   )
+}
+const AuthButtons = () => {
+  const { user, logout } = useAuth();
+  if (user) {
+    return (
+      <div className="flex items-center gap-4">
+        <span className="text-sm text-gray-600">{user.displayName || user.email}</span>
+        <button onClick={logout} className="border px-3 py-1 rounded">Logout</button>
+      </div>
+    );
+  }
+  return (
+    <div className="flex items-center gap-3">
+      <Link to="/login" className="border px-3 py-1 rounded">Login</Link>
+      <Link to="/signup" className="bg-black text-white px-3 py-1 rounded">Sign up</Link>
+    </div>
+  );
 }
 export default Navbar;
