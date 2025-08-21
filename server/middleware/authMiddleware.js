@@ -1,6 +1,6 @@
 const admin = require('../config/firebase-admin');
 
-const verfifyToken = async (req, res, next) => {
+const verifyToken = async (req, res, next) => {
   const token = req.headers.authoriazation?.split(' ')[1];
 
   if (!token) {
@@ -16,4 +16,4 @@ const verfifyToken = async (req, res, next) => {
   }
 };
 
-module.exports = verfifyToken;
+module.exports = verifyToken;
