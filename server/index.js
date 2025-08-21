@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const verifyToken = require('./middleware/authMiddleware');
 require('dotenv').config();
 const db = require('./config/database');
 
@@ -21,6 +22,13 @@ app.get('/api/test-db', async (req,res) => {
     res.status(500).json({message: "Database connection failed!"});
   }
 })
+
+app.get('/api/protected', verifyToken, (req ,res) => {
+    res.json({
+      message: "You are accessed the protected route!",
+      user: req.user
+    });
+});
 
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Hello from Ethio Farmers backend!' });
