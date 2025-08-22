@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { useNavigate } from "react-router-dom";
+import { signInWithEmailAndPassword,signInWithPopup } from "firebase/auth";
+import { auth, googleProvider } from "../firebaseConfig";
 import { Loader2, Info, AlertCircle } from "lucide-react";
 
 const LoginForm = ({ onSwitch }) => {
@@ -8,6 +9,7 @@ const LoginForm = ({ onSwitch }) => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const isDemoMode = true;
 
@@ -17,10 +19,25 @@ const LoginForm = ({ onSwitch }) => {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      window.location.href = "/";
     } catch (err) {
       setError("Failed to log in: " + err.message);
     }
     setLoading(false);
+  };
+
+  const handleSignInWithGoogle = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      await signInWithPopup(auth, googleProvider);
+      navigate("/");
+    } catch (error) {
+      setError("Google sign-in failed. Please try again.");
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,7 +94,17 @@ const LoginForm = ({ onSwitch }) => {
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           Sign In
         </button>
+
+        <button
+        onClick={handleSignInWithGoogle}
+        className="w-full mt-2 rounded-md border border-gray-300 py-2 flex items-center justify-center gap-2 hover:bg-gray-100"
+      >
+        <img src="/search.png" alt="Google logo" className="w-5 h-5" />
+        Sign in with Google
+      </button>
+
       </form>
+
 
       <div className="mt-4 text-center text-sm text-gray-500">
         Don't have an account?{" "}
