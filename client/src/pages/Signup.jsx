@@ -1,10 +1,12 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebaseConfig";
+import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { auth , googleProvider} from "../firebaseConfig";
 import { Loader2, Info, AlertCircle, User, Tractor } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const  SignupForm = ({ onSwitch }) => {
+  const navigate = useNavigate();
   const [role, setRole] = useState("buyer");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -34,12 +36,30 @@ const  SignupForm = ({ onSwitch }) => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      onSwitch(); // switch to login after signup
+
     } catch (err) {
       setError("Failed to create account: " + err.message);
     }
     setLoading(false);
   };
+
+    const onToggleMode = () => {
+    window.location.href = "/login";
+  };
+
+  const handleSignInWithGoogle = async () => {
+      try {
+        setLoading(true);
+        setError('');
+        await signInWithPopup(auth, googleProvider);
+        navigate("/");
+      } catch (error) {
+        setError("Google sign-in failed. Please try again.");
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <div>
@@ -179,11 +199,20 @@ const  SignupForm = ({ onSwitch }) => {
           {loading && <Loader2 className="h-4 w-4 animate-spin" />}
           Create Account
         </button>
+
+
+        <button
+        onClick={handleSignInWithGoogle}
+        className="w-full mt-2 rounded-md border border-gray-300 py-2 flex items-center justify-center gap-2 hover:bg-gray-100"
+      >
+        <img src="/search.png" alt="Google logo" className="w-5 h-5" />
+        SignUp with Google
+      </button>
       </form>
 
       <div className="mt-4 text-center text-sm text-gray-500">
         Already have an account?{" "}
-        <button className="text-[#006C36] font-medium hover:underline" onClick={onSwitch}>
+        <button className="text-[#006C36] font-medium hover:underline" onClick={onToggleMode}>
           Sign In
         </button>
       </div>

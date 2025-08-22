@@ -2,49 +2,42 @@ import React, { useState } from "react";
 import AuthModal from "./AuthModal";
 
 const Navbar = () => {
-  const [authOpen, setAuthOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   return (
-    <header className="border-b bg-[#f1f5f9]/50 backdrop-blur-sm sticky top-0 z-50 rounded-md">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo */}
+    <>
+      <header className="border-b bg-[#f1f5f9]/50 backdrop-blur-sm sticky top-0 z-50 rounded-md">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-[#006C36] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">EF</span>
+              <a href="/">
+                <span className="text-white font-bold text-sm">EF</span>
+              </a>
             </div>
-            <h1 className="font-serif font-bold text-xl text-black">Ethio Farmers</h1>
+            <a href="/" className="font-serif font-bold text-xl text-black uppercase">
+                <h1>Ethio Farmers</h1>
+            </a>
           </div>
 
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center gap-6">
-            <a
-              href="/marketplace"
-              className="text-[#B5B5B5] hover:text-black transition-colors"
-            >
-              Marketplace
-            </a>
-            <a
-              href="/trends"
-              className="text-[#B5B5B5] hover:text-black transition-colors"
-            >
-              Trends
-            </a>
-
-            {/* Auth Button */}
+          <nav className="flex items-center gap-4">
             <button
-              onClick={() => setAuthOpen(true)}
-              className="bg-[#006C36] text-white px-4 py-2 rounded-md hover:bg-[#006C36]/80 transition"
+              onClick={() => setIsAuthOpen(true)}
+              className="px-4 py-2 rounded-md bg-[#006C36] text-white font-medium"
             >
-              Log In / Sign Up
+              Login
+            </button>
+            <button
+              onClick={() => setIsAuthOpen(true)}
+              className="px-4 py-2 rounded-md border border-[#006C36] text-[#006C36] font-medium hover:bg-[#006C36]/10"
+            >
+              Signup
             </button>
           </nav>
         </div>
-      </div>
+      </header>
 
-      {/* Auth Modal */}
-      {authOpen && <AuthModal isOpen={authOpen} onClose={() => setAuthOpen(false)} />}
-    </header>
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+    </>
   );
 };
 
