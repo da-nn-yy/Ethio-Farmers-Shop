@@ -2,6 +2,16 @@
 @import "tailwindcss";
 /*@import "tw-animate-css";*/
 
+/*imported form deleted app.css o center objects*/
+
+/*#root {*/
+/*  max-width: 1280px;*/
+/*  margin: 0 auto;*/
+/*  padding: 2rem;*/
+/*  text-align: center;*/
+/*}*/
+
+
 
 @custom-variant dark (&:is(.dark *));
 
