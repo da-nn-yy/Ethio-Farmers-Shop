@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContexts";
 import AuthModal from "./AuthModal";
 
 const Navbar = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const { currentUser, logout } = useAuth();
 
   return (
     <>
@@ -15,23 +17,37 @@ const Navbar = () => {
               </a>
             </div>
             <a href="/" className="font-serif font-bold text-xl text-black uppercase">
-                <h1>Ethio Farmers</h1>
+              <h1>Ethio Farmers</h1>
             </a>
           </div>
 
           <nav className="flex items-center gap-4">
-            <button
-              onClick={() => setIsAuthOpen(true)}
-              className="px-4 py-2 rounded-md bg-[#006C36] text-white font-medium"
-            >
-              Login
-            </button>
-            <button
-              onClick={() => setIsAuthOpen(true)}
-              className="px-4 py-2 rounded-md border border-[#006C36] text-[#006C36] font-medium hover:bg-[#006C36]/10"
-            >
-              Signup
-            </button>
+            {currentUser ? (
+              <>
+                <span className="font-medium text-gray-700">Hello, {currentUser.displayName || currentUser.email}</span>
+                <button
+                  onClick={logout}
+                  className="px-4 py-2 rounded-md bg-red-600 text-white font-medium"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="px-4 py-2 rounded-md bg-[#006C36] text-white font-medium"
+                >
+                  Login
+                </button>
+                <button
+                  onClick={() => setIsAuthOpen(true)}
+                  className="px-4 py-2 rounded-md border border-[#006C36] text-[#006C36] font-medium hover:bg-[#006C36]/10"
+                >
+                  Signup
+                </button>
+              </>
+            )}
           </nav>
         </div>
       </header>
