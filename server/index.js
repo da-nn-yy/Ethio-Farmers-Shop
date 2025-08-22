@@ -30,6 +30,27 @@ app.get('/api/protected', verifyToken, (req ,res) => {
     });
 });
 
+// register and login routes
+
+app.post('/api/register', verifyToken, async (req, res) => {
+    const { email,role } = req.body;
+    const firebase_uid = req.user.uid;
+
+    try{
+        const [existingUsers] = await db.execute('SELECT * FROM users WHERE firebase_uid = ?', [firebase_uid]);
+
+        if(existingUsers.length > 0) {
+            return res.status(400).json({ message: 'User already exist' });
+        }
+        const [result] = await db.execute('INSERT INTO users (firebase_uid,email,role) VALUES (?, ?, ?)', [firebase_uid,email,role]);
+        res.status(201).json({ message: 'User registered successfully', userId: result[0].insertId });
+    }catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+
 app.get('/api/test', (req, res) => {
   res.json({ message: 'Hello from Ethio Farmers backend!' });
 });
