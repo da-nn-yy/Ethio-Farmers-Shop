@@ -4,7 +4,7 @@ import { signInWithEmailAndPassword,signInWithPopup } from "firebase/auth";
 import { auth, googleProvider } from "../firebaseConfig";
 import { Loader2, Info, AlertCircle } from "lucide-react";
 
-const LoginForm = ({ onSwitch }) => {
+const LoginForm = ({ onSwitch, onSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -19,6 +19,7 @@ const LoginForm = ({ onSwitch }) => {
     setLoading(true);
     try {
       await signInWithEmailAndPassword(auth, email, password);
+      if (onSuccess) onSuccess();
       window.location.href = "/";
     } catch (err) {
       setError("Failed to log in: " + err.message);
@@ -31,6 +32,7 @@ const LoginForm = ({ onSwitch }) => {
       setLoading(true);
       setError('');
       await signInWithPopup(auth, googleProvider);
+      if (onSuccess) onSuccess();
       navigate("/");
     } catch (error) {
       setError("Google sign-in failed. Please try again.");
@@ -97,7 +99,7 @@ const LoginForm = ({ onSwitch }) => {
 
         <button
         onClick={handleSignInWithGoogle}
-        className="w-full mt-2 rounded-md border border-gray-300 py-2 flex items-center justify-center gap-2 hover:bg-gray-100"
+        className="w-full mt-2 rounded-md border border-gray-300 py-2 flex items-center justify-center gap-2 hover:bg-gray-100 text-md"
       >
         <img src="/search.png" alt="Google logo" className="w-5 h-5" />
         Sign in with Google
@@ -105,13 +107,6 @@ const LoginForm = ({ onSwitch }) => {
 
       </form>
 
-
-      <div className="mt-4 text-center text-sm text-gray-500">
-        Don't have an account?{" "}
-        <button className="text-[#006C36] font-medium hover:underline" onClick={onSwitch}>
-          Sign Up
-        </button>
-      </div>
     </div>
   );
 }
