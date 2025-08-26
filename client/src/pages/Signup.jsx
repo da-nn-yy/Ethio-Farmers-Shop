@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { createUserWithEmailAndPassword, signInWithPopup } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithPopup, updateProfile } from "firebase/auth";
 import { auth , googleProvider} from "../firebaseConfig";
 import { Loader2, Info, AlertCircle, User, Tractor } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const  SignupForm = ({ onSwitch }) => {
+const  SignupForm = ({ onSuccess }) => {
   const navigate = useNavigate();
   const [role, setRole] = useState("buyer");
   const [name, setName] = useState("");
@@ -28,8 +28,10 @@ const  SignupForm = ({ onSwitch }) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      await updateProfile(user, { displayName: name });
       const token = await user.getIdToken();
-
+      if (onSuccess) onSuccess();
+      navigate("/");
       await axios.post(
         "http://localhost:5000/api/register",
         { email, role, name, phone, location },
@@ -43,15 +45,14 @@ const  SignupForm = ({ onSwitch }) => {
     setLoading(false);
   };
 
-    const onToggleMode = () => {
-    window.location.href = "/login";
-  };
+
 
   const handleSignInWithGoogle = async () => {
       try {
         setLoading(true);
         setError('');
         await signInWithPopup(auth, googleProvider);
+        if (onSuccess) onSuccess();
         navigate("/");
       } catch (error) {
         setError("Google sign-in failed. Please try again.");
@@ -203,19 +204,12 @@ const  SignupForm = ({ onSwitch }) => {
 
         <button
         onClick={handleSignInWithGoogle}
-        className="w-full mt-2 rounded-md border border-gray-300 py-2 flex items-center justify-center gap-2 hover:bg-gray-100"
+        className="w-full mt-2 rounded-md border border-gray-300 py-2 flex items-center text-md justify-center gap-2 hover:bg-gray-100"
       >
-        <img src="/search.png" alt="Google logo" className="w-5 h-5" />
-        SignUp with Google
+                 <img src="/search.png" alt="Google logo" className="w-5 h-5" />
+         SignUp with Google
       </button>
       </form>
-
-      <div className="mt-4 text-center text-sm text-gray-500">
-        Already have an account?{" "}
-        <button className="text-[#006C36] font-medium hover:underline" onClick={onToggleMode}>
-          Sign In
-        </button>
-      </div>
     </div>
   );
 }

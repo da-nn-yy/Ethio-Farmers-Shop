@@ -4,6 +4,7 @@ import AuthModal from "./AuthModal";
 
 const Navbar = () => {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
   const { currentUser, logout } = useAuth();
 
   return (
@@ -24,35 +25,46 @@ const Navbar = () => {
           <nav className="flex items-center gap-4">
             {currentUser ? (
               <>
-                <span className="font-medium text-gray-700">Hello, {currentUser.displayName || currentUser.email}</span>
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <img
+                      src={currentUser.photoURL || "https://ui-avatars.com/api/?background=006C36&color=fff&name=" + encodeURIComponent(currentUser.displayName || currentUser.email)}
+                      alt="Avatar"
+                      className="h-9 w-9 rounded-full object-cover ring-2 ring-[#006C36] ring-offset-2 ring-offset-white shadow"
+                    />
+                  </div>
+                  <span className="max-w-[120px] truncate hidden sm:block text-sm font-medium text-gray-700">
+                    {currentUser.displayName || currentUser.email}
+                  </span>
+                </div>
                 <button
                   onClick={logout}
-                  className="px-4 py-2 rounded-md bg-red-600 text-white font-medium"
+                  className="px-3 py-2 rounded-md bg-red-700 text-white text-sm font-medium shadow hover:bg-red-600/90"
                 >
                   Logout
                 </button>
               </>
             ) : (
-              <>
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setIsAuthOpen(true)}
-                  className="px-4 py-2 rounded-md bg-[#006C36] text-white font-medium"
+                  onClick={() => { setAuthMode("login"); setIsAuthOpen(true); }}
+                  className="px-4 py-2 rounded-md bg-[#006C36] text-white font-medium shadow hover:bg-[#006C36]/90"
                 >
-                  Login
+                  Sign in
                 </button>
                 <button
-                  onClick={() => setIsAuthOpen(true)}
+                  onClick={() => { setAuthMode("signup"); setIsAuthOpen(true); }}
                   className="px-4 py-2 rounded-md border border-[#006C36] text-[#006C36] font-medium hover:bg-[#006C36]/10"
                 >
-                  Signup
+                  Sign up
                 </button>
-              </>
+              </div>
             )}
           </nav>
         </div>
       </header>
 
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} initialMode={authMode} />
     </>
   );
 };
