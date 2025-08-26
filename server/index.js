@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const verifyToken = require('./middleware/authMiddleware');
+const authRoutes = require('./routes/authRoutes');
 require('dotenv').config();
 const db = require('./config/database');
 
@@ -12,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 //Routes
-app.use('api/',authRoutes)
+app.use('/api', authRoutes);
 
 // Db connection
 

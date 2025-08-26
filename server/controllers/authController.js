@@ -1,4 +1,4 @@
-const db = require('./config/database');
+const db = require('../config/database');
 
 // EthioFarmers Register
 
@@ -61,4 +61,4 @@ module.exports = {
   login
 };
 
-// login 
+// login
