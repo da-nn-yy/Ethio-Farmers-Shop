@@ -43,33 +43,45 @@ const Home = () => {
                     <button className="bg-[#006C36] text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/90 transition-colors">
                       Create Listing
                     </button>
-                    <button className="border-2 border-[#006C36] text-[#006C36] px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/10 transition-colors">
-                      My Listings
-                    </button>
+                                         <button
+                       onClick={() => window.location.href = '/farmer-dashboard'}
+                       className="border-2 border-[#006C36] text-[#006C36] px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/10 transition-colors"
+                     >
+                       My Listings
+                     </button>
                   </>
                 ) : (
-                  <>
-                    <button className="bg-[#006C36] text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/90 transition-colors">
-                      Browse Marketplace
-                    </button>
-                                         <button
+                                     <>
+                     <button
+                       onClick={() => window.location.href = '/marketplace'}
+                       className="bg-[#006C36] text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/90 transition-colors"
+                     >
+                       Browse Marketplace
+                     </button>
+                     <button
                        onClick={() => window.location.href = '/buyer-dashboard'}
                        className="border-2 border-[#006C36] text-[#006C36] px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/10 transition-colors"
                      >
                        My Orders
                      </button>
-                  </>
+                   </>
                 )
-              ) : (
-                <>
-                  <button className="bg-[#006C36] text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/90 transition-colors">
-                    Browse Marketplace
-                  </button>
-                  <button className="border-2 border-[#006C36] text-[#006C36] px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/10 transition-colors">
-                    Join as Farmer
-                  </button>
-                </>
-              )}
+                               ) : (
+                   <>
+                     <button
+                       onClick={() => window.location.href = '/marketplace'}
+                       className="bg-[#006C36] text-white px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/90 transition-colors"
+                     >
+                       Browse Marketplace
+                     </button>
+                     <button
+                       onClick={() => window.location.href = '/signup'}
+                       className="border-2 border-[#006C36] text-[#006C36] px-8 py-3 rounded-lg text-lg font-medium hover:bg-[#006C36]/10 transition-colors"
+                     >
+                       Join as Farmer
+                     </button>
+                   </>
+                 )}
             </div>
 
             {/* Search Bar */}
