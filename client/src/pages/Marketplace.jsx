@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContexts";
 import { Search, Filter, Leaf, ShoppingCart, Star } from "lucide-react";
+import { productsAPI, ordersAPI } from "../services/api";
 
 const Marketplace = () => {
   const { currentUser } = useAuth();
@@ -30,126 +31,20 @@ const Marketplace = () => {
   const loadMarketplaceData = async () => {
     try {
       setLoading(true);
-      // TODO: Replace with actual service calls
-      // const [availableListings, allCategories] = await Promise.all([
-      //   listingService.getAll({ status: "available" }),
-      //   categoryService.getAll(),
-      // ]);
-      // setListings(availableListings);
-      // setCategories(allCategories);
 
-      // Mock data for now
-      const mockListings = [
-        {
-          id: "1",
-          title: "Fresh Tomatoes",
-          description: "Organic tomatoes grown without pesticides",
-          pricePerKg: 25,
-          unit: "kg",
-          availableQuantity: 50,
-          category: "vegetables",
-          farmerName: "Abebe Kebede",
-          farmerLocation: "Addis Ababa",
-          rating: 4.5,
-          isOrganic: true,
-          harvestDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          image: null
-        },
-        {
-          id: "2",
-          title: "Sweet Potatoes",
-          description: "Fresh sweet potatoes from our farm",
-          pricePerKg: 30,
-          unit: "kg",
-          availableQuantity: 30,
-          category: "tubers",
-          farmerName: "Tigist Haile",
-          farmerLocation: "Bahir Dar",
-          rating: 4.8,
-          isOrganic: false,
-          harvestDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          createdAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-          image: null
-        },
-        {
-          id: "3",
-          title: "Green Peppers",
-          description: "Spicy green peppers perfect for cooking",
-          pricePerKg: 20,
-          unit: "kg",
-          availableQuantity: 25,
-          category: "vegetables",
-          farmerName: "Mekonnen Alemu",
-          farmerLocation: "Gondar",
-          rating: 4.2,
-          isOrganic: true,
-          harvestDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-          createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          image: null
-        },
-        {
-          id: "4",
-          title: "Onions",
-          description: "Fresh red onions from local farms",
-          pricePerKg: 15,
-          unit: "kg",
-          availableQuantity: 100,
-          category: "vegetables",
-          farmerName: "Bethel Tadesse",
-          farmerLocation: "Addis Ababa",
-          rating: 4.6,
-          isOrganic: false,
-          harvestDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
-          createdAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
-          image: null
-        },
-        {
-          id: "5",
-          title: "Organic Carrots",
-          description: "Sweet organic carrots rich in vitamins",
-          pricePerKg: 35,
-          unit: "kg",
-          availableQuantity: 40,
-          category: "vegetables",
-          farmerName: "Yohannes Desta",
-          farmerLocation: "Hawassa",
-          rating: 4.9,
-          isOrganic: true,
-          harvestDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          createdAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-          image: null
-        },
-        {
-          id: "6",
-          title: "Fresh Corn",
-          description: "Sweet corn harvested at peak freshness",
-          pricePerKg: 18,
-          unit: "kg",
-          availableQuantity: 60,
-          category: "grains",
-          farmerName: "Alemayehu Tadesse",
-          farmerLocation: "Jimma",
-          rating: 4.3,
-          isOrganic: false,
-          harvestDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-          createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
-          image: null
-        }
-      ];
+      // Load products and categories in parallel
+      const [productsResponse, categoriesResponse] = await Promise.all([
+        productsAPI.search({ limit: 50 }), // Get more products for filtering
+        productsAPI.getCategories()
+      ]);
 
-      const mockCategories = [
-        { id: "vegetables", name: "Vegetables" },
-        { id: "fruits", name: "Fruits" },
-        { id: "tubers", name: "Tubers" },
-        { id: "grains", name: "Grains" },
-        { id: "herbs", name: "Herbs" }
-      ];
-
-      setListings(mockListings);
-      setCategories(mockCategories);
+      setListings(productsResponse.data.products || []);
+      setCategories(categoriesResponse.data || []);
     } catch (error) {
       console.error("Error loading marketplace data:", error);
+      // Fallback to empty arrays if API fails
+      setListings([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -164,8 +59,7 @@ const Marketplace = () => {
         (listing) =>
           listing.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
           listing.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          listing.farmerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          listing.farmerLocation.toLowerCase().includes(searchTerm.toLowerCase()),
+          listing.farmerName.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
 
@@ -217,10 +111,19 @@ const Marketplace = () => {
     setSortBy("newest");
   };
 
-  const handleAddToCart = (product) => {
-    // TODO: Implement add to cart functionality
-    console.log("Adding to cart:", product);
-    alert(`${product.title} added to cart!`);
+  const handleAddToCart = async (product) => {
+    try {
+      if (!currentUser) {
+        alert("Please log in to add items to cart");
+        return;
+      }
+
+      await ordersAPI.addToCart(product.id, 1);
+      alert(`${product.title} added to cart!`);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add item to cart. Please try again.");
+    }
   };
 
   if (loading) {
@@ -403,9 +306,9 @@ const ProductCard = ({ product, onAddToCart, onClick }) => {
     >
       {/* Product Image */}
       <div className="aspect-square bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center">
-        {product.image ? (
+        {product.images && product.images.length > 0 ? (
           <img
-            src={product.image}
+            src={product.images[0]}
             alt={product.title}
             className="w-full h-full object-cover"
           />
@@ -425,7 +328,7 @@ const ProductCard = ({ product, onAddToCart, onClick }) => {
           <h3 className="font-semibold text-gray-900 line-clamp-1">{product.title}</h3>
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 text-yellow-400 fill-current" />
-            <span className="text-sm text-gray-600">{product.rating}</span>
+            <span className="text-sm text-gray-600">{product.averageRating || "N/A"}</span>
           </div>
         </div>
 
@@ -445,10 +348,6 @@ const ProductCard = ({ product, onAddToCart, onClick }) => {
           <div className="flex justify-between">
             <span className="text-sm text-gray-500">Farmer:</span>
             <span className="text-sm font-medium">{product.farmerName}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-sm text-gray-500">Location:</span>
-            <span className="text-sm">{product.farmerLocation}</span>
           </div>
           {product.isOrganic && (
             <div className="flex items-center gap-1 text-green-600">
@@ -477,14 +376,25 @@ const ProductCard = ({ product, onAddToCart, onClick }) => {
 // Product Detail Modal Component
 const ProductDetailModal = ({ product, isOpen, onClose, onOrderSuccess }) => {
   const [quantity, setQuantity] = useState(1);
+  const { currentUser } = useAuth();
 
   if (!isOpen) return null;
 
-  const handleOrder = () => {
-    // TODO: Implement order functionality
-    console.log("Ordering:", { product, quantity });
-    alert(`Order placed for ${quantity} ${product.unit} of ${product.title}!`);
-    onOrderSuccess();
+  const handleOrder = async () => {
+    try {
+      if (!currentUser) {
+        alert("Please log in to place an order");
+        return;
+      }
+
+      // Add to cart first
+      await ordersAPI.addToCart(product.id, quantity);
+      alert(`Added ${quantity} ${product.unit} of ${product.title} to cart!`);
+      onOrderSuccess();
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      alert("Failed to add to cart. Please try again.");
+    }
   };
 
   return (
@@ -504,9 +414,9 @@ const ProductDetailModal = ({ product, isOpen, onClose, onOrderSuccess }) => {
           <div className="grid md:grid-cols-2 gap-6">
             {/* Product Image */}
             <div className="aspect-square bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg flex items-center justify-center">
-              {product.image ? (
+              {product.images && product.images.length > 0 ? (
                 <img
-                  src={product.image}
+                  src={product.images[0]}
                   alt={product.title}
                   className="w-full h-full object-cover rounded-lg"
                 />
@@ -545,8 +455,8 @@ const ProductDetailModal = ({ product, isOpen, onClose, onOrderSuccess }) => {
                   <p className="font-medium text-gray-900">{product.farmerName}</p>
                 </div>
                 <div>
-                  <span className="text-sm text-gray-500">Location</span>
-                  <p className="font-medium text-gray-900">{product.farmerLocation}</p>
+                  <span className="text-sm text-gray-500">Category</span>
+                  <p className="font-medium text-gray-900 capitalize">{product.category}</p>
                 </div>
               </div>
 
@@ -559,8 +469,10 @@ const ProductDetailModal = ({ product, isOpen, onClose, onOrderSuccess }) => {
 
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                <span className="font-medium">{product.rating}</span>
-                <span className="text-gray-500">({product.rating}/5)</span>
+                <span className="font-medium">{product.averageRating || "No ratings"}</span>
+                {product.reviewCount && (
+                  <span className="text-gray-500">({product.reviewCount} reviews)</span>
+                )}
               </div>
 
               <div className="space-y-3">
@@ -583,7 +495,7 @@ const ProductDetailModal = ({ product, isOpen, onClose, onOrderSuccess }) => {
                     onClick={handleOrder}
                     className="flex-1 bg-[#006C36] text-white py-3 px-4 rounded-md hover:bg-[#006C36]/90 transition-colors font-medium"
                   >
-                    Place Order
+                    Add to Cart
                   </button>
                   <button
                     onClick={onClose}
