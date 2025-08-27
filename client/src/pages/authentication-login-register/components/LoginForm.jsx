@@ -47,8 +47,9 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, formData.identifier, formData.password);
       const idToken = await user.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
       try {
-        await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/sync`, {}, {
+        await axios.post(`${API_BASE}/auth/sync`, {}, {
           headers: { Authorization: `Bearer ${idToken}` }
         });
       } catch (_) {}
@@ -56,7 +57,7 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
       // Fetch profile to get role
       let userRole = 'buyer';
       try {
-        const { data: profile } = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/me`, {
+        const { data: profile } = await axios.get(`${API_BASE}/users/me`, {
           headers: { Authorization: `Bearer ${idToken}` }
         });
         if (profile?.role) userRole = profile.role;

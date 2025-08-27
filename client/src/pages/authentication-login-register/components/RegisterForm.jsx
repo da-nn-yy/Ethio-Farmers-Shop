@@ -91,7 +91,8 @@ const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
         try { await updateProfile(user, { displayName: formData.fullName }); } catch (_) {}
       }
       const idToken = await user.getIdToken();
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/users`, {
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+      await axios.post(`${API_BASE}/users`, {
         role: formData.role,
         fullName: formData.fullName,
         phoneNumber: formData.phoneNumber,
@@ -115,7 +116,7 @@ const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors?.general && (
-        <div className="p-4 bg-error/10 border border-error/20 rounded-lg">
+        <div className="p-4 border rounded-lg bg-error/10 border-error/20">
           <p className="text-sm text-error">{errors?.general}</p>
         </div>
       )}
@@ -125,7 +126,7 @@ const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
         currentLanguage={currentLanguage}
       />
       {errors?.role && (
-        <p className="text-sm text-error -mt-4">{errors?.role}</p>
+        <p className="-mt-4 text-sm text-error">{errors?.role}</p>
       )}
       <Input
         label={currentLanguage === 'am' ? 'ሙሉ ስም' : 'Full Name'}
@@ -171,7 +172,7 @@ const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
           {errors?.woreda && <p className="text-sm text-error">{errors?.woreda}</p>}
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Input
           label={currentLanguage === 'am' ? 'የይለፍ ቃል' : 'Password'}
           type="password"

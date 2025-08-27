@@ -11,20 +11,20 @@ const NotFound = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-      <div className="text-center max-w-md">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-background">
+      <div className="max-w-md text-center">
         <div className="flex justify-center mb-6">
           <div className="relative">
-            <h1 className="text-9xl font-bold text-primary opacity-20">404</h1>
+            <h1 className="font-bold text-9xl text-primary opacity-20">404</h1>
           </div>
         </div>
 
-        <h2 className="text-2xl font-medium text-onBackground mb-2">Page Not Found</h2>
-        <p className="text-onBackground/70 mb-8">
+        <h2 className="mb-2 text-2xl font-medium text-onBackground">Page Not Found</h2>
+        <p className="mb-8 text-onBackground/70">
           The page you're looking for doesn't exist. Let's get you back!
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <div className="flex flex-col justify-center gap-4 sm:flex-row">
           <Button
             variant="primary"
             icon={<Icon name="ArrowLeft" />}
