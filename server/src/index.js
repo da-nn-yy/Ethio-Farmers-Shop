@@ -22,7 +22,7 @@ app.use(authRouter);
 app.use(userRouter);
 
 // Start server
-const port = Number(process.env.PORT || 4000);
+const port = Number(process.env.PORT || 5000);
 app.listen(port, () => {
   console.log(`API listening on http://localhost:${port}`);
 });
