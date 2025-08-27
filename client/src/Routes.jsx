@@ -11,6 +11,15 @@ import MarketTrendsDashboard from './pages/market-trends-dashboard';
 import BrowseListingsBuyerHome from './pages/browse-listings-buyer-home';
 import BuyerDashboard from './pages/dashboard-buyer-home';
 import ProtectedRoute from './components/ProtectedRoute';
+import { Navigate } from "react-router-dom";
+
+const RoleRedirect = () => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  const userRole = localStorage.getItem('userRole');
+  if (!isAuthenticated) return <AuthenticationPage />;
+  if (userRole === 'farmer') return <Navigate to="/dashboard-farmer-home" replace />;
+  return <Navigate to="/dashboard-buyer-home" replace />;
+};
 
 const Routes = () => {
   return (
@@ -19,7 +28,7 @@ const Routes = () => {
       <ScrollToTop />
       <RouterRoutes>
         {/* Public */}
-        <Route path="/" element={<AuthenticationPage />} />
+        <Route path="/" element={<RoleRedirect />} />
         <Route path="/authentication-login-register" element={<AuthenticationPage />} />
 
         {/* Protected by role */}
