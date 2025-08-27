@@ -1,15 +1,12 @@
-const dotenv = require('dotenv');
-const admin  = require('firebase-admin');
-
-dotenv.config();
-
+import admin from "firebase-admin";
+import "dotenv/config";
 
 admin.initializeApp({
   credential: admin.credential.cert({
-    project_id: process.env.FIREBASE_PROJECT_ID,
+    projectId: process.env.FIREBASE_PROJECT_ID,
     clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-    private_key: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    privateKey: (process.env.FIREBASE_PRIVATE_KEY || "").replace(/\\n/g, "\n"),
   }),
 });
 
-module.exports = admin;
+export default admin;
