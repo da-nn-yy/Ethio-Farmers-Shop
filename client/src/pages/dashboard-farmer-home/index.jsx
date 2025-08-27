@@ -271,7 +271,7 @@ const DashboardFarmerHome = () => {
                     {currentLanguage === 'am' ? 'አዲስ ጨምር' : 'Add New'}
                   </Button>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                   {produceListings?.slice(0, 4)?.map((listing) => (
                     <ProduceListingCard

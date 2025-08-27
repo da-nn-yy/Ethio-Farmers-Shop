@@ -19,8 +19,8 @@ const BuyerDashboard = () => {
         currentLanguage={currentLanguage}
         onLanguageChange={setCurrentLanguage}
       />
-      <main className="pt-20 px-4 max-w-6xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">Buyer Dashboard</h1>
+      <main className="max-w-6xl px-4 pt-20 mx-auto">
+        <h1 className="mb-4 text-2xl font-bold">Buyer Dashboard</h1>
         <p className="text-text-secondary">Welcome! Start browsing fresh listings tailored for buyers.</p>
       </main>
     </div>

@@ -229,7 +229,7 @@ const BrowseListingsBuyerHome = () => {
     // Apply search
     if (searchQuery?.trim()) {
       const query = searchQuery?.toLowerCase();
-      filtered = filtered?.filter(listing => 
+      filtered = filtered?.filter(listing =>
         listing?.name?.toLowerCase()?.includes(query) ||
         (listing?.nameAm && listing?.nameAm?.includes(query)) ||
         listing?.farmer?.name?.toLowerCase()?.includes(query) ||
@@ -239,7 +239,7 @@ const BrowseListingsBuyerHome = () => {
 
     // Apply filters
     if (filters?.produceTypes?.length > 0) {
-      filtered = filtered?.filter(listing => 
+      filtered = filtered?.filter(listing =>
         filters?.produceTypes?.includes(listing?.category)
       );
     }
@@ -247,7 +247,7 @@ const BrowseListingsBuyerHome = () => {
     if (filters?.regions?.length > 0) {
       filtered = filtered?.filter(listing => {
         const location = listing?.farmer?.location?.toLowerCase();
-        return filters?.regions?.some(region => 
+        return filters?.regions?.some(region =>
           location?.includes(region?.toLowerCase())
         );
       });
@@ -348,7 +348,7 @@ const BrowseListingsBuyerHome = () => {
   const handleRemoveFilter = (filterToRemove) => {
     setFilters(prev => {
       const newFilters = { ...prev };
-      
+
       switch (filterToRemove?.type) {
         case 'produceType':
           newFilters.produceTypes = prev?.produceTypes?.filter(type => type !== filterToRemove?.value);
@@ -363,7 +363,7 @@ const BrowseListingsBuyerHome = () => {
           newFilters.verifiedOnly = false;
           break;
       }
-      
+
       return newFilters;
     });
   };
@@ -485,7 +485,7 @@ const BrowseListingsBuyerHome = () => {
                 </span>
               )}
             </div>
-            
+
             <SortDropdown
               currentSort={currentSort}
               onSortChange={setCurrentSort}
