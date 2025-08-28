@@ -159,7 +159,7 @@ const BuyerDashboard = () => {
           {/* Dashboard Content */}
           <div className="mt-6">
             {/* Welcome Section & Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
               {/* Welcome Card */}
               <div className="lg:col-span-3 bg-gradient-to-r from-primary to-primary/80 text-white rounded-xl p-6">
                 <div className="flex items-center justify-between">
@@ -308,7 +308,7 @@ const BuyerDashboard = () => {
 
       {/* Mobile Refresh Indicator */}
       {isRefreshing && (
-        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
+        <div className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
           <div className="bg-card border border-border rounded-lg px-4 py-2 shadow-lg">
             <div className="flex items-center space-x-2">
               <Icon name="RefreshCw" className="w-4 h-4 animate-spin text-primary" />
