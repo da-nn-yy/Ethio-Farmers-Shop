@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getAuth } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import TabNavigation from '../../components/ui/TabNavigation';
@@ -16,14 +17,38 @@ const UserProfileManagement = () => {
   const navigate = useNavigate();
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [userRole, setUserRole] = useState('farmer'); // farmer or buyer
+  const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('account');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(true);
+
 
   // Load language preference from localStorage
   useEffect(() => {
     const savedLanguage = localStorage.getItem('language') || 'en';
     setCurrentLanguage(savedLanguage);
+  }, []);
+
+  // Fetch user profile from backend
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const auth = getAuth();
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+        const token = await currentUser.getIdToken();
+        const res = await fetch('/users/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        setUser(data);
+        setUserRole(data.role || 'farmer');
+      } catch (e) {
+        // handle error
+      }
+    };
+    fetchUser();
   }, []);
 
   // Handle language change
@@ -84,36 +109,36 @@ const UserProfileManagement = () => {
     switch (activeTab) {
       case 'account':
         return (
-          <AccountInformation 
-            userRole={userRole} 
-            currentLanguage={currentLanguage} 
+          <AccountInformation
+            userRole={userRole}
+            currentLanguage={currentLanguage}
           />
         );
       case 'role-specific':
         return (
-          <RoleSpecificSection 
-            userRole={userRole} 
-            currentLanguage={currentLanguage} 
+          <RoleSpecificSection
+            userRole={userRole}
+            currentLanguage={currentLanguage}
           />
         );
       case 'verification':
         return (
-          <VerificationSection 
-            userRole={userRole} 
-            currentLanguage={currentLanguage} 
+          <VerificationSection
+            userRole={userRole}
+            currentLanguage={currentLanguage}
           />
         );
       case 'orders':
         return (
-          <OrderHistorySection 
-            userRole={userRole} 
-            currentLanguage={currentLanguage} 
+          <OrderHistorySection
+            userRole={userRole}
+            currentLanguage={currentLanguage}
           />
         );
       case 'security':
         return (
-          <SecuritySection 
-            currentLanguage={currentLanguage} 
+          <SecuritySection
+            currentLanguage={currentLanguage}
           />
         );
       default:
@@ -129,6 +154,7 @@ const UserProfileManagement = () => {
         isAuthenticated={isAuthenticated}
         onLanguageChange={handleLanguageChange}
         currentLanguage={currentLanguage}
+        user={user}
       />
       {/* Tab Navigation */}
       <TabNavigation
@@ -145,12 +171,12 @@ const UserProfileManagement = () => {
         currentLanguage={currentLanguage}
       />
       {/* Main Content */}
-      <main className="pt-32 lg:pt-36 pb-8">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6">
+      <main className="pt-32 pb-8 lg:pt-36">
+        <div className="px-4 mx-auto max-w-7xl lg:px-6">
           {/* Page Header */}
           <div className="mb-8">
-            <div className="flex items-center space-x-2 text-sm text-text-secondary mb-2">
-              <button 
+            <div className="flex items-center mb-2 space-x-2 text-sm text-text-secondary">
+              <button
                 onClick={() => navigate('/dashboard-farmer-home')}
                 className="hover:text-primary transition-smooth"
               >
@@ -161,10 +187,10 @@ const UserProfileManagement = () => {
                 {getLabel('Profile Management', 'የመገለጫ አስተዳደር')}
               </span>
             </div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-text-primary">
+            <h1 className="text-2xl font-bold lg:text-3xl text-text-primary">
               {getLabel('Profile Management', 'የመገለጫ አስተዳደር')}
             </h1>
-            <p className="text-text-secondary mt-2">
+            <p className="mt-2 text-text-secondary">
               {getLabel(
                 'Manage your account information, verification documents, and security settings.',
                 'የመለያ መረጃዎን፣ የማረጋገጫ ሰነዶችን እና የደህንነት ቅንብሮችን ያስተዳድሩ።'
@@ -183,7 +209,7 @@ const UserProfileManagement = () => {
 
           {/* Desktop Tabs */}
           <div className="hidden lg:block">
-            <div className="border-b border-border mb-8">
+            <div className="mb-8 border-b border-border">
               <nav className="flex space-x-8">
                 {tabs?.map((tab) => (
                   <button
@@ -205,12 +231,12 @@ const UserProfileManagement = () => {
           </div>
 
           {/* Mobile Tab Selector */}
-          <div className="lg:hidden mb-6">
+          <div className="mb-6 lg:hidden">
             <div className="relative">
               <select
                 value={activeTab}
                 onChange={(e) => setActiveTab(e?.target?.value)}
-                className="w-full p-3 bg-surface border border-border rounded-lg text-text-primary font-medium appearance-none pr-10"
+                className="w-full p-3 pr-10 font-medium border rounded-lg appearance-none bg-surface border-border text-text-primary"
               >
                 {tabs?.map((tab) => (
                   <option key={tab?.id} value={tab?.id}>
@@ -218,10 +244,10 @@ const UserProfileManagement = () => {
                   </option>
                 ))}
               </select>
-              <Icon 
-                name="ChevronDown" 
-                size={20} 
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-text-secondary pointer-events-none"
+              <Icon
+                name="ChevronDown"
+                size={20}
+                className="absolute transform -translate-y-1/2 pointer-events-none right-3 top-1/2 text-text-secondary"
               />
             </div>
           </div>
@@ -232,7 +258,7 @@ const UserProfileManagement = () => {
           </div>
 
           {/* Quick Actions (Mobile) */}
-          <div className="lg:hidden fixed bottom-4 right-4 z-40">
+          <div className="fixed z-40 lg:hidden bottom-4 right-4">
             <div className="flex flex-col space-y-2">
               <Button
                 variant="default"
