@@ -1,4 +1,5 @@
-import { pool } from "../config/db.js";
+
+import pool from "../config/db.js";
 
 export const syncUser = async (req, res) => {
   const uid = req.user.uid;
