@@ -9,6 +9,7 @@ import SortDropdown from './components/SortDropdown';
 import ProduceCard from './components/ProduceCard';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
+import { ListingsApi, OrdersApi, FavoritesApi } from '../../utils/api';
 
 const BrowseListingsBuyerHome = () => {
   const navigate = useNavigate();
@@ -205,14 +206,40 @@ const BrowseListingsBuyerHome = () => {
   // Load initial data
   useEffect(() => {
     const loadInitialData = async () => {
-      setIsLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setListings(mockListings);
-      setFilteredListings(mockListings);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const data = await ListingsApi.browse({ page: 1, pageSize: 24 });
+        // Map API to UI model (fallback to mock images for demo)
+        const mapped = (data?.items || []).map((it, idx) => ({
+          id: it.id,
+          name: it.title || it.crop,
+          nameAm: it.title,
+          pricePerKg: Number(it.price_per_unit || 0),
+          availableQuantity: Number(it.quantity || 0),
+          image: mockListings?.[idx % mockListings.length]?.image,
+          freshness: 'Fresh',
+          category: it.crop?.toLowerCase?.(),
+          farmer: {
+            id: it.farmer_user_id,
+            name: 'Farmer',
+            avatar: mockListings?.[idx % mockListings.length]?.farmer?.avatar,
+            location: [it.region, it.woreda].filter(Boolean).join(', '),
+            rating: 4.7,
+            reviewCount: 50,
+            phone: '',
+            isVerified: true
+          }
+        }));
+        setListings(mapped);
+        setFilteredListings(mapped);
+      } catch (_) {
+        // fallback to mock if API not available locally
+        setListings(mockListings);
+        setFilteredListings(mockListings);
+      } finally {
+        setIsLoading(false);
+      }
     };
-
     loadInitialData();
   }, []);
 
@@ -381,20 +408,12 @@ const BrowseListingsBuyerHome = () => {
 
   // Handle add to cart
   const handleAddToCart = async (listingId, quantity) => {
-    const listing = listings?.find(l => l?.id === listingId);
-    if (listing) {
-      setCartItems(prev => {
-        const existingItem = prev?.find(item => item?.listingId === listingId);
-        if (existingItem) {
-          return prev?.map(item =>
-            item?.listingId === listingId
-              ? { ...item, quantity: item?.quantity + quantity }
-              : item
-          );
-        } else {
-          return [...prev, { listingId, quantity, listing }];
-        }
-      });
+    try {
+      await OrdersApi.create({ listingId, quantity });
+      // optimistic feedback
+      setCartItems(prev => [...prev, { listingId, quantity }]);
+    } catch (e) {
+      console.error(e);
     }
   };
 
@@ -404,16 +423,26 @@ const BrowseListingsBuyerHome = () => {
   };
 
   // Handle bookmark toggle
-  const handleToggleBookmark = (farmerId) => {
+  const handleToggleBookmark = async (listingId) => {
     setBookmarkedFarmers(prev => {
-      const newBookmarks = new Set(prev);
-      if (newBookmarks?.has(farmerId)) {
-        newBookmarks?.delete(farmerId);
-      } else {
-        newBookmarks?.add(farmerId);
-      }
-      return newBookmarks;
+      const next = new Set(prev);
+      if (next.has(listingId)) next.delete(listingId); else next.add(listingId);
+      return next;
     });
+    try {
+      if (bookmarkedFarmers.has(listingId)) {
+        await FavoritesApi.remove(listingId);
+      } else {
+        await FavoritesApi.add(listingId);
+      }
+    } catch (e) {
+      // revert on failure
+      setBookmarkedFarmers(prev => {
+        const next = new Set(prev);
+        if (next.has(listingId)) next.delete(listingId); else next.add(listingId);
+        return next;
+      });
+    }
   };
 
   // Handle cart click

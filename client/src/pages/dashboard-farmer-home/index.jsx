@@ -74,7 +74,7 @@ const DashboardFarmerHome = () => {
       descriptionAm: 'ለገዢዎች ትኩስ ምርትዎን ዘርዝር',
       icon: 'Plus',
       variant: 'primary',
-      onClick: () => console.log('Add new listing')
+      onClick: () => navigate('/farmer/listings')
     },
     {
       title: 'View All Orders',

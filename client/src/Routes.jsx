@@ -10,6 +10,7 @@ import UserProfileManagement from './pages/user-profile-management';
 import MarketTrendsDashboard from './pages/market-trends-dashboard';
 import BrowseListingsBuyerHome from './pages/browse-listings-buyer-home';
 import BuyerDashboard from './pages/dashboard-buyer-home';
+import FarmerListingsPage from './pages/farmer-listings';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Navigate } from "react-router-dom";
 
@@ -47,6 +48,11 @@ const Routes = () => {
         <Route path="/order-management" element={
           <ProtectedRoute>
             <OrderManagement />
+          </ProtectedRoute>
+        } />
+        <Route path="/farmer/listings" element={
+          <ProtectedRoute requiredRole="farmer">
+            <FarmerListingsPage />
           </ProtectedRoute>
         } />
         <Route path="/user-profile-management" element={
