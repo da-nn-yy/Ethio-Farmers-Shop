@@ -1,48 +1,38 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
+import { FavoritesApi } from '../../../utils/api';
 
 const SavedFarmersSection = ({ currentLanguage = 'en' }) => {
   const navigate = useNavigate();
+  const [farmers, setFarmers] = useState([]);
 
-  const savedFarmers = [
-    {
-      id: 1,
-      name: 'Ahmed Hassan',
-      location: 'Bahir Dar',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      rating: 4.8,
-      specialties: ['Vegetables', 'Fruits'],
-      isVerified: true,
-      activeListings: 8,
-      totalOrders: 23
-    },
-    {
-      id: 2,
-      name: 'Fatima Ali',
-      location: 'Gondar',
-      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face',
-      rating: 4.9,
-      specialties: ['Grains', 'Legumes'],
-      isVerified: true,
-      activeListings: 5,
-      totalOrders: 41
-    },
-    {
-      id: 3,
-      name: 'Mohammed Getnet',
-      location: 'Hawassa',
-      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
-      rating: 4.7,
-      specialties: ['Organic Produce'],
-      isVerified: true,
-      activeListings: 12,
-      totalOrders: 18
-    }
-  ];
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const data = await FavoritesApi.listFarmers();
+        setFarmers(data?.items || []);
+      } catch (_) {
+        setFarmers([]);
+      }
+    };
+    load();
+  }, []);
+
+  const savedFarmers = farmers?.map(f => ({
+    id: f.farmer_user_id,
+    name: f.farmer_name,
+    location: [f.region, f.woreda].filter(Boolean).join(', ') || 'Ethiopia',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+    rating: 4.8,
+    specialties: ['Produce'],
+    isVerified: true,
+    activeListings: 0,
+    totalOrders: 0
+  }));
 
   const handleViewFarmerProfile = (farmerId) => {
     // Navigate to farmer profile

@@ -40,6 +40,7 @@ const GlobalHeader = ({ userRole = null, isAuthenticated = false, onLanguageChan
     } catch (_) {}
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('firebase_id_token');
     // keep language preference
     setIsMobileMenuOpen(false);
     navigate('/authentication-login-register');

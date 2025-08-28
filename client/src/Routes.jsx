@@ -11,6 +11,7 @@ import MarketTrendsDashboard from './pages/market-trends-dashboard';
 import BrowseListingsBuyerHome from './pages/browse-listings-buyer-home';
 import BuyerDashboard from './pages/dashboard-buyer-home';
 import FarmerListingsPage from './pages/farmer-listings';
+import EditListingPage from './pages/farmer-listings/EditListing';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Navigate } from "react-router-dom";
 
@@ -53,6 +54,11 @@ const Routes = () => {
         <Route path="/farmer/listings" element={
           <ProtectedRoute requiredRole="farmer">
             <FarmerListingsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/farmer/listings/edit/:id" element={
+          <ProtectedRoute requiredRole="farmer">
+            <EditListingPage />
           </ProtectedRoute>
         } />
         <Route path="/user-profile-management" element={

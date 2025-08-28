@@ -47,6 +47,7 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
     try {
       const { user } = await signInWithEmailAndPassword(auth, formData.identifier, formData.password);
       const idToken = await user.getIdToken();
+      localStorage.setItem('firebase_id_token', idToken);
       const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
       try {
         await axios.post(`${API_BASE}/auth/sync`, {}, {
