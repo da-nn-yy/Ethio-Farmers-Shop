@@ -31,6 +31,14 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
           roles: ['farmer']
         },
         {
+          id: 'listings',
+          label: 'Listings',
+          labelAm: 'ዝርዝሮች',
+          icon: 'Package',
+          path: '/farmer/listings',
+          roles: ['farmer']
+        },
+        {
           id: 'orders',
           label: 'Orders',
           labelAm: 'ትዕዛዞች',
