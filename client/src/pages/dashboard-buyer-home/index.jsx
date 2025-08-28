@@ -107,19 +107,16 @@ const BuyerDashboard = () => {
   // Handle category change
   const handleCategoryChange = (category) => {
     setSelectedCategory(category);
-    // Filter logic would go here
   };
 
   // Handle location change
   const handleLocationChange = (location) => {
     setSelectedLocation(location);
-    // Filter logic would go here
   };
 
   // Handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    // Simulate refresh
     await new Promise(resolve => setTimeout(resolve, 1000));
     setIsRefreshing(false);
   };
@@ -140,50 +137,72 @@ const BuyerDashboard = () => {
         onToggleCollapse={() => setIsNavCollapsed(!isNavCollapsed)}
       />
       
-      {/* Breadcrumbs */}
+      {/* Main Content Container */}
       <div className={`transition-all duration-300 ${isNavCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
+        {/* Breadcrumbs */}
         <div className="pt-16">
           <ContextualBreadcrumbs userRole="buyer" />
         </div>
 
-        {/* Main Content */}
-        <main className="pb-20 md:pb-6">
-          {/* Location Header */}
-          <LocationHeader
-            currentLanguage={currentLanguage}
-            onLocationChange={handleLocationChange}
-          />
+        {/* Location Header */}
+        <LocationHeader
+          currentLanguage={currentLanguage}
+          onLocationChange={handleLocationChange}
+        />
 
-          {/* Dashboard Content */}
-          <div className="max-w-6xl mx-auto px-4 py-6 space-y-6">
-            {/* Welcome Section */}
-            <div className="bg-card border border-border rounded-lg p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold text-text-primary mb-2">
-                    {currentLanguage === 'en' 
-                      ? `Welcome back, ${user.name}!` 
-                      : `እንኳን ደህና መጡ, ${user.name}!`
-                    }
-                  </h1>
-                  <p className="text-text-secondary">
-                    {currentLanguage === 'en' 
-                      ? 'Discover fresh produce from verified farmers in your area' 
-                      : 'በአካባቢዎ ካሉ የተረጋገጡ አርሶ አደሮች ትኩስ ምርቶችን ያግኙ'
-                    }
-                  </p>
+        {/* Dashboard Content */}
+        <main className="p-6 space-y-6">
+          <div className="max-w-7xl mx-auto">
+            {/* Welcome Section & Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+              {/* Welcome Card */}
+              <div className="lg:col-span-3 bg-gradient-to-r from-primary to-primary/80 text-white rounded-xl p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold mb-2">
+                      {currentLanguage === 'en' 
+                        ? `Welcome back, ${user.name}!` 
+                        : `እንኳን ደህና መጡ, ${user.name}!`
+                      }
+                    </h1>
+                    <p className="text-white/90 mb-4">
+                      {currentLanguage === 'en' 
+                        ? 'Discover fresh produce from verified farmers in your area' 
+                        : 'በአካባቢዎ ካሉ የተረጋገጡ አርሶ አደሮች ትኩስ ምርቶችን ያግኙ'
+                      }
+                    </p>
+                    <div className="flex items-center space-x-2 text-sm text-white/80">
+                      <Icon name="MapPin" className="w-4 h-4" />
+                      <span>{selectedLocation}</span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="secondary"
+                    iconName={isRefreshing ? "RefreshCw" : "Search"}
+                    onClick={() => navigate('/browse-listings-buyer-home')}
+                    className={isRefreshing ? "animate-spin" : ""}
+                  >
+                    {currentLanguage === 'en' ? 'Browse Market' : 'ገበያ አስሳ'}
+                  </Button>
                 </div>
-                <Button
-                  variant="primary"
-                  iconName="RefreshCw"
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                >
-                  {isRefreshing 
-                    ? (currentLanguage === 'en' ? 'Refreshing...' : 'በመደስ ላይ...') 
-                    : (currentLanguage === 'en' ? 'Refresh' : 'አድስ')
-                  }
-                </Button>
+              </div>
+
+              {/* Quick Stats Card */}
+              <div className="bg-card border border-border rounded-xl p-6">
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-primary mb-1">24</div>
+                  <div className="text-sm text-text-secondary mb-3">
+                    {currentLanguage === 'en' ? 'Active Orders' : 'ንቁ ትዕዛዞች'}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate('/order-management')}
+                    className="w-full"
+                  >
+                    {currentLanguage === 'en' ? 'View Orders' : 'ትዕዛዞችን ይመልከቱ'}
+                  </Button>
+                </div>
               </div>
             </div>
 
@@ -196,19 +215,23 @@ const BuyerDashboard = () => {
             {/* Quick Actions Grid */}
             <QuickActionsGrid currentLanguage={currentLanguage} />
 
-            {/* Two Column Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Left Column - Main Content */}
-              <div className="lg:col-span-2 space-y-6">
+            {/* Main Content Grid */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              {/* Left Content - Listings & Farmers */}
+              <div className="xl:col-span-2 space-y-6">
                 {/* Featured Listings */}
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold text-text-primary">
-                      {currentLanguage === 'en' ? 'Featured Listings' : 'ተመራጭ ዝርዝሮች'}
-                    </h3>
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <div className="flex items-center justify-between mb-6">
+                    <div>
+                      <h2 className="text-xl font-semibold text-text-primary">
+                        {currentLanguage === 'en' ? 'Featured Listings' : 'ተመራጭ ዝርዝሮች'}
+                      </h2>
+                      <p className="text-sm text-text-secondary mt-1">
+                        {currentLanguage === 'en' ? 'Fresh produce from verified farmers' : 'ከተረጋገጡ አርሶ አደሮች ትኩስ ምርቶች'}
+                      </p>
+                    </div>
                     <Button
                       variant="outline"
-                      size="sm"
                       iconName="ArrowRight"
                       iconPosition="right"
                       onClick={() => navigate('/browse-listings-buyer-home')}
@@ -217,8 +240,8 @@ const BuyerDashboard = () => {
                     </Button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {featuredListings.map((listing) => (
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {featuredListings.slice(0, 4).map((listing) => (
                       <ProduceListingCard
                         key={listing.id}
                         listing={listing}
@@ -232,32 +255,65 @@ const BuyerDashboard = () => {
                 <SavedFarmersSection currentLanguage={currentLanguage} />
               </div>
 
-              {/* Right Column - Widgets */}
+              {/* Right Sidebar - Widgets */}
               <div className="space-y-6">
                 {/* Market Trends Widget */}
                 <MarketTrendsWidget currentLanguage={currentLanguage} />
 
                 {/* Recent Orders Widget */}
                 <RecentOrdersWidget currentLanguage={currentLanguage} />
-              </div>
-            </div>
-          </div>
 
-          {/* Mobile Pull-to-Refresh Indicator */}
-          {isRefreshing && (
-            <div className="lg:hidden fixed top-32 left-1/2 transform -translate-x-1/2 z-40">
-              <div className="bg-card border border-border rounded-lg p-3 shadow-lg">
-                <div className="flex items-center space-x-2">
-                  <Icon name="RefreshCw" className="w-4 h-4 animate-spin text-primary" />
-                  <span className="text-sm text-text-primary">
-                    {currentLanguage === 'en' ? 'Refreshing...' : 'በመደስ ላይ...'}
-                  </span>
+                {/* Market Insights Card */}
+                <div className="bg-card border border-border rounded-xl p-6">
+                  <h3 className="text-lg font-semibold text-text-primary mb-4">
+                    {currentLanguage === 'en' ? 'Market Insights' : 'የገበያ ግንዛቤዎች'}
+                  </h3>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Icon name="TrendingUp" className="w-4 h-4 text-green-600" />
+                        <span className="text-sm font-medium">
+                          {currentLanguage === 'en' ? 'Tomato prices up 12%' : 'የቲማቲም ዋጋ በ12% ጨምሯል'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Icon name="Leaf" className="w-4 h-4 text-blue-600" />
+                        <span className="text-sm font-medium">
+                          {currentLanguage === 'en' ? 'New organic farmers available' : 'አዳዲስ ኦርጋኒክ አርሶ አደሮች ይገኛሉ'}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                      <div className="flex items-center space-x-2">
+                        <Icon name="Clock" className="w-4 h-4 text-yellow-600" />
+                        <span className="text-sm font-medium">
+                          {currentLanguage === 'en' ? 'Seasonal produce available' : 'የወቅት ምርቶች ይገኛሉ'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
-          )}
+          </div>
         </main>
       </div>
+
+      {/* Mobile Refresh Indicator */}
+      {isRefreshing && (
+        <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 md:hidden">
+          <div className="bg-card border border-border rounded-lg px-4 py-2 shadow-lg">
+            <div className="flex items-center space-x-2">
+              <Icon name="RefreshCw" className="w-4 h-4 animate-spin text-primary" />
+              <span className="text-sm text-text-primary">
+                {currentLanguage === 'en' ? 'Refreshing...' : 'በመደስ ላይ...'}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
