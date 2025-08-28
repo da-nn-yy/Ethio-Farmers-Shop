@@ -91,14 +91,25 @@ const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
         try { await updateProfile(user, { displayName: formData.fullName }); } catch (_) {}
       }
       const idToken = await user.getIdToken();
-      await axios.post(`${import.meta.env.VITE_API_BASE_URL}/users`, {
-        role: formData.role,
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        email: email,
-        region: formData.region,
-        woreda: formData.woreda
-      }, { headers: { Authorization: `Bearer ${idToken}` } });
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+      await axios.post(
+        `${API_BASE}/users`,
+        {
+          role: formData.role,
+          fullName: formData.fullName,
+          phoneNumber: formData.phoneNumber,
+          email: email,
+          region: formData.region,
+          woreda: formData.woreda
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${idToken}`
+          }
+        }
+      );
+
 
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('userRole', formData?.role);
