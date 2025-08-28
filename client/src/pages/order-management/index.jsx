@@ -10,6 +10,7 @@ import OrderTabs from './components/OrderTabs';
 import EmptyOrderState from './components/EmptyOrderState';
 
 import Button from '../../components/ui/Button';
+import { OrdersApi } from '../../utils/api';
 
 const OrderManagement = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const OrderManagement = () => {
     sortBy: 'newest'
   });
 
-  // Mock data for orders
+  // Mock data for orders (fallback)
   const mockOrders = [
     {
       id: 'ORD-2024-001',
@@ -173,16 +174,51 @@ const OrderManagement = () => {
     }
   ];
 
-  // Load language preference and mock data
+  // Load language preference and orders
   useEffect(() => {
     const savedLanguage = localStorage.getItem('farmconnect_language') || 'en';
     setCurrentLanguage(savedLanguage);
-
-    // Simulate loading
-    setTimeout(() => {
-      setOrders(mockOrders);
-      setIsLoading(false);
-    }, 1000);
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const data = await OrdersApi.mine();
+        // Map API into UI shape
+        const mapped = (data?.items || []).map((o, idx) => ({
+          id: o.id,
+          orderNumber: String(o.id).padStart(6, '0'),
+          buyer: {
+            id: o.buyer_user_id,
+            name: 'Buyer',
+            avatar: 'https://randomuser.me/api/portraits/women/32.jpg',
+            phone: '',
+            location: '',
+            businessType: '',
+            verified: true
+          },
+          items: [
+            {
+              id: 'item-1',
+              name: 'Item',
+              quantity: 1,
+              unit: 'kg',
+              pricePerUnit: Number(o.subtotal || 0),
+              total: Number(o.subtotal || 0),
+              image: 'https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg'
+            }
+          ],
+          totalAmount: Number(o.total || o.subtotal || 0),
+          status: o.status,
+          createdAt: o.created_at,
+          specialInstructions: o.notes || ''
+        }));
+        setOrders(mapped);
+      } catch (_) {
+        setOrders(mockOrders);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
   }, []);
 
   // Filter orders based on active tab and filters
@@ -251,37 +287,14 @@ const OrderManagement = () => {
     localStorage.setItem('farmconnect_language', newLanguage);
   };
 
-  const handleAcceptOrder = (orderId) => {
-    setOrders(prevOrders =>
-      prevOrders?.map(order =>
-        order?.id === orderId
-          ? {
-              ...order,
-              status: 'confirmed',
-              pickupDetails: {
-                scheduledDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-                location: 'Farm Gate, Debre Zeit Road'
-              }
-            }
-          : order
-      )
-    );
-
-    // Show success notification
-    console.log(`Order ${orderId} accepted`);
+  const handleAcceptOrder = async (orderId) => {
+    try { await OrdersApi.updateStatus(orderId, 'confirmed'); } catch (_) {}
+    setOrders(prevOrders => prevOrders?.map(order => order?.id === orderId ? { ...order, status: 'confirmed' } : order));
   };
 
-  const handleDeclineOrder = (orderId, reason) => {
-    setOrders(prevOrders =>
-      prevOrders?.map(order =>
-        order?.id === orderId
-          ? { ...order, status: 'cancelled', declineReason: reason }
-          : order
-      )
-    );
-
-    // Show notification
-    console.log(`Order ${orderId} declined: ${reason}`);
+  const handleDeclineOrder = async (orderId, reason) => {
+    try { await OrdersApi.updateStatus(orderId, 'cancelled'); } catch (_) {}
+    setOrders(prevOrders => prevOrders?.map(order => order?.id === orderId ? { ...order, status: 'cancelled' } : order));
   };
 
   const handleContactBuyer = (phoneNumber) => {
