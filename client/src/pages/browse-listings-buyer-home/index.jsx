@@ -10,6 +10,7 @@ import ProduceCard from './components/ProduceCard';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import { ListingsApi, OrdersApi, FavoritesApi } from '../../utils/api';
+import { useToast } from '../../components/ui/Toast';
 
 const BrowseListingsBuyerHome = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const BrowseListingsBuyerHome = () => {
   const [cartItems, setCartItems] = useState([]);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+  const { show } = useToast() || { show: ()=>{} };
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -412,8 +414,10 @@ const BrowseListingsBuyerHome = () => {
       await OrdersApi.create({ listingId, quantity });
       // optimistic feedback
       setCartItems(prev => [...prev, { listingId, quantity }]);
+      show && show(currentLanguage==='am' ? 'ትዕዛዝ ተፈጥሯል' : 'Order placed', 'success');
     } catch (e) {
       console.error(e);
+      show && show(currentLanguage==='am' ? 'ስህተት ተፈጥሯል' : 'Something went wrong', 'error');
     }
   };
 
@@ -432,8 +436,10 @@ const BrowseListingsBuyerHome = () => {
     try {
       if (bookmarkedFarmers.has(listingId)) {
         await FavoritesApi.remove(listingId);
+        show && show(currentLanguage==='am' ? 'ከደረጃ ሰርዘዋል' : 'Removed from favorites', 'default');
       } else {
         await FavoritesApi.add(listingId);
+        show && show(currentLanguage==='am' ? 'ተመዝግቧል' : 'Added to favorites', 'success');
       }
     } catch (e) {
       // revert on failure
@@ -442,6 +448,7 @@ const BrowseListingsBuyerHome = () => {
         if (next.has(listingId)) next.delete(listingId); else next.add(listingId);
         return next;
       });
+      show && show(currentLanguage==='am' ? 'ስህተት ተፈጥሯል' : 'Failed to update favorite', 'error');
     }
   };
 

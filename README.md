@@ -74,3 +74,29 @@ A comprehensive e-commerce platform connecting Ethiopian farmers directly with b
 
 
 **Built with ❤️ for Ethiopian Farmers**
+
+## 🔧 Local Development
+
+1) Server setup
+- Copy `server/.env.example` to `server/.env` and fill values (MySQL + Firebase Admin).
+- Create database and run schema: import `server/src/sql/schema.sql` into your MySQL `DB_NAME`.
+- Install deps and run:
+  - `cd server && npm ci`
+  - `npm run dev`
+
+2) Client setup
+- Copy `client/.env.example` to `client/.env` and set `VITE_API_BASE_URL` to your API (e.g. `http://localhost:5000`).
+- Configure Firebase Web keys.
+- Install deps and run:
+  - `cd client && npm install`
+  - `npm run dev`
+
+3) Auth
+- After Firebase web sign-in, store the ID token in `localStorage` under `firebase_id_token` or wire automatic token storage; protected API routes require `Authorization: Bearer <token>`.
+
+## 🚦 Key Routes
+- Farmer dashboard: `/dashboard-farmer-home`
+- Buyer dashboard: `/dashboard-buyer-home`
+- Browse listings: `/browse-listings-buyer-home`
+- Order management: `/order-management`
+- Farmer listings (manage): `/farmer/listings`

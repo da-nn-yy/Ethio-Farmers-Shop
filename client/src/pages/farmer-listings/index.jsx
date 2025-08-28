@@ -4,6 +4,7 @@ import GlobalHeader from '../../components/ui/GlobalHeader';
 import TabNavigation from '../../components/ui/TabNavigation';
 import Button from '../../components/ui/Button';
 import { ListingsApi } from '../../utils/api';
+import { useToast } from '../../components/ui/Toast';
 
 const FarmerListingsPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const FarmerListingsPage = () => {
   const [form, setForm] = useState({
     title: '', crop: '', variety: '', quantity: '', unit: 'kg', pricePerUnit: '', region: '', woreda: ''
   });
+  const { show } = useToast() || { show: ()=>{} };
 
   useEffect(() => {
     const savedLanguage = localStorage.getItem('farmconnect_language') || 'en';
@@ -53,8 +55,10 @@ const FarmerListingsPage = () => {
       });
       setForm({ title: '', crop: '', variety: '', quantity: '', unit: 'kg', pricePerUnit: '', region: '', woreda: '' });
       await loadListings();
+      show && show(currentLanguage==='am' ? 'ዝርዝር ተፈጥሯል' : 'Listing created', 'success');
     } catch (e) {
       console.error(e);
+      show && show(currentLanguage==='am' ? 'ስህተት ተፈጥሯል' : 'Failed to create listing', 'error');
     }
   };
 
@@ -137,9 +141,8 @@ const FarmerListingsPage = () => {
                         <td className="py-2">{l.unit}</td>
                         <td className="py-2">{l.price_per_unit}</td>
                         <td className="py-2">
-                          <Button variant="outline" size="sm" className="mr-2" onClick={()=>navigate(`/farmer/listings/edit/${l.id}`)}>
-                            Edit
-                          </Button>
+                          <Button variant="outline" size="sm" className="mr-2" onClick={()=>navigate(`/farmer/listings/edit/${l.id}`)}>Edit</Button>
+                          <Button variant="destructive" size="sm" onClick={async()=>{ try{ await ListingsApi.remove(l.id); show && show('Deleted','success'); await loadListings(); }catch(_){ show && show('Delete failed','error'); } }}>Delete</Button>
                         </td>
                       </tr>
                     ))}
