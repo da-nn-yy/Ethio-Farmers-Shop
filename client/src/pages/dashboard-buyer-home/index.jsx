@@ -2,8 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GlobalHeader from '../../components/ui/GlobalHeader';
-import RoleBasedNavigation from '../../components/ui/RoleBasedNavigation';
-import ContextualBreadcrumbs from '../../components/ui/ContextualBreadcrumbs';
+import TabNavigation from '../../components/ui/TabNavigation';
+import MobileMenu from '../../components/ui/MobileMenu';
 import LocationHeader from './components/LocationHeader';
 import CategoryFilter from './components/CategoryFilter';
 import QuickActionsGrid from './components/QuickActionsGrid';
@@ -17,7 +17,7 @@ import Icon from '../../components/AppIcon';
 const BuyerDashboard = () => {
   const navigate = useNavigate();
   const [currentLanguage, setCurrentLanguage] = useState('en');
-  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLocation, setSelectedLocation] = useState('Addis Ababa');
@@ -125,34 +125,39 @@ const BuyerDashboard = () => {
     <div className="min-h-screen bg-background">
       {/* Global Header */}
       <GlobalHeader
-        user={user}
+        userRole="buyer"
+        isAuthenticated={true}
         onLanguageChange={handleLanguageChange}
         currentLanguage={currentLanguage}
       />
-      
-      {/* Navigation */}
-      <RoleBasedNavigation
+
+      {/* Top Tab Navigation */}
+      <TabNavigation
         userRole="buyer"
-        isCollapsed={isNavCollapsed}
-        onToggleCollapse={() => setIsNavCollapsed(!isNavCollapsed)}
+        notificationCounts={{ orders: 3 }}
       />
-      
-      {/* Main Content Container */}
-      <div className={`transition-all duration-300 ${isNavCollapsed ? 'md:ml-16' : 'md:ml-64'}`}>
-        {/* Breadcrumbs */}
-        <div className="pt-16">
-          <ContextualBreadcrumbs userRole="buyer" />
-        </div>
 
-        {/* Location Header */}
-        <LocationHeader
-          currentLanguage={currentLanguage}
-          onLocationChange={handleLocationChange}
-        />
+      {/* Mobile Role-Based Menu */}
+      <MobileMenu
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+        userRole="buyer"
+        isAuthenticated={true}
+        notificationCounts={{ orders: 3, total: 6 }}
+        currentLanguage={currentLanguage}
+      />
 
-        {/* Dashboard Content */}
-        <main className="p-6 space-y-6">
-          <div className="max-w-7xl mx-auto">
+      {/* Main Content */}
+      <main className="pt-32 lg:pt-36 pb-6 px-4 lg:px-6">
+        <div className="max-w-7xl mx-auto">
+          {/* Location Header */}
+          <LocationHeader
+            currentLanguage={currentLanguage}
+            onLocationChange={handleLocationChange}
+          />
+
+          {/* Dashboard Content */}
+          <div className="mt-6">
             {/* Welcome Section & Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
               {/* Welcome Card */}
@@ -298,8 +303,8 @@ const BuyerDashboard = () => {
               </div>
             </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </main>
 
       {/* Mobile Refresh Indicator */}
       {isRefreshing && (

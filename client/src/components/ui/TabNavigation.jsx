@@ -82,6 +82,7 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
   };
 
   const navigationItems = getNavigationItems();
+  const currentLanguage = localStorage.getItem('farmconnect_language') || 'en';
 
   const isActive = (path) => {
     return location?.pathname === path;
@@ -125,7 +126,7 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
                   )}
                 </div>
                 <span className={`text-xs lg:text-sm transition-smooth ${active ? 'text-primary font-medium' : 'text-current'}`}>
-                  {item?.label}
+                  {currentLanguage === 'am' ? item?.labelAm : item?.label}
                 </span>
                 {/* Active indicator for desktop */}
                 {active && (
