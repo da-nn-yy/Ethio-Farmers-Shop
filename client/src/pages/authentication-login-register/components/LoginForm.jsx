@@ -6,6 +6,7 @@ import { Checkbox } from '../../../components/ui/Checkbox';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../../firebase';
 import axios from 'axios';
+import { useToast } from '../../../components/ui/Toast';
 
 const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
     rememberMe: false
   });
   const [errors, setErrors] = useState({});
+  const { show } = useToast() || { show: ()=>{} };
   const [isLoading, setIsLoading] = useState(false);
 
   const handleInputChange = (e) => {
@@ -68,6 +70,7 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
       localStorage.setItem('currentLanguage', currentLanguage);
       localStorage.setItem('userRole', userRole);
       onAuthSuccess(userRole);
+      show && show(currentLanguage==='am' ? 'እንኳን ደህና መጡ' : 'Welcome back', 'success');
       if (userRole === 'farmer') {
         navigate('/dashboard-farmer-home');
       } else {
@@ -77,6 +80,7 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
       setErrors({
         general: currentLanguage === 'am' ? 'የተሳሳተ መለያ ወይም የይለፍ ቃል' : 'Invalid credentials'
       });
+      show && show(currentLanguage==='am' ? 'መግባት አልተሳካም' : 'Login failed', 'error');
     } finally {
       setIsLoading(false);
     }

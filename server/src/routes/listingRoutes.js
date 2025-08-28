@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { authGuard } from "../middleware/auth.js";
-import { createListing, listListings, updateListing, deleteListing } from "../controllers/listingController.js";
+import { createListing, listListings, updateListing, deleteListing, getListingById } from "../controllers/listingController.js";
 
 const router = Router();
 
 // Public: list/browse
 router.get('/listings', listListings);
+router.get('/listings/:id', getListingById);
 
 // Farmer protected: CRUD
 router.post('/listings', authGuard, createListing);

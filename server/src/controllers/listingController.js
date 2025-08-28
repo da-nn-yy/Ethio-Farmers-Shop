@@ -25,7 +25,11 @@ export const listListings = async (req, res) => {
      LIMIT ? OFFSET ?`,
     [...params, Number(pageSize), offset]
   );
-  res.json({ items: rows, page: Number(page), pageSize: Number(pageSize) });
+  const [[countRow]] = await pool.query(
+    `SELECT COUNT(*) AS total FROM produce_listings pl ${whereSql}`,
+    params
+  );
+  res.json({ items: rows, page: Number(page), pageSize: Number(pageSize), total: Number(countRow.total) });
 };
 
 export const createListing = async (req, res) => {
@@ -81,5 +85,21 @@ export const deleteListing = async (req, res) => {
   if (owned.length === 0) return res.status(404).json({ error: 'Listing not found' });
   await pool.query("DELETE FROM produce_listings WHERE id = ?", [listingId]);
   res.json({ ok: true });
+};
+
+export const getListingById = async (req, res) => {
+  const id = Number(req.params.id);
+  const [rows] = await pool.query(
+    `SELECT pl.id, pl.title, pl.crop, pl.variety, pl.quantity, pl.unit, pl.price_per_unit, pl.currency,
+            pl.region, pl.woreda, pl.status, pl.description, pl.created_at,
+            u.id AS farmer_user_id
+     FROM produce_listings pl
+     JOIN users u ON u.id = pl.farmer_user_id
+     WHERE pl.id = ?
+     LIMIT 1`,
+    [id]
+  );
+  if (rows.length === 0) return res.status(404).json({ error: 'Not found' });
+  res.json(rows[0]);
 };
 

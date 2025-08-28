@@ -36,6 +36,7 @@ async function http(method, path, { params, body, headers } = {}) {
 // Listings
 export const ListingsApi = {
   browse: (params) => http('GET', '/listings', { params }),
+  get: (id) => http('GET', `/listings/${id}`),
   create: (payload) => http('POST', '/listings', { body: payload }),
   update: (id, payload) => http('PUT', `/listings/${id}`, { body: payload }),
   remove: (id) => http('DELETE', `/listings/${id}`),

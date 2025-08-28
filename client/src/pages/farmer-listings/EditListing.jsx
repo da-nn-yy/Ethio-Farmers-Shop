@@ -21,9 +21,7 @@ const EditListingPage = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        // for simplicity, get from browse and pick id; in real case, add GET /listings/:id
-        const data = await ListingsApi.browse({ page: 1, pageSize: 200 });
-        const found = (data?.items || []).find(x => String(x.id) === String(id));
+        const found = await ListingsApi.get(id);
         if (found) {
           setForm({
             title: found.title || '', crop: found.crop || '', variety: found.variety || '', quantity: found.quantity || '', unit: found.unit || 'kg', pricePerUnit: found.price_per_unit || '', region: found.region || '', woreda: found.woreda || '', status: found.status || 'active'

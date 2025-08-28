@@ -11,6 +11,9 @@ const FarmerListingsPage = () => {
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [listings, setListings] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const pageSize = 10;
   const [form, setForm] = useState({
     title: '', crop: '', variety: '', quantity: '', unit: 'kg', pricePerUnit: '', region: '', woreda: ''
   });
@@ -24,8 +27,9 @@ const FarmerListingsPage = () => {
   const loadListings = async () => {
     try {
       setIsLoading(true);
-      const data = await ListingsApi.browse({ page: 1, pageSize: 50 });
+      const data = await ListingsApi.browse({ page, pageSize });
       setListings((data?.items || []).filter(it => !!it));
+      setTotal(Number(data?.total || 0));
     } catch (_) {
       setListings([]);
     } finally {
@@ -33,7 +37,7 @@ const FarmerListingsPage = () => {
     }
   };
 
-  useEffect(() => { loadListings(); }, []);
+  useEffect(() => { loadListings(); }, [page]);
 
   const handleLanguageChange = (lang) => {
     setCurrentLanguage(lang);
@@ -148,6 +152,14 @@ const FarmerListingsPage = () => {
                     ))}
                   </tbody>
                 </table>
+                {/* Pagination */}
+                <div className="flex items-center justify-between mt-4">
+                  <span className="text-sm text-text-secondary">Page {page} of {Math.max(1, Math.ceil(total / pageSize))}</span>
+                  <div className="space-x-2">
+                    <Button variant="outline" size="sm" onClick={()=>setPage(p=>Math.max(1,p-1))} disabled={page<=1}>Prev</Button>
+                    <Button variant="outline" size="sm" onClick={()=>setPage(p=> (p*pageSize<total ? p+1 : p))} disabled={page*pageSize>=total}>Next</Button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
