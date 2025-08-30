@@ -29,7 +29,7 @@ const DashboardFarmerHome = () => {
   const [recentActivity, setRecentActivity] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   // Add New Listing state
   const [isAddListingModalOpen, setIsAddListingModalOpen] = useState(false);
   const [newListing, setNewListing] = useState({
@@ -131,8 +131,73 @@ const DashboardFarmerHome = () => {
 
   // Dashboard data will be fetched from API
 
+  // Add New Listing functions
+  const handleAddNewListing = () => {
+    setIsAddListingModalOpen(true);
+  };
+
+  const handleSubmitNewListing = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated || !user) return;
+
+    try {
+      setIsSubmitting(true);
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+      const listingData = {
+        ...newListing,
+        pricePerKg: Number(newListing.pricePerKg),
+        availableQuantity: Number(newListing.availableQuantity)
+      };
+
+      const response = await axios.post(`${API_BASE}/farmer/listings`, listingData, {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+
+      // Add new listing to the list
+      setProduceListings(prev => [response.data, ...prev]);
+
+      // Reset form and close modal
+      setNewListing({
+        name: '',
+        nameAm: '',
+        description: '',
+        descriptionAm: '',
+        category: 'vegetables',
+        pricePerKg: '',
+        availableQuantity: '',
+        location: 'Addis Ababa',
+        image: ''
+      });
+      setIsAddListingModalOpen(false);
+
+      // Show success message
+      if (currentLanguage === 'am') {
+        alert('የእርስዎ ዝርዝር በተሳካቸ ሁኔታ ተጨምሯል!');
+      } else {
+        alert('Your listing has been added successfully!');
+      }
+
+    } catch (error) {
+      console.error('Failed to add listing:', error);
+      if (currentLanguage === 'am') {
+        alert('ዝርዝር ማክራት አልተሳካም። እባክዎ እንደገና ይሞክሩ።');
+      } else {
+        alert('Failed to add listing. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleInputChange = (field, value) => {
+    setNewListing(prev => ({ ...prev, [field]: value }));
+  };
+
   const quickActions = [
-    { title: "Add New Listing", titleAm: "አዲስ ዝርዝር ጨምር", description: "List your fresh produce for buyers", descriptionAm: "ለገዢዎች ትኩስ ምርትዎን ዘርዝር", icon: "Plus", variant: "primary", onClick: () => console.log("Add new listing") },
+    { title: "Add New Listing", titleAm: "አዲስ ዝርዝር ጨምር", description: "List your fresh produce for buyers", descriptionAm: "ለገዢዎች ትኩስ ምርትዎን ዘርዝር", icon: "Plus", variant: "primary", onClick: handleAddNewListing },
     { title: "View All Orders", titleAm: "ሁሉንም ትዕዛዞች ይመልከቱ", description: "Manage your incoming orders", descriptionAm: "የሚመጡ ትዕዛዞችዎን ያስተዳድሩ", icon: "ShoppingBag", variant: "secondary", onClick: () => navigate("/order-management") }
   ];
 
@@ -175,7 +240,7 @@ const DashboardFarmerHome = () => {
     }
   };
 
-  const handleEditListing = (listingId) => console.log("Edit listing:", listingId);
+    const handleEditListing = (listingId) => console.log("Edit listing:", listingId);
   const handleDuplicateListing = (listingId) => console.log("Duplicate listing:", listingId);
   const handleToggleListingStatus = (listingId) => console.log("Toggle listing status:", listingId);
 
@@ -277,7 +342,13 @@ const DashboardFarmerHome = () => {
                   <h2 className="text-xl font-semibold text-text-primary">
                     {currentLanguage === "am" ? "የእርስዎ ንቁ ዝርዝሮች" : "Your Active Listings"}
                   </h2>
-                  <Button variant="outline" size="sm" iconName="Plus" iconPosition="left">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    iconName="Plus"
+                    iconPosition="left"
+                    onClick={handleAddNewListing}
+                  >
                     {currentLanguage === "am" ? "አዲስ ጨምር" : "Add New"}
                   </Button>
                 </div>
@@ -306,7 +377,12 @@ const DashboardFarmerHome = () => {
                           ? "ገና ምንም ዝርዝሮች የሉዎትም። የእርስዎን ምርት ያስጀምሩ!"
                           : "You don't have any listings yet. Start listing your produce!"}
                       </p>
-                      <Button variant="primary" iconName="Plus" iconPosition="left">
+                      <Button
+                        variant="primary"
+                        iconName="Plus"
+                        iconPosition="left"
+                        onClick={handleAddNewListing}
+                      >
                         {currentLanguage === "am" ? "ዝርዝር ጀምር" : "Create First Listing"}
                       </Button>
                     </div>
@@ -349,6 +425,198 @@ const DashboardFarmerHome = () => {
           )}
         </div>
       </main>
+
+      {/* Add New Listing Modal */}
+      {isAddListingModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-border">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold text-text-primary">
+                  {currentLanguage === "am" ? "አዲስ ዝርዝር ጨምር" : "Add New Listing"}
+                </h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsAddListingModalOpen(false)}
+                  iconName="X"
+                />
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmitNewListing} className="p-6 overflow-y-auto max-h-96">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {/* English Name */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "የምርት ስም (English)" : "Product Name (English)"}
+                  </label>
+                  <input
+                    type="text"
+                    value={newListing.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder={currentLanguage === "am" ? "ለምሳሌ: Fresh Tomatoes" : "e.g., Fresh Tomatoes"}
+                  />
+                </div>
+
+                {/* Amharic Name */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "የምርት ስም (አማርኛ)" : "Product Name (Amharic)"}
+                  </label>
+                  <input
+                    type="text"
+                    value={newListing.nameAm}
+                    onChange={(e) => handleInputChange('nameAm', e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder={currentLanguage === "am" ? "ለምሳሌ: ትኩስ ቲማቲም" : "e.g., ትኩስ ቲማቲም"}
+                  />
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "ምድብ" : "Category"}
+                  </label>
+                  <select
+                    value={newListing.category}
+                    onChange={(e) => handleInputChange('category', e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="vegetables">{currentLanguage === "am" ? "አትክልቶች" : "Vegetables"}</option>
+                    <option value="fruits">{currentLanguage === "am" ? "ፍራፍሬዎች" : "Fruits"}</option>
+                    <option value="grains">{currentLanguage === "am" ? "እህሎች" : "Grains"}</option>
+                    <option value="legumes">{currentLanguage === "am" ? "ጥራጥሮች" : "Legumes"}</option>
+                    <option value="spices">{currentLanguage === "am" ? "ቅመሞች" : "Spices"}</option>
+                  </select>
+                </div>
+
+                {/* Location */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "ክልል" : "Region"}
+                  </label>
+                  <select
+                    value={newListing.location}
+                    onChange={(e) => handleInputChange('location', e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                  >
+                    <option value="Addis Ababa">{currentLanguage === "am" ? "አዲስ አበባ" : "Addis Ababa"}</option>
+                    <option value="Oromia">{currentLanguage === "am" ? "ኦሮሚያ" : "Oromia"}</option>
+                    <option value="Amhara">{currentLanguage === "am" ? "አማራ" : "Amhara"}</option>
+                    <option value="Tigray">{currentLanguage === "am" ? "ትግራይ" : "Tigray"}</option>
+                    <option value="SNNP">{currentLanguage === "am" ? "ደቡብ ብሔሮች" : "SNNP"}</option>
+                    <option value="Somali">{currentLanguage === "am" ? "ሶማሌ" : "Somali"}</option>
+                    <option value="Afar">{currentLanguage === "am" ? "አፋር" : "Afar"}</option>
+                  </select>
+                </div>
+
+                {/* Price per kg */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "ዋጋ በኪሎ (ETB)" : "Price per kg (ETB)"}
+                  </label>
+                  <input
+                    type="number"
+                    value={newListing.pricePerKg}
+                    onChange={(e) => handleInputChange('pricePerKg', e.target.value)}
+                    required
+                    min="0"
+                    step="0.01"
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="25.00"
+                  />
+                </div>
+
+                {/* Available Quantity */}
+                <div>
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "የሚገኝ መጠን (kg)" : "Available Quantity (kg)"}
+                  </label>
+                  <input
+                    type="number"
+                    value={newListing.availableQuantity}
+                    onChange={(e) => handleInputChange('availableQuantity', e.target.value)}
+                    required
+                    min="0"
+                    step="0.1"
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="100.0"
+                  />
+                </div>
+
+                {/* Image URL */}
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "የምስት አድራሻ" : "Image URL"}
+                  </label>
+                  <input
+                    type="url"
+                    value={newListing.image}
+                    onChange={(e) => handleInputChange('image', e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+
+                {/* Description */}
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "መግለጫ (English)" : "Description (English)"}
+                  </label>
+                  <textarea
+                    value={newListing.description}
+                    onChange={(e) => handleInputChange('description', e.target.value)}
+                    rows="3"
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder={currentLanguage === "am" ? "የምርትዎን ጥራት እና ባህሪያት ይግለጹ" : "Describe the quality and characteristics of your produce"}
+                  />
+                </div>
+
+                {/* Amharic Description */}
+                <div className="md:col-span-2">
+                  <label className="block mb-2 text-sm font-medium text-text-secondary">
+                    {currentLanguage === "am" ? "መግለጫ (አማርኛ)" : "Description (Amharic)"}
+                  </label>
+                  <textarea
+                    value={newListing.descriptionAm}
+                    onChange={(e) => handleInputChange('descriptionAm', e.target.value)}
+                    rows="3"
+                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                    placeholder={currentLanguage === "am" ? "የምርትዎን ጥራት እና ባህሪያት ይግለጹ" : "Describe the quality and characteristics of your produce"}
+                  />
+                </div>
+              </div>
+            </form>
+
+            <div className="p-6 border-t border-border">
+              <div className="flex justify-end space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsAddListingModalOpen(false)}
+                  disabled={isSubmitting}
+                >
+                  {currentLanguage === "am" ? "ያቋርጡ" : "Cancel"}
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleSubmitNewListing}
+                  loading={isSubmitting}
+                  disabled={isSubmitting}
+                  iconName="Plus"
+                  iconPosition="left"
+                >
+                  {currentLanguage === "am" ? "ዝርዝር ጨምር" : "Add Listing"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,4 +1,8 @@
+<<<<<<< HEAD
  🌾 Ethio Farmers - Agricultural Marketplace
+=======
+# 🌾 Ethio Farmers - Agricultural Marketplace
+>>>>>>> 3eda38a82d432751664176e4f857952c5804203a
 
 A comprehensive e-commerce platform connecting Ethiopian farmers directly with buyers, eliminating intermediaries and ensuring fair prices for both parties.
 

@@ -4,8 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Update IDE workspace configuration and improve API base URL handling in registration form">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -37,22 +39,22 @@
     <option name="openDirectoriesWithSingleClick" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "ignore.virus.scanning.warn.message": "true",
-    "last_opened_file_path": "C:/Users/hp/Downloads/farmconnect_ethiopia (1)/Ethio-Framers_Shop",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2024.3.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/hp/Downloads/farmconnect_ethiopia (1)/Ethio-Framers_Shop&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\WebStorm 2024.3.4\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\hp\Downloads\farmconnect_ethiopia (1)\Ethio-Framers_Shop\server\src" />
@@ -78,7 +80,9 @@
       <workItem from="1756362188489" duration="6254000" />
       <workItem from="1756369372511" duration="424000" />
       <workItem from="1756370240989" duration="176000" />
-      <workItem from="1756370447815" duration="9446000" />
+      <workItem from="1756370447815" duration="9782000" />
+      <workItem from="1756570295256" duration="316000" />
+      <workItem from="1756583779626" duration="1531000" />
     </task>
     <task id="LOCAL-00001" summary="Update server port configuration and add default user role assignment during user synchronization">
       <option name="closed" value="true" />
@@ -184,11 +188,54 @@
       <option name="project" value="LOCAL" />
       <updated>1756387781242</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="Implement comprehensive buyer dashboard with produce browsing, cart functionality, and order placement">
+      <option name="closed" value="true" />
+      <created>1756585382079</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1756585382079</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states">
+      <option name="closed" value="true" />
+      <created>1756585397756</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1756585397756</updated>
+    </task>
+    <option name="localTasksCounter" value="16" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="OPEN_GENERIC_TABS">
+      <map>
+        <entry key="599fe1e6-7dd6-45e4-b916-0f1ebc7c2c41" value="TOOL_WINDOW" />
+        <entry key="3e98b42f-07ff-4de3-a49f-971a351777a5" value="TOOL_WINDOW" />
+      </map>
+    </option>
+    <option name="TAB_STATES">
+      <map>
+        <entry key="3e98b42f-07ff-4de3-a49f-971a351777a5">
+          <value>
+            <State />
+          </value>
+        </entry>
+        <entry key="599fe1e6-7dd6-45e4-b916-0f1ebc7c2c41">
+          <value>
+            <State />
+          </value>
+        </entry>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Update server port configuration and add default user role assignment during user synchronization" />
@@ -203,6 +250,8 @@
     <MESSAGE value="Refactor server architecture by extracting configuration and routes into separate modules" />
     <MESSAGE value="Integrate Firebase authentication with backend API for user data fetching and improve component state management" />
     <MESSAGE value="Update IDE workspace configuration and improve API base URL handling in registration form" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update IDE workspace configuration and improve API base URL handling in registration form" />
+    <MESSAGE value="Implement comprehensive buyer dashboard with produce browsing, cart functionality, and order placement" />
+    <MESSAGE value="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states" />
+    <option name="LAST_COMMIT_MESSAGE" value="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states" />
   </component>
 </project>
