@@ -23,6 +23,28 @@ const DashboardFarmerHome = () => {
   const [user, setUser] = useState(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
+  // Dashboard data state
+  const [farmerMetrics, setFarmerMetrics] = useState([]);
+  const [produceListings, setProduceListings] = useState([]);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  // Add New Listing state
+  const [isAddListingModalOpen, setIsAddListingModalOpen] = useState(false);
+  const [newListing, setNewListing] = useState({
+    name: '',
+    nameAm: '',
+    description: '',
+    descriptionAm: '',
+    category: 'vegetables',
+    pricePerKg: '',
+    availableQuantity: '',
+    location: 'Addis Ababa',
+    image: ''
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Load language preference on component mount
   useEffect(() => {
     const savedLanguage = localStorage.getItem("farmconnect_language") || "en";
@@ -61,42 +83,96 @@ const DashboardFarmerHome = () => {
     fetchUser();
   }, []);
 
+  // ✅ Fetch dashboard data
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      if (!isAuthenticated || !user) return;
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+        // Fetch all dashboard data in parallel
+        const [metricsRes, listingsRes, activityRes] = await Promise.all([
+          axios.get(`${API_BASE}/farmer/metrics`, {
+            headers: { Authorization: `Bearer ${idToken}` }
+          }),
+          axios.get(`${API_BASE}/farmer/listings?limit=6`, {
+            headers: { Authorization: `Bearer ${idToken}` }
+          }),
+          axios.get(`${API_BASE}/farmer/activity?limit=5`, {
+            headers: { Authorization: `Bearer ${idToken}` }
+          })
+        ]);
+
+        setFarmerMetrics(metricsRes.data);
+        setProduceListings(listingsRes.data);
+        setRecentActivity(activityRes.data);
+      } catch (error) {
+        console.error("Failed to fetch dashboard data:", error);
+        setError("Failed to load dashboard data");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, [isAuthenticated, user]);
+
   // ✅ Safe text interpolation
   const welcomeText =
     currentLanguage === "am"
       ? `እንኳን ደህና መጡ፣ ${user?.fullName || "ገበሬ"}!`
       : `Welcome back, ${user?.fullName || "Farmer"}!`;
 
-  // --------------------
-  // Mock data for dashboard
-  // --------------------
-  const farmerMetrics = [
-    { title: "Active Listings", titleAm: "ንቁ ዝርዝሮች", value: 12, icon: "Package", trend: "up", trendValue: 8.5 },
-    { title: "Pending Orders", titleAm: "በመጠባበቅ ላይ ያሉ ትዕዛዞች", value: 7, icon: "ShoppingBag", trend: "up", trendValue: 12.3 },
-    { title: "Weekly Earnings", titleAm: "ሳምንታዊ ገቢ", value: 2850, icon: "TrendingUp", currency: true, trend: "up", trendValue: 15.7 },
-    { title: "Total Reviews", titleAm: "ጠቅላላ ግምገማዎች", value: 48, icon: "Star", trend: "up", trendValue: 4.2 }
-  ];
+  // Dashboard data will be fetched from API
 
   const quickActions = [
     { title: "Add New Listing", titleAm: "አዲስ ዝርዝር ጨምር", description: "List your fresh produce for buyers", descriptionAm: "ለገዢዎች ትኩስ ምርትዎን ዘርዝር", icon: "Plus", variant: "primary", onClick: () => console.log("Add new listing") },
     { title: "View All Orders", titleAm: "ሁሉንም ትዕዛዞች ይመልከቱ", description: "Manage your incoming orders", descriptionAm: "የሚመጡ ትዕዛዞችዎን ያስተዳድሩ", icon: "ShoppingBag", variant: "secondary", onClick: () => navigate("/order-management") }
   ];
 
-  const produceListings = [
-    { id: 1, name: "Premium Teff", nameAm: "ፕሪሚየም ጤፍ", image: "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg", pricePerKg: 92, availableQuantity: 150, location: "Addis Ababa", status: "active" },
-    { id: 2, name: "Organic Wheat", nameAm: "ኦርጋኒክ ስንዴ", image: "https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b", pricePerKg: 50, availableQuantity: 200, location: "Oromia", status: "active" },
-    { id: 3, name: "Fresh Barley", nameAm: "ትኩስ ገብስ", image: "https://images.pixabay.com/photo/2016/08/10/16/58/barley-1584328_1280.jpg", pricePerKg: 43, availableQuantity: 8, location: "Amhara", status: "low_stock" },
-    { id: 4, name: "Yellow Maize", nameAm: "ቢጫ በቆሎ", image: "https://images.pexels.com/photos/547263/pexels-photo-547263.jpeg", pricePerKg: 37, availableQuantity: 0, location: "SNNP", status: "sold_out" },
-    { id: 5, name: "Red Onions", nameAm: "ቀይ ሽንኩርት", image: "https://images.unsplash.com/photo-1518977676601-b53f82aba655", pricePerKg: 25, availableQuantity: 75, location: "Tigray", status: "active" },
-    { id: 6, name: "Fresh Tomatoes", nameAm: "ትኩስ ቲማቲም", image: "https://images.pixabay.com/photo/2016/08/10/16/58/tomatoes-1584328_1280.jpg", pricePerKg: 18, availableQuantity: 120, location: "Addis Ababa", status: "active" }
-  ];
-
-  const notificationCounts = { orders: 7, total: 15 };
+  // Calculate notification counts from real data
+  const notificationCounts = {
+    orders: farmerMetrics?.find(m => m.title === "Pending Orders")?.value || 0,
+    total: (farmerMetrics?.find(m => m.title === "Pending Orders")?.value || 0) +
+           (farmerMetrics?.find(m => m.title === "Active Listings")?.value || 0)
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsRefreshing(false);
+    try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+      // Refresh all dashboard data
+      const [metricsRes, listingsRes, activityRes] = await Promise.all([
+        axios.get(`${API_BASE}/farmer/metrics`, {
+          headers: { Authorization: `Bearer ${idToken}` }
+        }),
+        axios.get(`${API_BASE}/farmer/listings?limit=6`, {
+          headers: { Authorization: `Bearer ${idToken}` }
+        }),
+        axios.get(`${API_BASE}/farmer/activity?limit=5`, {
+          headers: { Authorization: `Bearer ${idToken}` }
+        })
+      ]);
+
+      setFarmerMetrics(metricsRes.data);
+      setProduceListings(listingsRes.data);
+      setRecentActivity(activityRes.data);
+      setError(null);
+    } catch (error) {
+      console.error("Failed to refresh dashboard data:", error);
+      setError("Failed to refresh data");
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
   const handleEditListing = (listingId) => console.log("Edit listing:", listingId);
@@ -149,11 +225,36 @@ const DashboardFarmerHome = () => {
             </div>
           </div>
 
+          {/* Error Display */}
+          {error && (
+            <div className="p-4 mb-6 border border-red-200 rounded-lg bg-red-50">
+              <div className="flex items-center space-x-2">
+                <Icon name="AlertCircle" size={20} className="text-red-500" />
+                <span className="text-red-700">{error}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setError(null)}
+                  className="ml-auto"
+                >
+                  {currentLanguage === "am" ? "ዘግብ" : "Dismiss"}
+                </Button>
+              </div>
+            </div>
+          )}
+
           {/* Metrics Cards */}
           <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-            {farmerMetrics?.map((metric, index) => (
-              <MetricsCard key={index} {...metric} currentLanguage={currentLanguage} />
-            ))}
+            {isLoading ? (
+              // Loading skeleton for metrics
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="h-24 bg-gray-200 rounded-lg animate-pulse" />
+              ))
+            ) : (
+              farmerMetrics?.map((metric, index) => (
+                <MetricsCard key={index} {...metric} currentLanguage={currentLanguage} />
+              ))
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -181,20 +282,39 @@ const DashboardFarmerHome = () => {
                   </Button>
                 </div>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
-                  {produceListings?.slice(0, 4)?.map((listing) => (
-                    <ProduceListingCard
-                      key={listing.id}
-                      listing={listing}
-                      onEdit={handleEditListing}
-                      onDuplicate={handleDuplicateListing}
-                      onToggleStatus={handleToggleListingStatus}
-                      currentLanguage={currentLanguage}
-                    />
-                  ))}
+                  {isLoading ? (
+                    // Loading skeleton for listings
+                    Array.from({ length: 4 }).map((_, index) => (
+                      <div key={index} className="h-48 bg-gray-200 rounded-lg animate-pulse" />
+                    ))
+                  ) : produceListings?.length > 0 ? (
+                    produceListings?.slice(0, 4)?.map((listing) => (
+                      <ProduceListingCard
+                        key={listing.id}
+                        listing={listing}
+                        onEdit={handleEditListing}
+                        onDuplicate={handleDuplicateListing}
+                        onToggleStatus={handleToggleListingStatus}
+                        currentLanguage={currentLanguage}
+                      />
+                    ))
+                  ) : (
+                    <div className="col-span-2 py-12 text-center">
+                      <Icon name="Package" size={48} className="mx-auto mb-4 text-gray-400" />
+                      <p className="mb-4 text-gray-500">
+                        {currentLanguage === "am"
+                          ? "ገና ምንም ዝርዝሮች የሉዎትም። የእርስዎን ምርት ያስጀምሩ!"
+                          : "You don't have any listings yet. Start listing your produce!"}
+                      </p>
+                      <Button variant="primary" iconName="Plus" iconPosition="left">
+                        {currentLanguage === "am" ? "ዝርዝር ጀምር" : "Create First Listing"}
+                      </Button>
+                    </div>
+                  )}
                 </div>
                 <div className="mt-6 text-center">
                   <Button variant="outline" iconName="ArrowRight" iconPosition="right">
-                    {currentLanguage === "am" ? "ሁሉንም ዝርዝሮች ይመልከቱ" : "View All Listings"} ({produceListings?.length})
+                    {currentLanguage === "am" ? "ሁሉንም ዝርዝሮች ይመልከቱ" : "View All Listings"} ({produceListings?.length || 0})
                   </Button>
                 </div>
               </div>
@@ -202,8 +322,17 @@ const DashboardFarmerHome = () => {
 
             {/* Right Column */}
             <div className="space-y-6">
-              <MarketTrendsWidget currentLanguage={currentLanguage} />
-              <RecentActivityFeed currentLanguage={currentLanguage} />
+              {isLoading ? (
+                <>
+                  <div className="h-64 bg-gray-200 rounded-lg animate-pulse" />
+                  <div className="h-48 bg-gray-200 rounded-lg animate-pulse" />
+                </>
+              ) : (
+                <>
+                  <MarketTrendsWidget currentLanguage={currentLanguage} />
+                  <RecentActivityFeed currentLanguage={currentLanguage} recentActivity={recentActivity} />
+                </>
+              )}
             </div>
           </div>
 
