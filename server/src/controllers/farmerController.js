@@ -386,7 +386,7 @@ export const updateFarmerListing = async (req, res) => {
 
     // Verify the listing belongs to this farmer
     const [listingRows] = await pool.query(
-      'SELECT id FROM produce_listings WHERE id = ? AND farmer_id = ?',
+      'SELECT id FROM produce_listings WHERE id = ? AND farmer_user_id = ?',
       [id, farmerDbId]
     );
 
@@ -397,27 +397,29 @@ export const updateFarmerListing = async (req, res) => {
     // Update the listing
     await pool.query(
       `UPDATE produce_listings SET
-        name = ?,
-        name_am = ?,
+        title = ?,
+        crop = ?,
+        variety = ?,
+        quantity = ?,
+        unit = ?,
+        price_per_unit = ?,
+        currency = ?,
+        region = ?,
+        woreda = ?,
         description = ?,
-        description_am = ?,
-        category = ?,
-        price_per_kg = ?,
-        available_quantity = ?,
-        location = ?,
-        image_url = ?,
         updated_at = NOW()
       WHERE id = ?`,
       [
         name,
-        nameAm || null,
-        description || null,
-        descriptionAm || null,
         category,
-        pricePerKg,
+        nameAm || null,
         availableQuantity,
+        'kg',
+        pricePerKg,
+        'ETB',
         location,
-        image || null,
+        null, // woreda
+        description || null,
         id
       ]
     );
@@ -426,19 +428,19 @@ export const updateFarmerListing = async (req, res) => {
     const [updatedListingRows] = await pool.query(
       `SELECT
         pl.id,
-        pl.name,
-        pl.name_am as nameAm,
+        pl.title as name,
+        pl.crop as nameAm,
         pl.description,
-        pl.description_am as descriptionAm,
-        pl.category,
-        pl.price_per_kg as pricePerKg,
-        pl.available_quantity as availableQuantity,
-        pl.location,
-        pl.image_url as image,
+        pl.crop as category,
+        pl.price_per_unit as pricePerKg,
+        pl.quantity as availableQuantity,
+        pl.region as location,
+        li.url as image,
         pl.status,
         pl.created_at as createdAt,
         pl.updated_at as updatedAt
       FROM produce_listings pl
+      LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
       WHERE pl.id = ?`,
       [id]
     );
@@ -483,7 +485,7 @@ export const updateListingStatus = async (req, res) => {
 
     // Verify the listing belongs to this farmer
     const [listingRows] = await pool.query(
-      'SELECT id FROM produce_listings WHERE id = ? AND farmer_id = ?',
+      'SELECT id FROM produce_listings WHERE id = ? AND farmer_user_id = ?',
       [id, farmerDbId]
     );
 
@@ -523,7 +525,7 @@ export const uploadImage = async (req, res) => {
     }
 
     // Generate the URL for the uploaded image
-    const imageUrl = `${req.protocol}://${req.get('host')}:5001/uploads/${req.file.filename}`;
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
     console.log('Image uploaded successfully:', imageUrl);
 
