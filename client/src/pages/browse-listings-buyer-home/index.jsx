@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import TabNavigation from '../../components/ui/TabNavigation';
 import SearchHeader from './components/SearchHeader';
@@ -206,11 +207,50 @@ const BrowseListingsBuyerHome = () => {
   useEffect(() => {
     const loadInitialData = async () => {
       setIsLoading(true);
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      setListings(mockListings);
-      setFilteredListings(mockListings);
-      setIsLoading(false);
+      try {
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
+        // Fetch real listings from API
+        const response = await axios.get(`${API_BASE}/public/listings`);
+
+        if (response.data.success) {
+          // Transform API data to match component expectations
+          const transformedListings = response.data.listings.map(listing => ({
+            id: listing.id,
+            name: listing.name,
+            nameAm: listing.category, // Using category as Amharic name for now
+            pricePerKg: parseFloat(listing.pricePerKg),
+            availableQuantity: parseFloat(listing.availableQuantity),
+            image: listing.image || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
+            freshness: "Fresh from farm",
+            category: listing.category,
+            farmer: {
+              id: listing.id, // Using listing id as farmer id for now
+              name: listing.farmerName,
+              avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
+              location: listing.location,
+              rating: 4.5,
+              reviewCount: 50,
+              phone: "+251900000000",
+              isVerified: true
+            }
+          }));
+
+          setListings(transformedListings);
+          setFilteredListings(transformedListings);
+        } else {
+          // Fallback to mock data if API fails
+          setListings(mockListings);
+          setFilteredListings(mockListings);
+        }
+      } catch (error) {
+        console.error('Failed to fetch listings:', error);
+        // Fallback to mock data
+        setListings(mockListings);
+        setFilteredListings(mockListings);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
     loadInitialData();
@@ -229,7 +269,7 @@ const BrowseListingsBuyerHome = () => {
     // Apply search
     if (searchQuery?.trim()) {
       const query = searchQuery?.toLowerCase();
-      filtered = filtered?.filter(listing => 
+      filtered = filtered?.filter(listing =>
         listing?.name?.toLowerCase()?.includes(query) ||
         (listing?.nameAm && listing?.nameAm?.includes(query)) ||
         listing?.farmer?.name?.toLowerCase()?.includes(query) ||
@@ -239,7 +279,7 @@ const BrowseListingsBuyerHome = () => {
 
     // Apply filters
     if (filters?.produceTypes?.length > 0) {
-      filtered = filtered?.filter(listing => 
+      filtered = filtered?.filter(listing =>
         filters?.produceTypes?.includes(listing?.category)
       );
     }
@@ -247,7 +287,7 @@ const BrowseListingsBuyerHome = () => {
     if (filters?.regions?.length > 0) {
       filtered = filtered?.filter(listing => {
         const location = listing?.farmer?.location?.toLowerCase();
-        return filters?.regions?.some(region => 
+        return filters?.regions?.some(region =>
           location?.includes(region?.toLowerCase())
         );
       });
@@ -348,7 +388,7 @@ const BrowseListingsBuyerHome = () => {
   const handleRemoveFilter = (filterToRemove) => {
     setFilters(prev => {
       const newFilters = { ...prev };
-      
+
       switch (filterToRemove?.type) {
         case 'produceType':
           newFilters.produceTypes = prev?.produceTypes?.filter(type => type !== filterToRemove?.value);
@@ -363,7 +403,7 @@ const BrowseListingsBuyerHome = () => {
           newFilters.verifiedOnly = false;
           break;
       }
-      
+
       return newFilters;
     });
   };
@@ -485,7 +525,7 @@ const BrowseListingsBuyerHome = () => {
                 </span>
               )}
             </div>
-            
+
             <SortDropdown
               currentSort={currentSort}
               onSortChange={setCurrentSort}

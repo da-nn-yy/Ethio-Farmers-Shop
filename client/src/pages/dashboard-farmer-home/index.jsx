@@ -68,7 +68,7 @@ const DashboardFarmerHome = () => {
 
         const idToken = await currentUser.getIdToken();
         const API_BASE =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
         const res = await axios.get(`${API_BASE}/users/me`, {
           headers: { Authorization: `Bearer ${idToken}` },
@@ -95,7 +95,7 @@ const DashboardFarmerHome = () => {
 
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
         // Fetch all dashboard data in parallel
         const [metricsRes, listingsRes, activityRes] = await Promise.all([
@@ -145,7 +145,7 @@ const DashboardFarmerHome = () => {
       setIsSubmitting(true);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
       const listingData = {
         ...newListing,
@@ -214,7 +214,7 @@ const DashboardFarmerHome = () => {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
       // Refresh all dashboard data
       const [metricsRes, listingsRes, activityRes] = await Promise.all([
@@ -272,7 +272,7 @@ const DashboardFarmerHome = () => {
       setIsSubmitting(true);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
       const listingData = {
         ...editingListing,

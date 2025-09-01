@@ -79,10 +79,30 @@ const BuyerDashboard = () => {
 
         const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
-        // Fetch all active listings
-        const response = await axios.get(`${API_BASE}/listings/active`);
-        setAllListings(response.data);
-        setFilteredListings(response.data);
+        // Fetch all active listings from public endpoint
+        const response = await axios.get(`${API_BASE}/public/listings`);
+
+        if (response.data.success) {
+          // Transform API data to match component expectations
+          const transformedListings = response.data.listings.map(listing => ({
+            id: listing.id,
+            name: listing.name,
+            nameAm: listing.category,
+            image: listing.image || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
+            pricePerKg: parseFloat(listing.pricePerKg),
+            availableQuantity: parseFloat(listing.availableQuantity),
+            location: listing.location,
+            category: listing.category,
+            farmerName: listing.farmerName,
+            status: listing.status,
+            createdAt: listing.createdAt
+          }));
+
+          setAllListings(transformedListings);
+          setFilteredListings(transformedListings);
+        } else {
+          setError('Failed to load produce listings');
+        }
       } catch (error) {
         console.error('Failed to fetch listings:', error);
         setError('Failed to load produce listings');
