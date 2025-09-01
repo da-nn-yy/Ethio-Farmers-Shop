@@ -182,31 +182,21 @@ export const getFarmerRecentActivity = async (req, res) => {
     const farmerId = req.user.uid;
     const limit = parseInt(req.query.limit) || 10;
 
-    // Get recent orders, reviews, and listing updates
+    // Get recent orders only (skip reviews for now since table doesn't exist)
     const [activities] = await pool.query(
-      `(SELECT
+      `SELECT
         'order' as type,
         o.created_at as timestamp,
         CONCAT('New order received from ', u.full_name) as message,
         CONCAT('አዲስ ትዕዛዝ ከ', u.full_name, ' ደርሷል') as message_am,
         o.id as reference_id
       FROM orders o
-      JOIN users u ON o.buyer_id = u.id
-      JOIN users f ON o.farmer_id = f.id
-      WHERE f.firebase_uid = ?)
-      UNION ALL
-      (SELECT
-        'review' as type,
-        r.created_at as timestamp,
-        CONCAT('New review received: ', r.rating, ' stars') as message,
-        CONCAT('አዲስ ግምገማ ደርሷል: ', r.rating, ' ኮከቦች') as message_am,
-        r.id as reference_id
-      FROM reviews r
-      JOIN users f ON r.farmer_id = f.id
-      WHERE f.firebase_uid = ?)
-      ORDER BY timestamp DESC
+      JOIN users u ON o.buyer_user_id = u.id
+      JOIN users f ON o.farmer_user_id = f.id
+      WHERE f.firebase_uid = ?
+      ORDER BY o.created_at DESC
       LIMIT ?`,
-      [farmerId, farmerId, limit]
+      [farmerId, limit]
     );
 
     res.json(activities);
@@ -239,17 +229,29 @@ export const createFarmerListing = async (req, res) => {
       });
     }
 
-    // Get farmer's database ID from firebase_uid
+    // For development/testing, create user if doesn't exist
+    let farmerDbId;
     const [farmerRows] = await pool.query(
       'SELECT id FROM users WHERE firebase_uid = ?',
       [farmerId]
     );
 
     if (farmerRows.length === 0) {
-      return res.status(404).json({ error: "Farmer not found" });
-    }
+      // Create user for development
+      const [newUserResult] = await pool.query(
+        'INSERT INTO users (firebase_uid, role, full_name, phone, email, region, woreda) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [farmerId, 'farmer', 'Development Farmer', '+251900000000', 'dev@example.com', 'Addis Ababa', 'Development Area']
+      );
+      farmerDbId = newUserResult.insertId;
 
-    const farmerDbId = farmerRows[0].id;
+      // Create farmer profile
+      await pool.query(
+        'INSERT INTO farmer_profiles (user_id, farm_name, farm_size_ha, experience_years, address) VALUES (?, ?, ?, ?, ?)',
+        [farmerDbId, 'Development Farm', 5.0, 3, 'Addis Ababa, Ethiopia']
+      );
+    } else {
+      farmerDbId = farmerRows[0].id;
+    }
 
     // Create the listing
     const [result] = await pool.query(
