@@ -27,46 +27,6 @@ app.use('/uploads', express.static('uploads'));
 // Health
 app.get("/health", (req, res) => res.json({ ok: true }));
 
-// Test the farmer listings endpoint
-app.get("/test/farmer-listings", async (req, res) => {
-  try {
-    // Mock user for testing
-    req.user = {
-      uid: 'dev_farmer_1',
-      email: 'dev@example.com'
-    };
-
-    // Import the controller function
-    const { getFarmerListings } = await import('./controllers/farmerController.js');
-
-    // Call the controller
-    await getFarmerListings(req, res);
-  } catch (error) {
-    console.error('Test error:', error);
-    res.status(500).json({ error: "Test failed", details: error.message });
-  }
-});
-
-// Test adding a listing
-app.post("/test/add-listing", async (req, res) => {
-  try {
-    // Mock user for testing
-    req.user = {
-      uid: 'dev_farmer_1',
-      email: 'dev@example.com'
-    };
-
-    // Import the controller function
-    const { createFarmerListing } = await import('./controllers/farmerController.js');
-
-    // Call the controller
-    await createFarmerListing(req, res);
-  } catch (error) {
-    console.error('Test error:', error);
-    res.status(500).json({ error: "Test failed", details: error.message });
-  }
-});
-
 // Mount routes
 app.use(authRouter);
 app.use(userRouter);
