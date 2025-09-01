@@ -176,22 +176,22 @@ export const getOrderById = async (req, res) => {
         o.notes,
         o.created_at as createdAt,
         o.updated_at as updatedAt,
-        pl.name,
-        pl.name_am as nameAm,
+        pl.title as name,
+        pl.crop as nameAm,
         pl.description,
-        pl.description_am as descriptionAm,
-        pl.image_url as image,
-        pl.price_per_kg as pricePerKg,
-        pl.category,
+        li.url as image,
+        pl.price_per_unit as pricePerKg,
+        pl.crop as category,
         u.full_name as farmerName,
-        u.avatar as farmerAvatar,
-        pl.location,
+        u.avatar_url as farmerAvatar,
+        pl.region as location,
         u.phone as farmerPhone,
         u.email as farmerEmail
       FROM orders o
       JOIN produce_listings pl ON o.listing_id = pl.id
-      JOIN users u ON pl.farmer_id = u.id
-      WHERE o.id = ? AND (o.buyer_id = ? OR pl.farmer_id = ?)
+      JOIN users u ON pl.farmer_user_id = u.id
+      LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
+      WHERE o.id = ? AND (o.buyer_user_id = ? OR pl.farmer_user_id = ?)
     `;
 
     const [rows] = await connection.execute(query, [id, userId, userId]);

@@ -27,6 +27,40 @@ app.use('/uploads', express.static('uploads'));
 // Health
 app.get("/health", (req, res) => res.json({ ok: true }));
 
+// Public buyer listings endpoint (no authentication required)
+app.get("/public/listings", async (req, res) => {
+  try {
+    // Test database connection and simple query
+    const { pool } = await import('./config/database.js');
+
+    const [rows] = await pool.query(`
+      SELECT
+        pl.id,
+        pl.title as name,
+        pl.crop as category,
+        pl.price_per_unit as pricePerKg,
+        pl.quantity as availableQuantity,
+        pl.region as location,
+        pl.status,
+        u.full_name as farmerName
+      FROM produce_listings pl
+      JOIN users u ON pl.farmer_user_id = u.id
+      WHERE pl.status = 'active'
+      AND pl.quantity > 0
+      ORDER BY pl.created_at DESC
+    `);
+
+    res.json({
+      success: true,
+      count: rows.length,
+      listings: rows
+    });
+  } catch (error) {
+    console.error('Public listings error:', error);
+    res.status(500).json({ error: "Failed to fetch listings", details: error.message });
+  }
+});
+
 // Mount routes
 app.use(authRouter);
 app.use(userRouter);

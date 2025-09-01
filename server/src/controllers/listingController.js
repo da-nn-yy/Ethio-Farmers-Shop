@@ -9,7 +9,6 @@ export const getAllActiveListings = async (req, res) => {
         pl.title as name,
         pl.crop as nameAm,
         pl.description,
-        pl.description_am,
         pl.price_per_unit as pricePerKg,
         pl.quantity as availableQuantity,
         pl.crop as category,
@@ -49,7 +48,6 @@ export const getListingById = async (req, res) => {
         pl.title as name,
         pl.crop as nameAm,
         pl.description,
-        pl.description_am,
         pl.price_per_unit as pricePerKg,
         pl.quantity as availableQuantity,
         pl.crop as category,
@@ -153,7 +151,6 @@ export const searchListings = async (req, res) => {
         pl.title as name,
         pl.crop as nameAm,
         pl.description,
-        pl.description_am,
         pl.price_per_unit as pricePerKg,
         pl.quantity as availableQuantity,
         pl.crop as category,
@@ -188,7 +185,6 @@ export const searchListings = async (req, res) => {
 export const getListingsByCategory = async (req, res) => {
   try {
     const { category } = req.params;
-    const connection = await pool.getConnection();
 
     const query = `
       SELECT
@@ -196,7 +192,6 @@ export const getListingsByCategory = async (req, res) => {
         pl.title as name,
         pl.crop as nameAm,
         pl.description,
-        pl.description_am,
         pl.price_per_unit as pricePerKg,
         pl.quantity as availableQuantity,
         pl.crop as category,
@@ -218,9 +213,7 @@ export const getListingsByCategory = async (req, res) => {
       ORDER BY pl.created_at DESC
     `;
 
-    const [rows] = await connection.execute(query, [category]);
-    connection.release();
-
+    const [rows] = await pool.query(query, [category]);
     res.json(rows);
   } catch (error) {
     console.error('Error fetching listings by category:', error);
@@ -232,7 +225,6 @@ export const getListingsByCategory = async (req, res) => {
 export const getListingsByRegion = async (req, res) => {
   try {
     const { region } = req.params;
-    const connection = await pool.getConnection();
 
     const query = `
       SELECT
@@ -240,7 +232,6 @@ export const getListingsByRegion = async (req, res) => {
         pl.title as name,
         pl.crop as nameAm,
         pl.description,
-        pl.description_am,
         pl.price_per_unit as pricePerKg,
         pl.quantity as availableQuantity,
         pl.crop as category,
@@ -262,9 +253,7 @@ export const getListingsByRegion = async (req, res) => {
       ORDER BY pl.created_at DESC
     `;
 
-    const [rows] = await connection.execute(query, [region]);
-    connection.release();
-
+    const [rows] = await pool.query(query, [region]);
     res.json(rows);
   } catch (error) {
     console.error('Error fetching listings by region:', error);
