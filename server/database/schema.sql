@@ -90,6 +90,10 @@ INSERT INTO users (firebase_uid, role, full_name, phone, email, region, woreda) 
 ('sample_farmer_1', 'farmer', 'Abebe Kebede', '+251911234567', 'abebe@example.com', 'Addis Ababa', 'Kolfe Keranio'),
 ('sample_buyer_1', 'buyer', 'Kebede Alemu', '+251922345678', 'kebede@example.com', 'Addis Ababa', 'Bole');
 
+-- Add development user for testing
+INSERT IGNORE INTO users (firebase_uid, role, full_name, phone, email, region, woreda) VALUES
+('dev_farmer_1', 'farmer', 'Development Farmer', '+251900000000', 'dev@example.com', 'Addis Ababa', 'Development Area');
+
 -- Sample produce listings
 INSERT INTO produce_listings (farmer_id, name, name_am, category, price_per_kg, available_quantity, location, status) VALUES
 (1, 'Premium Teff', 'ፕሪሚየም ጤፍ', 'grains', 92.00, 150.00, 'Addis Ababa', 'active'),

@@ -1,11 +1,15 @@
 import { Router } from "express";
 import { authGuard } from "../middleware/auth.js";
+import upload, { handleUploadError } from "../middleware/upload.js";
 import {
   getFarmerMetrics,
   getFarmerListings,
   getFarmerOrders,
   getFarmerRecentActivity,
-  createFarmerListing
+  createFarmerListing,
+  updateFarmerListing,
+  updateListingStatus,
+  uploadImage
 } from "../controllers/farmerController.js";
 
 const router = Router();
@@ -27,5 +31,14 @@ router.get('/farmer/activity', getFarmerRecentActivity);
 
 // Create new produce listing
 router.post('/farmer/listings', createFarmerListing);
+
+// Update existing produce listing
+router.put('/farmer/listings/:id', updateFarmerListing);
+
+// Update listing status
+router.patch('/farmer/listings/:id/status', updateListingStatus);
+
+// Upload image
+router.post('/farmer/upload-image', authGuard, upload.single('image'), handleUploadError, uploadImage);
 
 export default router;

@@ -7,31 +7,31 @@ export const getFarmerMetrics = async (req, res) => {
 
     // Get active listings count
     const [listingsResult] = await pool.query(
-      "SELECT COUNT(*) as count FROM produce_listings WHERE farmer_id = (SELECT id FROM users WHERE firebase_uid = ?) AND status = 'active'",
+      "SELECT COUNT(*) as count FROM produce_listings pl JOIN users u ON pl.farmer_user_id = u.id WHERE u.firebase_uid = ? AND pl.status = 'active'",
       [farmerId]
     );
 
     // Get pending orders count
     const [pendingOrdersResult] = await pool.query(
-      "SELECT COUNT(*) as count FROM orders WHERE farmer_id = (SELECT id FROM users WHERE firebase_uid = ?) AND status = 'pending'",
+      "SELECT COUNT(*) as count FROM orders o JOIN users u ON o.farmer_user_id = u.id WHERE u.firebase_uid = ? AND o.status = 'pending'",
       [farmerId]
     );
 
     // Get weekly earnings (last 7 days)
     const [earningsResult] = await pool.query(
-      "SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE farmer_id = (SELECT id FROM users WHERE firebase_uid = ?) AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)",
+      "SELECT COALESCE(SUM(o.total), 0) as total FROM orders o JOIN users u ON o.farmer_user_id = u.id WHERE u.firebase_uid = ? AND o.status = 'completed' AND o.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)",
       [farmerId]
     );
 
-    // Get total reviews count
+    // Get total reviews count (if you have a reviews table)
     const [reviewsResult] = await pool.query(
-      "SELECT COUNT(*) as count FROM reviews WHERE farmer_id = (SELECT id FROM users WHERE firebase_uid = ?)",
+      "SELECT COUNT(*) as count FROM notifications n JOIN users u ON n.user_id = u.id WHERE u.firebase_uid = ? AND n.type = 'review'",
       [farmerId]
     );
 
     // Calculate trends (compare with previous week)
     const [previousWeekEarnings] = await pool.query(
-      "SELECT COALESCE(SUM(total_amount), 0) as total FROM orders WHERE farmer_id = (SELECT id FROM users WHERE firebase_uid = ?) AND status = 'completed' AND created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY) AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)",
+      "SELECT COALESCE(SUM(o.total), 0) as total FROM orders o JOIN users u ON o.farmer_user_id = u.id WHERE u.firebase_uid = ? AND o.status = 'completed' AND o.created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY) AND o.created_at < DATE_SUB(NOW(), INTERVAL 7 DAY)",
       [farmerId]
     );
 
@@ -91,16 +91,22 @@ export const getFarmerListings = async (req, res) => {
     const [listings] = await pool.query(
       `SELECT
         pl.id,
-        pl.name,
-        pl.name_am,
-        pl.image_url,
-        pl.price_per_kg,
-        pl.available_quantity,
-        pl.location,
+        pl.title as name,
+        pl.crop,
+        pl.variety,
+        pl.quantity,
+        pl.unit,
+        pl.price_per_unit as pricePerUnit,
+        pl.currency,
+        pl.region,
+        pl.woreda,
+        pl.description,
         pl.status,
-        pl.created_at
+        pl.created_at,
+        li.url as image_url
       FROM produce_listings pl
-      JOIN users u ON pl.farmer_id = u.id
+      JOIN users u ON pl.farmer_user_id = u.id
+      LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
       WHERE u.firebase_uid = ?
       ORDER BY pl.created_at DESC
       LIMIT ?`,
@@ -111,13 +117,16 @@ export const getFarmerListings = async (req, res) => {
     const transformedListings = listings.map(listing => ({
       id: listing.id,
       name: listing.name,
-      nameAm: listing.name_am,
+      nameAm: listing.crop, // Using crop as Amharic name for now
       image: listing.image_url || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
-      pricePerKg: listing.price_per_kg,
-      availableQuantity: listing.available_quantity,
-      location: listing.location,
+      pricePerKg: listing.pricePerUnit,
+      availableQuantity: listing.quantity,
+      location: listing.region,
       status: listing.status,
-      createdAt: listing.created_at
+      createdAt: listing.created_at,
+      category: listing.crop,
+      unit: listing.unit,
+      currency: listing.currency
     }));
 
     res.json(transformedListings);
@@ -245,21 +254,159 @@ export const createFarmerListing = async (req, res) => {
     // Create the listing
     const [result] = await pool.query(
       `INSERT INTO produce_listings (
-        farmer_id,
-        name,
-        name_am,
+        farmer_user_id,
+        title,
+        crop,
+        variety,
+        quantity,
+        unit,
+        price_per_unit,
+        currency,
+        region,
+        woreda,
         description,
-        description_am,
-        category,
-        price_per_kg,
-        available_quantity,
-        location,
-        image_url,
         status,
         created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', NOW())`,
       [
         farmerDbId,
+        name,
+        category,
+        nameAm || null,
+        availableQuantity,
+        'kg',
+        pricePerKg,
+        'ETB',
+        location,
+        null, // woreda
+        description || null
+      ]
+    );
+
+    const listingId = result.insertId;
+
+    // Add image if provided
+    if (image) {
+      await pool.query(
+        `INSERT INTO listing_images (listing_id, url, sort_order) VALUES (?, ?, 0)`,
+        [listingId, image]
+      );
+    }
+
+    // Get the created listing with all details
+    const [listingRows] = await pool.query(
+      `SELECT
+        pl.id,
+        pl.title as name,
+        pl.crop,
+        pl.variety,
+        pl.quantity,
+        pl.unit,
+        pl.price_per_unit as pricePerUnit,
+        pl.currency,
+        pl.region,
+        pl.woreda,
+        pl.description,
+        pl.status,
+        pl.created_at as createdAt,
+        pl.updated_at as updatedAt,
+        li.url as image_url
+      FROM produce_listings pl
+      LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
+      WHERE pl.id = ?`,
+      [listingId]
+    );
+
+    if (listingRows.length === 0) {
+      return res.status(500).json({ error: "Failed to retrieve created listing" });
+    }
+
+    const createdListing = listingRows[0];
+
+    // Transform to match frontend expectations
+    const transformedListing = {
+      id: createdListing.id,
+      name: createdListing.name,
+      nameAm: createdListing.crop,
+      image: createdListing.image_url || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
+      pricePerKg: createdListing.pricePerUnit,
+      availableQuantity: createdListing.quantity,
+      location: createdListing.region,
+      status: createdListing.status,
+      createdAt: createdListing.createdAt,
+      category: createdListing.crop,
+      unit: createdListing.unit,
+      currency: createdListing.currency
+    };
+
+    res.status(201).json(transformedListing);
+  } catch (error) {
+    console.error("Error creating farmer listing:", error);
+    res.status(500).json({ error: "Failed to create listing" });
+  }
+};
+
+// Update existing produce listing for farmer
+export const updateFarmerListing = async (req, res) => {
+  try {
+    const farmerId = req.user.uid;
+    const { id } = req.params;
+    const {
+      name,
+      nameAm,
+      description,
+      descriptionAm,
+      category,
+      pricePerKg,
+      availableQuantity,
+      location,
+      image
+    } = req.body;
+
+    // Validate required fields
+    if (!name || !category || !pricePerKg || !availableQuantity || !location) {
+      return res.status(400).json({
+        error: "Missing required fields: name, category, pricePerKg, availableQuantity, location"
+      });
+    }
+
+    // Get farmer's database ID from firebase_uid
+    const [farmerRows] = await pool.query(
+      'SELECT id FROM users WHERE firebase_uid = ?',
+      [farmerId]
+    );
+
+    if (farmerRows.length === 0) {
+      return res.status(404).json({ error: "Farmer not found" });
+    }
+
+    const farmerDbId = farmerRows[0].id;
+
+    // Verify the listing belongs to this farmer
+    const [listingRows] = await pool.query(
+      'SELECT id FROM produce_listings WHERE id = ? AND farmer_id = ?',
+      [id, farmerDbId]
+    );
+
+    if (listingRows.length === 0) {
+      return res.status(404).json({ error: "Listing not found or not authorized" });
+    }
+
+    // Update the listing
+    await pool.query(
+      `UPDATE produce_listings SET
+        name = ?,
+        name_am = ?,
+        description = ?,
+        description_am = ?,
+        category = ?,
+        price_per_kg = ?,
+        available_quantity = ?,
+        location = ?,
+        image_url = ?,
+        updated_at = NOW()
+      WHERE id = ?`,
+      [
         name,
         nameAm || null,
         description || null,
@@ -268,14 +415,13 @@ export const createFarmerListing = async (req, res) => {
         pricePerKg,
         availableQuantity,
         location,
-        image || null
+        image || null,
+        id
       ]
     );
 
-    const listingId = result.insertId;
-
-    // Get the created listing with all details
-    const [listingRows] = await pool.query(
+    // Get the updated listing
+    const [updatedListingRows] = await pool.query(
       `SELECT
         pl.id,
         pl.name,
@@ -292,18 +438,100 @@ export const createFarmerListing = async (req, res) => {
         pl.updated_at as updatedAt
       FROM produce_listings pl
       WHERE pl.id = ?`,
-      [listingId]
+      [id]
+    );
+
+    if (updatedListingRows.length === 0) {
+      return res.status(500).json({ error: "Failed to retrieve updated listing" });
+    }
+
+    const updatedListing = updatedListingRows[0];
+
+    res.json(updatedListing);
+  } catch (error) {
+    console.error("Error updating farmer listing:", error);
+    res.status(500).json({ error: "Failed to update listing" });
+  }
+};
+
+// Update listing status
+export const updateListingStatus = async (req, res) => {
+  try {
+    const farmerId = req.user.uid;
+    const { id } = req.params;
+    const { status } = req.body;
+
+    // Validate status
+    const validStatuses = ['active', 'inactive', 'sold_out', 'low_stock'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
+    }
+
+    // Get farmer's database ID from firebase_uid
+    const [farmerRows] = await pool.query(
+      'SELECT id FROM users WHERE firebase_uid = ?',
+      [farmerId]
+    );
+
+    if (farmerRows.length === 0) {
+      return res.status(404).json({ error: "Farmer not found" });
+    }
+
+    const farmerDbId = farmerRows[0].id;
+
+    // Verify the listing belongs to this farmer
+    const [listingRows] = await pool.query(
+      'SELECT id FROM produce_listings WHERE id = ? AND farmer_id = ?',
+      [id, farmerDbId]
     );
 
     if (listingRows.length === 0) {
-      return res.status(500).json({ error: "Failed to retrieve created listing" });
+      return res.status(404).json({ error: "Listing not found or not authorized" });
     }
 
-    const createdListing = listingRows[0];
+    // Update the listing status
+    await pool.query(
+      'UPDATE produce_listings SET status = ?, updated_at = NOW() WHERE id = ?',
+      [status, id]
+    );
 
-    res.status(201).json(createdListing);
+    res.json({ message: "Listing status updated successfully" });
   } catch (error) {
-    console.error("Error creating farmer listing:", error);
-    res.status(500).json({ error: "Failed to create listing" });
+    console.error("Error updating listing status:", error);
+    res.status(500).json({ error: "Failed to update listing status" });
+  }
+};
+
+// Upload image for farmer
+export const uploadImage = async (req, res) => {
+  try {
+    console.log('Upload request received:', {
+      hasFile: !!req.file,
+      fileInfo: req.file ? {
+        filename: req.file.filename,
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size
+      } : null,
+      user: req.user ? req.user.uid : 'No user'
+    });
+
+    if (!req.file) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+
+    // Generate the URL for the uploaded image
+    const imageUrl = `${req.protocol}://${req.get('host')}:5001/uploads/${req.file.filename}`;
+
+    console.log('Image uploaded successfully:', imageUrl);
+
+    res.json({
+      message: "Image uploaded successfully",
+      imageUrl: imageUrl,
+      filename: req.file.filename
+    });
+  } catch (error) {
+    console.error("Error uploading image:", error);
+    res.status(500).json({ error: "Failed to upload image" });
   }
 };

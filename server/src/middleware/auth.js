@@ -2,6 +2,16 @@ import admin from "../config/firebase.js";
 
 export const authGuard = async (req, res, next) => {
   try {
+    // Development mode - bypass authentication if no Firebase config
+    if (process.env.NODE_ENV === 'development' && !process.env.FIREBASE_PROJECT_ID) {
+      // Create a mock user for development
+      req.user = {
+        uid: 'dev_farmer_1',
+        email: 'dev@example.com'
+      };
+      return next();
+    }
+
     const header = req.headers.authorization || "";
     const token = header.startsWith("Bearer ") ? header.slice(7) : null;
     if (!token) return res.status(401).json({ error: "Missing token" });

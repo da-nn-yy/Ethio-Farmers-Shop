@@ -32,12 +32,12 @@
    npm run dev
    ```
 
-## 📊 API Endpoints
+## 📊 API Endpoint
 
 ### Farmer Dashboard
 - `GET /farmer/metrics` - Get farmer dashboard metrics
 - `GET /farmer/listings` - Get farmer's produce listings
-- `GET /farmer/orders` - Get farmer's orders
+- `GET /farmer/orders` - Get farmer's orderssql 
 - `GET /farmer/activity` - Get recent activity feed
 
 ### Authentication

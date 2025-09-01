@@ -25,3 +25,4 @@ router.get('/category/:category', getListingsByCategory);
 router.get('/region/:region', getListingsByRegion);
 
 export default router;
+

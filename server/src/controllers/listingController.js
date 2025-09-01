@@ -266,3 +266,4 @@ export const getListingsByRegion = async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch listings by region' });
   }
 };
+

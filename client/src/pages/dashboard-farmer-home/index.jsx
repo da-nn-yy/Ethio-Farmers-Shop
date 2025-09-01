@@ -7,6 +7,7 @@ import TabNavigation from "../../components/ui/TabNavigation";
 import MobileMenu from "../../components/ui/MobileMenu";
 import Icon from "../../components/AppIcon";
 import Button from "../../components/ui/Button";
+import ImageUpload from "../../components/ui/ImageUpload";
 import MetricsCard from "./components/MetricsCard";
 import QuickActionCard from "./components/QuickActionCard";
 import ProduceListingCard from "./components/ProduceListingCard";
@@ -236,13 +237,139 @@ const DashboardFarmerHome = () => {
       console.error("Failed to refresh dashboard data:", error);
       setError("Failed to refresh data");
     } finally {
-      setIsRefreshing(false);
+    setIsRefreshing(false);
     }
   };
 
-    const handleEditListing = (listingId) => console.log("Edit listing:", listingId);
-  const handleDuplicateListing = (listingId) => console.log("Duplicate listing:", listingId);
-  const handleToggleListingStatus = (listingId) => console.log("Toggle listing status:", listingId);
+    // Edit Listing functionality
+  const [isEditListingModalOpen, setIsEditListingModalOpen] = useState(false);
+  const [editingListing, setEditingListing] = useState(null);
+
+  const handleEditListing = (listingId) => {
+    const listing = produceListings.find(l => l.id === listingId);
+    if (listing) {
+      setEditingListing({
+        id: listing.id,
+        name: listing.name || '',
+        nameAm: listing.nameAm || '',
+        description: listing.description || '',
+        descriptionAm: listing.descriptionAm || '',
+        category: listing.category || 'vegetables',
+        pricePerKg: listing.pricePerKg || '',
+        availableQuantity: listing.availableQuantity || '',
+        location: listing.location || 'Addis Ababa',
+        image: listing.image || ''
+      });
+      setIsEditListingModalOpen(true);
+    }
+  };
+
+  const handleUpdateListing = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated || !user || !editingListing) return;
+
+    try {
+      setIsSubmitting(true);
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+      const listingData = {
+        ...editingListing,
+        pricePerKg: Number(editingListing.pricePerKg),
+        availableQuantity: Number(editingListing.availableQuantity)
+      };
+
+      const response = await axios.put(`${API_BASE}/farmer/listings/${editingListing.id}`, listingData, {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+
+      // Update the listing in the list
+      setProduceListings(prev => prev.map(listing =>
+        listing.id === editingListing.id ? response.data : listing
+      ));
+
+      // Close modal and reset
+      setIsEditListingModalOpen(false);
+      setEditingListing(null);
+
+      // Show success message
+      if (currentLanguage === 'am') {
+        alert('የእርስዎ ዝርዝር በተሳካቸ ሁኔታ ተሻሽሏል!');
+      } else {
+        alert('Your listing has been updated successfully!');
+      }
+
+    } catch (error) {
+      console.error('Failed to update listing:', error);
+      if (currentLanguage === 'am') {
+        alert('ዝርዝር ማሻሻል አልተሳካም። እባክዎ እንደገና ይሞክሩ።');
+      } else {
+        alert('Failed to update listing. Please try again.');
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Duplicate Listing functionality
+  const handleDuplicateListing = (listingId) => {
+    const listing = produceListings.find(l => l.id === listingId);
+    if (listing) {
+      setNewListing({
+        name: `${listing.name} (Copy)`,
+        nameAm: listing.nameAm ? `${listing.nameAm} (ቅዳ)` : '',
+        description: listing.description || '',
+        descriptionAm: listing.descriptionAm || '',
+        category: listing.category || 'vegetables',
+        pricePerKg: listing.pricePerKg || '',
+        availableQuantity: listing.availableQuantity || '',
+        location: listing.location || 'Addis Ababa',
+        image: listing.image || ''
+      });
+      setIsAddListingModalOpen(true);
+    }
+  };
+
+  // Toggle Listing Status functionality
+  const handleToggleListingStatus = async (listingId) => {
+    if (!isAuthenticated || !user) return;
+
+    try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+
+      const listing = produceListings.find(l => l.id === listingId);
+      const newStatus = listing.status === 'sold_out' ? 'active' : 'sold_out';
+
+      const response = await axios.patch(`${API_BASE}/farmer/listings/${listingId}/status`, {
+        status: newStatus
+      }, {
+        headers: { Authorization: `Bearer ${idToken}` }
+      });
+
+      // Update the listing status in the list
+      setProduceListings(prev => prev.map(listing =>
+        listing.id === listingId ? { ...listing, status: newStatus } : listing
+      ));
+
+      // Show success message
+      if (currentLanguage === 'am') {
+        alert(`የእርስዎ ዝርዝር ሁኔታ ተሻሽሏል!`);
+      } else {
+        alert(`Your listing status has been updated!`);
+      }
+
+    } catch (error) {
+      console.error('Failed to update listing status:', error);
+      if (currentLanguage === 'am') {
+        alert('የዝርዝር ሁኔታ ማሻሻል አልተሳካም። እባክዎ እንደገና ይሞክሩ።');
+      } else {
+        alert('Failed to update listing status. Please try again.');
+      }
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -317,7 +444,7 @@ const DashboardFarmerHome = () => {
               ))
             ) : (
               farmerMetrics?.map((metric, index) => (
-                <MetricsCard key={index} {...metric} currentLanguage={currentLanguage} />
+              <MetricsCard key={index} {...metric} currentLanguage={currentLanguage} />
               ))
             )}
           </div>
@@ -360,14 +487,14 @@ const DashboardFarmerHome = () => {
                     ))
                   ) : produceListings?.length > 0 ? (
                     produceListings?.slice(0, 4)?.map((listing) => (
-                      <ProduceListingCard
-                        key={listing.id}
-                        listing={listing}
-                        onEdit={handleEditListing}
-                        onDuplicate={handleDuplicateListing}
-                        onToggleStatus={handleToggleListingStatus}
-                        currentLanguage={currentLanguage}
-                      />
+                    <ProduceListingCard
+                      key={listing.id}
+                      listing={listing}
+                      onEdit={handleEditListing}
+                      onDuplicate={handleDuplicateListing}
+                      onToggleStatus={handleToggleListingStatus}
+                      currentLanguage={currentLanguage}
+                    />
                     ))
                   ) : (
                     <div className="col-span-2 py-12 text-center">
@@ -405,7 +532,7 @@ const DashboardFarmerHome = () => {
                 </>
               ) : (
                 <>
-                  <MarketTrendsWidget currentLanguage={currentLanguage} />
+              <MarketTrendsWidget currentLanguage={currentLanguage} />
                   <RecentActivityFeed currentLanguage={currentLanguage} recentActivity={recentActivity} />
                 </>
               )}
@@ -549,19 +676,17 @@ const DashboardFarmerHome = () => {
                   />
                 </div>
 
-                {/* Image URL */}
-                <div className="md:col-span-2">
-                  <label className="block mb-2 text-sm font-medium text-text-secondary">
-                    {currentLanguage === "am" ? "የምስት አድራሻ" : "Image URL"}
-                  </label>
-                  <input
-                    type="url"
-                    value={newListing.image}
-                    onChange={(e) => handleInputChange('image', e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
-                    placeholder="https://example.com/image.jpg"
-                  />
-                </div>
+                                 {/* Image Upload */}
+                 <div className="md:col-span-2">
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "የምርት ምስት" : "Product Image"}
+                   </label>
+                   <ImageUpload
+                     onImageUpload={(imageUrl) => handleInputChange('image', imageUrl)}
+                     currentImage={newListing.image}
+                     currentLanguage={currentLanguage}
+                   />
+                 </div>
 
                 {/* Description */}
                 <div className="md:col-span-2">
@@ -615,8 +740,204 @@ const DashboardFarmerHome = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
+                 </div>
+       )}
+
+       {/* Edit Listing Modal */}
+       {isEditListingModalOpen && editingListing && (
+         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-hidden">
+             <div className="p-6 border-b border-border">
+               <div className="flex items-center justify-between">
+                 <h3 className="text-xl font-semibold text-text-primary">
+                   {currentLanguage === "am" ? "ዝርዝር አርም" : "Edit Listing"}
+                 </h3>
+                 <Button
+                   variant="ghost"
+                   size="sm"
+                   onClick={() => {
+                     setIsEditListingModalOpen(false);
+                     setEditingListing(null);
+                   }}
+                   iconName="X"
+                 />
+               </div>
+             </div>
+
+             <form onSubmit={handleUpdateListing} className="p-6 overflow-y-auto max-h-96">
+               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                 {/* English Name */}
+                 <div>
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "የምርት ስም (English)" : "Product Name (English)"}
+                   </label>
+                   <input
+                     type="text"
+                     value={editingListing.name}
+                     onChange={(e) => setEditingListing(prev => ({ ...prev, name: e.target.value }))}
+                     required
+                     className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                     placeholder={currentLanguage === "am" ? "ለምሳሌ: Fresh Tomatoes" : "e.g., Fresh Tomatoes"}
+                   />
+                 </div>
+
+                 {/* Amharic Name */}
+                 <div>
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "የምርት ስም (አማርኛ)" : "Product Name (Amharic)"}
+                   </label>
+                   <input
+                     type="text"
+                     value={editingListing.nameAm}
+                     onChange={(e) => setEditingListing(prev => ({ ...prev, nameAm: e.target.value }))}
+                     className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                     placeholder={currentLanguage === "am" ? "ለምሳሌ: ትኩስ ቲማቲም" : "e.g., ትኩስ ቲማቲም"}
+                   />
+                 </div>
+
+                 {/* Category */}
+                 <div>
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "ምድብ" : "Category"}
+                   </label>
+                   <select
+                     value={editingListing.category}
+                     onChange={(e) => setEditingListing(prev => ({ ...prev, category: e.target.value }))}
+                     required
+                     className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                   >
+                     <option value="vegetables">{currentLanguage === "am" ? "አትክልቶች" : "Vegetables"}</option>
+                     <option value="fruits">{currentLanguage === "am" ? "ፍራፍሬዎች" : "Fruits"}</option>
+                     <option value="grains">{currentLanguage === "am" ? "እህሎች" : "Grains"}</option>
+                     <option value="legumes">{currentLanguage === "am" ? "ጥራጥሮች" : "Legumes"}</option>
+                     <option value="spices">{currentLanguage === "am" ? "ቅመሞች" : "Spices"}</option>
+                   </select>
+                 </div>
+
+                 {/* Location */}
+                 <div>
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "ክልል" : "Region"}
+                   </label>
+                   <select
+                     value={editingListing.location}
+                     onChange={(e) => setEditingListing(prev => ({ ...prev, location: e.target.value }))}
+                     required
+                     className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                   >
+                     <option value="Addis Ababa">{currentLanguage === "am" ? "አዲስ አበባ" : "Addis Ababa"}</option>
+                     <option value="Oromia">{currentLanguage === "am" ? "ኦሮሚያ" : "Oromia"}</option>
+                     <option value="Amhara">{currentLanguage === "am" ? "አማራ" : "Amhara"}</option>
+                     <option value="Tigray">{currentLanguage === "am" ? "ትግራይ" : "Tigray"}</option>
+                     <option value="SNNP">{currentLanguage === "am" ? "ደቡብ ብሔሮች" : "SNNP"}</option>
+                     <option value="Somali">{currentLanguage === "am" ? "ሶማሌ" : "Somali"}</option>
+                     <option value="Afar">{currentLanguage === "am" ? "አፋር" : "Afar"}</option>
+                   </select>
+                 </div>
+
+                 {/* Price per kg */}
+                 <div>
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "ዋጋ በኪሎ (ETB)" : "Price per kg (ETB)"}
+                   </label>
+                   <input
+                     type="number"
+                     value={editingListing.pricePerKg}
+                     onChange={(e) => setEditingListing(prev => ({ ...prev, pricePerKg: e.target.value }))}
+                     required
+                     min="0"
+                     step="0.01"
+                     className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                     placeholder="25.00"
+                   />
+                 </div>
+
+                 {/* Available Quantity */}
+                 <div>
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "የሚገኝ መጠን (kg)" : "Available Quantity (kg)"}
+                   </label>
+                   <input
+                     type="number"
+                     value={editingListing.availableQuantity}
+                     onChange={(e) => setEditingListing(prev => ({ ...prev, availableQuantity: e.target.value }))}
+                     required
+                     min="0"
+                     step="0.1"
+                     className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                     placeholder="100.0"
+                   />
+                 </div>
+
+                 {/* Image Upload */}
+                 <div className="md:col-span-2">
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "የምርት ምስት" : "Product Image"}
+                   </label>
+                   <ImageUpload
+                     onImageUpload={(imageUrl) => setEditingListing(prev => ({ ...prev, image: imageUrl }))}
+                     currentImage={editingListing.image}
+                     currentLanguage={currentLanguage}
+                   />
+                 </div>
+
+                 {/* Description */}
+                 <div className="md:col-span-2">
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "መግለጫ (English)" : "Description (English)"}
+                   </label>
+                   <textarea
+                     value={editingListing.description}
+                     onChange={(e) => setEditingListing(prev => ({ ...prev, description: e.target.value }))}
+                     rows="3"
+                     className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                     placeholder={currentLanguage === "am" ? "የምርትዎን ጥራት እና ባህሪያት ይግለጹ" : "Describe the quality and characteristics of your produce"}
+                   />
+                 </div>
+
+                 {/* Amharic Description */}
+                 <div className="md:col-span-2">
+                   <label className="block mb-2 text-sm font-medium text-text-secondary">
+                     {currentLanguage === "am" ? "መግለጫ (አማርኛ)" : "Description (Amharic)"}
+                   </label>
+                   <textarea
+                     value={editingListing.descriptionAm}
+                     onChange={(e) => setEditingListing(prev => ({ ...prev, descriptionAm: e.target.value }))}
+                     rows="3"
+                     className="w-full px-3 py-2 border rounded-lg border-border focus:ring-2 focus:ring-primary focus:border-transparent"
+                     placeholder={currentLanguage === "am" ? "የምርትዎን ጥራት እና ባህሪያት ይግለጹ" : "Describe the quality and characteristics of your produce"}
+                   />
+                 </div>
+               </div>
+             </form>
+
+             <div className="p-6 border-t border-border">
+               <div className="flex justify-end space-x-3">
+                 <Button
+                   variant="outline"
+                   onClick={() => {
+                     setIsEditListingModalOpen(false);
+                     setEditingListing(null);
+                   }}
+                   disabled={isSubmitting}
+                 >
+                   {currentLanguage === "am" ? "ያቋርጡ" : "Cancel"}
+                 </Button>
+                 <Button
+                   variant="primary"
+                   onClick={handleUpdateListing}
+                   loading={isSubmitting}
+                   disabled={isSubmitting}
+                   iconName="Save"
+                   iconPosition="left"
+                 >
+                   {currentLanguage === "am" ? "ዝርዝር አርም" : "Update Listing"}
+                 </Button>
+               </div>
+             </div>
+           </div>
+         </div>
+       )}
     </div>
   );
 };

@@ -4,10 +4,34 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration">
+      <change beforePath="$PROJECT_DIR$/.idea/Ethio-Farmers-Shop.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/attached_assets/CategoryFilter_1756352354378.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/attached_assets/LocationHeader_1756352354379.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/attached_assets/MarketTrendsWidget_1756352354380.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/attached_assets/ProduceListingCard_1756352354380.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/attached_assets/QuickActionsGrid_1756352354381.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/attached_assets/RecentOrdersWidget_1756352354381.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/attached_assets/SavedFarmersSection_1756352354382.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/attached_assets/index_1756352337438.jsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/components/MetricsCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/components/MetricsCard.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/farmerController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/farmerController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/orderController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/orderController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/farmerRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/farmerRoutes.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -82,7 +106,7 @@
       <workItem from="1756370240989" duration="176000" />
       <workItem from="1756370447815" duration="9782000" />
       <workItem from="1756570295256" duration="316000" />
-      <workItem from="1756583779626" duration="1531000" />
+      <workItem from="1756583779626" duration="4064000" />
     </task>
     <task id="LOCAL-00001" summary="Update server port configuration and add default user role assignment during user synchronization">
       <option name="closed" value="true" />
@@ -204,7 +228,15 @@
       <option name="project" value="LOCAL" />
       <updated>1756585397756</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration">
+      <option name="closed" value="true" />
+      <created>1756587089183</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1756587089183</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -252,6 +284,7 @@
     <MESSAGE value="Update IDE workspace configuration and improve API base URL handling in registration form" />
     <MESSAGE value="Implement comprehensive buyer dashboard with produce browsing, cart functionality, and order placement" />
     <MESSAGE value="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states" />
-    <option name="LAST_COMMIT_MESSAGE" value="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states" />
+    <MESSAGE value="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration" />
   </component>
 </project>
