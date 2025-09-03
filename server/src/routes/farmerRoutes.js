@@ -9,7 +9,8 @@ import {
   createFarmerListing,
   updateFarmerListing,
   updateListingStatus,
-  uploadImage
+  uploadImage,
+  addListingImage
 } from "../controllers/farmerController.js";
 
 const router = Router();
@@ -40,5 +41,8 @@ router.patch('/farmer/listings/:id/status', updateListingStatus);
 
 // Upload image
 router.post('/farmer/upload-image', authGuard, upload.single('image'), handleUploadError, uploadImage);
+
+// Attach image to a specific listing (file or JSON url)
+router.post('/farmer/listings/:id/images', authGuard, upload.single('image'), handleUploadError, addListingImage);
 
 export default router;

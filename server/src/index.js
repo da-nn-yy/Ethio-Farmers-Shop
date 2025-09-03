@@ -40,7 +40,8 @@ app.get("/public/listings", async (req, res) => {
         pl.region as location,
         pl.status,
         u.full_name as farmerName,
-        li.url as image
+        li.url as image,
+        pl.created_at as createdAt
       FROM produce_listings pl
       JOIN users u ON pl.farmer_user_id = u.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
