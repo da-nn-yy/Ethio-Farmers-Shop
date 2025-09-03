@@ -4,9 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add role-based sidebar navigation and activity feed components with bilingual support">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,6 +84,7 @@
       <workItem from="1756583779626" duration="4064000" />
       <workItem from="1756720869678" duration="4489000" />
       <workItem from="1756870063488" duration="1379000" />
+      <workItem from="1756883162852" duration="369000" />
     </task>
     <task id="LOCAL-00001" summary="Update server port configuration and add default user role assignment during user synchronization">
       <option name="closed" value="true" />
@@ -317,7 +318,31 @@
       <option name="project" value="LOCAL" />
       <updated>1756870500989</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication">
+      <option name="closed" value="true" />
+      <created>1756883200509</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1756883200509</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Refactor farmer dashboard to use dedicated add-listing page and enhance public listings with image support">
+      <option name="closed" value="true" />
+      <created>1756883215215</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1756883215215</updated>
+    </task>
+    <task id="LOCAL-00032" summary="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication">
+      <option name="closed" value="true" />
+      <created>1756883236715</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1756883236715</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -351,8 +376,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactor React imports to use named imports instead of default imports across multiple components" />
-    <MESSAGE value="Update API base URL configuration with fallback values in authentication forms" />
     <MESSAGE value="Expand database schema with comprehensive marketplace tables and improve user management with role-based routing" />
     <MESSAGE value="Add placeholder pages for farmer and buyer market trends with coming soon messaging" />
     <MESSAGE value="Add API base URL configuration to environment variables" />
@@ -376,6 +399,8 @@
     <MESSAGE value="Add comprehensive add-listing page with multi-step form and breadcrumb navigation component" />
     <MESSAGE value="Add multi-step form components for produce listing creation with bilingual support" />
     <MESSAGE value="Add role-based sidebar navigation and activity feed components with bilingual support" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add role-based sidebar navigation and activity feed components with bilingual support" />
+    <MESSAGE value="Refactor farmer dashboard to use dedicated add-listing page and enhance public listings with image support" />
+    <MESSAGE value="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication" />
   </component>
 </project>
