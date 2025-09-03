@@ -4,7 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add node-fetch dependency and fix file formatting inconsistencies" />
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add role-based sidebar navigation and activity feed components with bilingual support">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -80,6 +83,7 @@
       <workItem from="1756570295256" duration="316000" />
       <workItem from="1756583779626" duration="4064000" />
       <workItem from="1756720869678" duration="4489000" />
+      <workItem from="1756870063488" duration="1379000" />
     </task>
     <task id="LOCAL-00001" summary="Update server port configuration and add default user role assignment during user synchronization">
       <option name="closed" value="true" />
@@ -273,7 +277,47 @@
       <option name="project" value="LOCAL" />
       <updated>1756742172048</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="Update application branding from FarmConnect to KeGeberew and add development test login functionality">
+      <option name="closed" value="true" />
+      <created>1756870318861</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1756870318861</updated>
+    </task>
+    <task id="LOCAL-00026" summary="Add dedicated add-listing route and remove hardcoded port from Vite configuration">
+      <option name="closed" value="true" />
+      <created>1756870334514</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1756870334514</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Add comprehensive add-listing page with multi-step form and breadcrumb navigation component">
+      <option name="closed" value="true" />
+      <created>1756870370205</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1756870370205</updated>
+    </task>
+    <task id="LOCAL-00028" summary="Add multi-step form components for produce listing creation with bilingual support">
+      <option name="closed" value="true" />
+      <created>1756870389808</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1756870389808</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Add role-based sidebar navigation and activity feed components with bilingual support">
+      <option name="closed" value="true" />
+      <created>1756870500989</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1756870500989</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -307,7 +351,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Update server port configuration and add default user role assignment during user synchronization" />
     <MESSAGE value="Refactor React imports to use named imports instead of default imports across multiple components" />
     <MESSAGE value="Update API base URL configuration with fallback values in authentication forms" />
     <MESSAGE value="Expand database schema with comprehensive marketplace tables and improve user management with role-based routing" />
@@ -328,6 +371,11 @@
     <MESSAGE value="Update database schema references and add public listings endpoint for testing" />
     <MESSAGE value="Update API base URL configuration to use port 5001 for consistent backend connectivity" />
     <MESSAGE value="Add node-fetch dependency and fix file formatting inconsistencies" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add node-fetch dependency and fix file formatting inconsistencies" />
+    <MESSAGE value="Update application branding from FarmConnect to KeGeberew and add development test login functionality" />
+    <MESSAGE value="Add dedicated add-listing route and remove hardcoded port from Vite configuration" />
+    <MESSAGE value="Add comprehensive add-listing page with multi-step form and breadcrumb navigation component" />
+    <MESSAGE value="Add multi-step form components for produce listing creation with bilingual support" />
+    <MESSAGE value="Add role-based sidebar navigation and activity feed components with bilingual support" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add role-based sidebar navigation and activity feed components with bilingual support" />
   </component>
 </project>
