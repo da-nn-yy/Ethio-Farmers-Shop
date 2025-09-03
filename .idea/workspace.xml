@@ -4,35 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration">
-      <change beforePath="$PROJECT_DIR$/.idea/Ethio-Farmers-Shop.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.local.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dataSources.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/dbnavigator.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/attached_assets/CategoryFilter_1756352354378.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/attached_assets/LocationHeader_1756352354379.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/attached_assets/MarketTrendsWidget_1756352354380.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/attached_assets/ProduceListingCard_1756352354380.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/attached_assets/QuickActionsGrid_1756352354381.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/attached_assets/RecentOrdersWidget_1756352354381.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/attached_assets/SavedFarmersSection_1756352354382.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/attached_assets/index_1756352337438.jsx" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/components/MetricsCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/components/MetricsCard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/server/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/controllers/farmerController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/farmerController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/controllers/orderController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/orderController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/routes/farmerRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/farmerRoutes.js" afterDir="false" />
-    </list>
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add node-fetch dependency and fix file formatting inconsistencies" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -107,6 +79,7 @@
       <workItem from="1756370447815" duration="9782000" />
       <workItem from="1756570295256" duration="316000" />
       <workItem from="1756583779626" duration="4064000" />
+      <workItem from="1756720869678" duration="4489000" />
     </task>
     <task id="LOCAL-00001" summary="Update server port configuration and add default user role assignment during user synchronization">
       <option name="closed" value="true" />
@@ -236,7 +209,71 @@
       <option name="project" value="LOCAL" />
       <updated>1756587089183</updated>
     </task>
-    <option name="localTasksCounter" value="17" />
+    <task id="LOCAL-00017" summary="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration">
+      <option name="closed" value="true" />
+      <created>1756722591399</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1756722591399</updated>
+    </task>
+    <task id="LOCAL-00018" summary="Add development user auto-creation and comprehensive image upload component for farmer listings">
+      <option name="closed" value="true" />
+      <created>1756724512657</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1756724512657</updated>
+    </task>
+    <task id="LOCAL-00019" summary="Add development user auto-creation and comprehensive image upload component for farmer listings">
+      <option name="closed" value="true" />
+      <created>1756724550417</created>
+      <option name="number" value="00019" />
+      <option name="presentableId" value="LOCAL-00019" />
+      <option name="project" value="LOCAL" />
+      <updated>1756724550417</updated>
+    </task>
+    <task id="LOCAL-00020" summary="I notice that the code diff provided is empty, which means there are no actual changes to analyze. Without any code changes (additions, deletions, or modifications), I cannot generate a meaningful commit message that describes what was actually changed in the codebase.&#10;&#10;Please provide the actual code diff showing the changes made in this commit.">
+      <option name="closed" value="true" />
+      <created>1756724578944</created>
+      <option name="number" value="00020" />
+      <option name="presentableId" value="LOCAL-00020" />
+      <option name="project" value="LOCAL" />
+      <updated>1756724578944</updated>
+    </task>
+    <task id="LOCAL-00021" summary="Fix image upload URL generation by removing hardcoded port number">
+      <option name="closed" value="true" />
+      <created>1756742113306</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1756742113306</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Update database schema references and add public listings endpoint for testing">
+      <option name="closed" value="true" />
+      <created>1756742137431</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1756742137431</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Update API base URL configuration to use port 5001 for consistent backend connectivity">
+      <option name="closed" value="true" />
+      <created>1756742150948</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1756742150948</updated>
+    </task>
+    <task id="LOCAL-00024" summary="Add node-fetch dependency and fix file formatting inconsistencies">
+      <option name="closed" value="true" />
+      <created>1756742172048</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1756742172048</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -285,6 +322,12 @@
     <MESSAGE value="Implement comprehensive buyer dashboard with produce browsing, cart functionality, and order placement" />
     <MESSAGE value="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states" />
     <MESSAGE value="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration" />
+    <MESSAGE value="Add development user auto-creation and comprehensive image upload component for farmer listings" />
+    <MESSAGE value="Remove test endpoints from server index to clean up production code" />
+    <MESSAGE value="Fix image upload URL generation by removing hardcoded port number" />
+    <MESSAGE value="Update database schema references and add public listings endpoint for testing" />
+    <MESSAGE value="Update API base URL configuration to use port 5001 for consistent backend connectivity" />
+    <MESSAGE value="Add node-fetch dependency and fix file formatting inconsistencies" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add node-fetch dependency and fix file formatting inconsistencies" />
   </component>
 </project>

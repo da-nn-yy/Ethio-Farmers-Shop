@@ -10,6 +10,7 @@ import UserProfileManagement from './pages/user-profile-management';
 import MarketTrendsDashboard from './pages/market-trends-dashboard';
 import BrowseListingsBuyerHome from './pages/browse-listings-buyer-home';
 import BuyerDashboard from './pages/dashboard-buyer-home';
+import AddListing from './pages/add-listing';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const Routes = () => {
@@ -53,6 +54,11 @@ const Routes = () => {
         <Route path="/browse-listings-buyer-home" element={
           <ProtectedRoute requiredRole="buyer">
             <BrowseListingsBuyerHome />
+          </ProtectedRoute>
+        } />
+        <Route path="/add-listing" element={
+          <ProtectedRoute requiredRole="farmer">
+            <AddListing />
           </ProtectedRoute>
         } />
 
