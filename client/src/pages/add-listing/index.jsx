@@ -10,6 +10,7 @@ import ProgressIndicator from './components/ProgressIndicator';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import axios from 'axios';
+import { auth } from '../../firebase';
 
 const AddListing = () => {
   const [currentLanguage, setCurrentLanguage] = useState('en');
@@ -183,32 +184,38 @@ const AddListing = () => {
 
     try {
       const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        navigate('/authentication-login-register');
+        return;
+      }
+      const idToken = await currentUser.getIdToken();
 
-      // Prepare the listing data
+      // Prepare the listing data to match server expectations
       const listingData = {
-        title: formData.produceType,
-        crop: formData.produceType,
+        name: formData.produceType,
+        nameAm: formData.produceType || undefined,
         description: formData.description,
-        price_per_unit: parseFloat(formData.pricePerKg),
-        quantity: parseFloat(formData.availableQuantity),
-        unit: formData.quantityUnit,
-        currency: 'ETB',
-        region: formData.region,
-        woreda: formData.woreda,
-        status: 'active',
-        images: formData.images
+        category: formData.produceType,
+        pricePerKg: Number(formData.pricePerKg),
+        availableQuantity: Number(formData.availableQuantity),
+        location: formData.region,
+        image: Array.isArray(formData.images) && formData.images.length > 0 ? formData.images[0] : undefined,
       };
 
       const response = await axios.post(`${API_BASE}/farmer/listings`, listingData, {
         headers: {
           'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`
         }
       });
 
-      if (response.data.success) {
-        alert(currentLanguage === 'en' ?'Listing published successfully!' :'ዝርዝሩ በተሳካ ሁኔታ ታትሟል!'
+      if (response.status === 201 || response.data?.id) {
+        alert(
+          currentLanguage === 'en'
+            ? 'Listing published successfully!'
+            : 'ዝርዝሩ በተሳካ ሁኔታ ታትሟል!'
         );
-
         navigate('/dashboard-farmer-home');
       }
     } catch (error) {
@@ -295,7 +302,7 @@ const AddListing = () => {
             <nav className="flex items-center space-x-2 text-sm text-muted-foreground">
               <button
                 onClick={() => navigate('/dashboard-farmer-home')}
-                className="hover:text-foreground transition-colors"
+                className="transition-colors hover:text-foreground"
               >
                 {currentLanguage === 'en' ? 'Dashboard' : 'ዳሽቦርድ'}
               </button>
