@@ -177,7 +177,7 @@ const OrderManagement = () => {
   useEffect(() => {
     const savedLanguage = localStorage.getItem('farmconnect_language') || 'en';
     setCurrentLanguage(savedLanguage);
-    
+
     // Simulate loading
     setTimeout(() => {
       setOrders(mockOrders);
@@ -200,31 +200,31 @@ const OrderManagement = () => {
     }
 
     if (filters?.dateFrom) {
-      filtered = filtered?.filter(order => 
+      filtered = filtered?.filter(order =>
         new Date(order.createdAt) >= new Date(filters.dateFrom)
       );
     }
 
     if (filters?.dateTo) {
-      filtered = filtered?.filter(order => 
+      filtered = filtered?.filter(order =>
         new Date(order.createdAt) <= new Date(filters.dateTo)
       );
     }
 
     if (filters?.minValue) {
-      filtered = filtered?.filter(order => 
+      filtered = filtered?.filter(order =>
         order?.totalAmount >= parseFloat(filters?.minValue)
       );
     }
 
     if (filters?.maxValue) {
-      filtered = filtered?.filter(order => 
+      filtered = filtered?.filter(order =>
         order?.totalAmount <= parseFloat(filters?.maxValue)
       );
     }
 
     if (filters?.buyerLocation) {
-      filtered = filtered?.filter(order => 
+      filtered = filtered?.filter(order =>
         order?.buyer?.location?.toLowerCase()?.includes(filters?.buyerLocation?.toLowerCase())
       );
     }
@@ -255,8 +255,8 @@ const OrderManagement = () => {
     setOrders(prevOrders =>
       prevOrders?.map(order =>
         order?.id === orderId
-          ? { 
-              ...order, 
+          ? {
+              ...order,
               status: 'confirmed',
               pickupDetails: {
                 scheduledDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
@@ -266,7 +266,7 @@ const OrderManagement = () => {
           : order
       )
     );
-    
+
     // Show success notification
     console.log(`Order ${orderId} accepted`);
   };
@@ -279,7 +279,7 @@ const OrderManagement = () => {
           : order
       )
     );
-    
+
     // Show notification
     console.log(`Order ${orderId} declined: ${reason}`);
   };
@@ -341,7 +341,7 @@ const OrderManagement = () => {
         <div className="pt-32 lg:pt-36">
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
-              <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <div className="w-12 h-12 mx-auto mb-4 border-4 rounded-full border-primary border-t-transparent animate-spin"></div>
               <p className="text-text-secondary">
                 {currentLanguage === 'am' ? 'ትዕዛዞች በመጫን ላይ...' : 'Loading orders...'}
               </p>
@@ -372,22 +372,22 @@ const OrderManagement = () => {
         notificationCounts={notificationCounts}
         currentLanguage={currentLanguage}
       />
-      <main className="pt-32 lg:pt-36 pb-8">
-        <div className="max-w-7xl mx-auto px-4 lg:px-6">
+      <main className="pt-32 pb-8 lg:pt-36">
+        <div className="px-4 mx-auto max-w-7xl lg:px-6">
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-text-primary">
+                <h1 className="text-2xl font-bold lg:text-3xl text-text-primary">
                   {currentLanguage === 'am' ? 'የትዕዛዝ አስተዳደር' : 'Order Management'}
                 </h1>
-                <p className="text-text-secondary mt-1">
+                <p className="mt-1 text-text-secondary">
                   {currentLanguage === 'am' ?'የገዢዎች ትዕዛዞችን ይቆጣጠሩ እና ያስተዳድሩ' :'Monitor and manage buyer orders'
                   }
                 </p>
               </div>
-              
-              <div className="hidden lg:flex items-center space-x-3">
+
+              <div className="items-center hidden space-x-3 lg:flex">
                 <Button
                   variant="outline"
                   onClick={handleExport}
@@ -438,14 +438,14 @@ const OrderManagement = () => {
                 {/* Results Header */}
                 <div className="flex items-center justify-between">
                   <p className="text-sm text-text-secondary">
-                    {currentLanguage === 'am' 
+                    {currentLanguage === 'am'
                       ? `${filteredOrders?.length} ትዕዛዞች ተገኝተዋል`
                       : `${filteredOrders?.length} orders found`
                     }
                   </p>
-                  
+
                   {/* Mobile Actions */}
-                  <div className="lg:hidden flex items-center space-x-2">
+                  <div className="flex items-center space-x-2 lg:hidden">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -458,7 +458,7 @@ const OrderManagement = () => {
                 </div>
 
                 {/* Order Cards */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
                   {filteredOrders?.map((order) => (
                     <OrderCard
                       key={order?.id}
@@ -483,7 +483,7 @@ const OrderManagement = () => {
         </div>
       </main>
       {/* Mobile FAB */}
-      <div className="lg:hidden fixed bottom-6 right-6 z-40">
+      <div className="fixed z-40 lg:hidden bottom-6 right-6">
         <Button
           variant="default"
           size="lg"

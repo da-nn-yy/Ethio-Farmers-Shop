@@ -7,7 +7,7 @@ export const upsertUser = async (req, res) => {
     `INSERT INTO users (firebase_uid, role, full_name, phone, email, region, woreda)
      VALUES (?, ?, ?, ?, ?, ?, ?)
      ON DUPLICATE KEY UPDATE role=VALUES(role), full_name=VALUES(full_name), phone=VALUES(phone), email=VALUES(email), region=VALUES(region), woreda=VALUES(woreda)`,
-    [uid, role || null, fullName || null, phoneNumber || null, email || null, region || null, woreda || null]
+    [uid, role || "buyer", fullName || null, phoneNumber || null, email || null, region || null, woreda || null]
   );
   res.json({ ok: true });
 };
@@ -36,11 +36,25 @@ export const updateMe = async (req, res) => {
   const { role, fullName, phoneNumber, email, region, woreda } = req.body || {};
   const [existing] = await pool.query("SELECT id FROM users WHERE firebase_uid = ?", [uid]);
   if (existing.length === 0) return res.status(404).json({ error: "Profile not found" });
+  const toNullIfEmpty = (v) => (v === undefined || v === "" ? null : v);
   await pool.query(
     `UPDATE users
-     SET role = ?, full_name = ?, phone = ?, email = ?, region = ?, woreda = ?
+     SET role = COALESCE(?, role),
+         full_name = COALESCE(?, full_name),
+         phone = COALESCE(?, phone),
+         email = COALESCE(?, email),
+         region = COALESCE(?, region),
+         woreda = COALESCE(?, woreda)
      WHERE firebase_uid = ?`,
-    [role || null, fullName || null, phoneNumber || null, email || null, region || null, woreda || null, uid]
+    [
+      toNullIfEmpty(role),
+      toNullIfEmpty(fullName),
+      toNullIfEmpty(phoneNumber),
+      toNullIfEmpty(email),
+      toNullIfEmpty(region),
+      toNullIfEmpty(woreda),
+      uid,
+    ]
   );
   const [rows] = await pool.query("SELECT * FROM users WHERE firebase_uid = ?", [uid]);
   const row = rows[0];

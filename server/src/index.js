@@ -5,17 +5,14 @@ import "dotenv/config";
 // Initialize Firebase Admin once
 import "./config/firebase.js";
 
-// Initialize database connection
-import { testConnection } from "./config/database.js";
-
-
 // Routers
 import authRouter from "./routes/authRoutes.js";
 import userRouter from "./routes/userRoutes.js";
 import farmerRouter from "./routes/farmerRoutes.js";
 import listingRouter from "./routes/listingRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
-
+// Initialize database connection
+import { testConnection } from "./config/database.js";
 // App
 const app = express();
 app.use(cors());
