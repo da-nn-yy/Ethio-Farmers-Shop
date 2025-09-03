@@ -35,6 +35,22 @@ const AuthenticationPage = () => {
     setIsAuthenticated(true);
     localStorage.setItem('isAuthenticated', 'true');
     localStorage.setItem('userRole', userRole);
+    localStorage.setItem('userName', userRole === 'farmer' ? 'Test Farmer' : 'Test Buyer');
+  };
+
+  // Test authentication for development
+  const handleTestLogin = (role) => {
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('userRole', role);
+    localStorage.setItem('userName', role === 'farmer' ? 'Test Farmer' : 'Test Buyer');
+    setIsAuthenticated(true);
+
+    // Navigate to appropriate dashboard
+    if (role === 'farmer') {
+      window.location.href = '/dashboard-farmer-home';
+    } else {
+      window.location.href = '/dashboard-buyer-home';
+    }
   };
 
   const getPageTitle = () => {
@@ -77,7 +93,7 @@ const AuthenticationPage = () => {
             </div>
 
             {/* Language Toggle */}
-            <LanguageToggle 
+            <LanguageToggle
               currentLanguage={currentLanguage}
               onLanguageChange={handleLanguageChange}
             />
@@ -101,7 +117,7 @@ const AuthenticationPage = () => {
 
             {/* Auth Form Container */}
             <div className="bg-surface rounded-2xl shadow-warm-lg border border-border p-6 lg:p-8">
-              <AuthTabs 
+              <AuthTabs
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 currentLanguage={currentLanguage}
@@ -110,12 +126,12 @@ const AuthenticationPage = () => {
               {/* Form Content */}
               <div className="space-y-6">
                 {activeTab === 'login' ? (
-                  <LoginForm 
+                  <LoginForm
                     currentLanguage={currentLanguage}
                     onAuthSuccess={handleAuthSuccess}
                   />
                 ) : (
-                  <RegisterForm 
+                  <RegisterForm
                     currentLanguage={currentLanguage}
                     onAuthSuccess={handleAuthSuccess}
                   />
@@ -124,6 +140,27 @@ const AuthenticationPage = () => {
 
               {/* Trust Signals */}
               <TrustSignals currentLanguage={currentLanguage} />
+            </div>
+
+            {/* Test Login Buttons for Development */}
+            <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <p className="text-sm text-yellow-800 mb-3 font-medium">
+                🚀 Development Mode - Quick Test Login:
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleTestLogin('farmer')}
+                  className="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                >
+                  Login as Farmer
+                </button>
+                <button
+                  onClick={() => handleTestLogin('buyer')}
+                  className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+                >
+                  Login as Buyer
+                </button>
+              </div>
             </div>
 
             {/* Footer Help Text */}
@@ -142,7 +179,7 @@ const AuthenticationPage = () => {
         {/* Footer */}
         <footer className="flex-shrink-0 p-4 text-center">
           <p className="text-xs text-text-secondary">
-            © {new Date()?.getFullYear()} FarmConnect Ethiopia. 
+            © {new Date()?.getFullYear()} FarmConnect Ethiopia.
             {currentLanguage === 'am' ? ' ሁሉም መብቶች የተጠበቁ ናቸው።' : ' All rights reserved.'}
           </p>
         </footer>

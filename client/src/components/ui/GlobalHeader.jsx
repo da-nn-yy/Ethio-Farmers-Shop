@@ -74,7 +74,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
             <Icon name="Sprout" size={20} color="white" className="lg:w-6 lg:h-6" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-bold font-heading lg:text-xl text-primary">FarmConnect</span>
+            <span className="text-lg font-bold font-heading lg:text-xl text-primary">KeGeberew</span>
             <span className="-mt-1 text-xs font-caption text-text-secondary">Ethiopia</span>
           </div>
         </div>
