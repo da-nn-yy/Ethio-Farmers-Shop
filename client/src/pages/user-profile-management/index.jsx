@@ -58,9 +58,25 @@ const UserProfileManagement = () => {
   };
 
   // Handle photo edit
-  const handleEditPhoto = () => {
-    // Photo edit logic here
-    console.log('Edit photo clicked');
+  const handleEditPhoto = async (file) => {
+    try {
+      const authInstance = getAuth();
+      const currentUser = authInstance.currentUser;
+      if (!currentUser || !file) return;
+      const token = await currentUser.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const form = new FormData();
+      form.append('image', file);
+      const { data } = await axios.post(`${API_BASE}/users/me/avatar`, form, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setUser(prev => ({ ...(prev || {}), avatarUrl: data.avatarUrl }));
+    } catch (e) {
+      // ignore for now
+    }
   };
 
   // Tab configuration
@@ -204,6 +220,7 @@ const UserProfileManagement = () => {
               userRole={userRole}
               currentLanguage={currentLanguage}
               onEditPhoto={handleEditPhoto}
+              user={user}
             />
           </div>
 
