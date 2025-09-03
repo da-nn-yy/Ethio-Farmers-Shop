@@ -103,7 +103,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
               {/* User Menu */}
               <div className="flex items-center pl-4 space-x-3 border-l cursor-pointer border-border" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
                 <div className="w-8 h-8 overflow-hidden rounded-full bg-muted">
-                  <img src={user.avatar || "/assets/images/no_image.png"} alt={user.name} className="object-cover w-full h-full" />
+                  <img src={user.avatarUrl || "/assets/images/no_image.png"} alt={user.fullName || "User"} className="object-cover w-full h-full" />
                 </div>
                 <div className="flex flex-col">
                   <span className="text-sm font-medium text-text-primary">{user.fullName}</span>
@@ -159,7 +159,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
               <>
                 <div className="flex items-center p-4 space-x-3 rounded-lg bg-muted">
                   <div className="w-12 h-12 overflow-hidden rounded-full bg-primary/10">
-                    <img src={user.avatar || "/assets/images/no_image.png"} alt={user.name} className="object-cover w-full h-full" />
+                    <img src={user.avatarUrl || "/assets/images/no_image.png"} alt={user.fullName || "User"} className="object-cover w-full h-full" />
                   </div>
                   <div className="flex flex-col">
                     <span className="font-medium text-text-primary">{user.fullName}</span>
