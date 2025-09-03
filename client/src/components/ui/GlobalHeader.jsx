@@ -23,7 +23,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
         }
 
         const idToken = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
 
         const res = await axios.get(`${API_BASE}/users/me`, {
           headers: { Authorization: `Bearer ${idToken}` },

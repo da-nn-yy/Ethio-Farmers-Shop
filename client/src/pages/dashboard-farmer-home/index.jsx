@@ -395,7 +395,6 @@ const DashboardFarmerHome = () => {
                     {currentLanguage === "am" ? "አዲስ ጨምር" : "Add New"}
                   </Button>
                 </div>
-<<<<<<< HEAD
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
                   {isLoading ? (
                     // Loading skeleton for listings
@@ -404,11 +403,6 @@ const DashboardFarmerHome = () => {
                     ))
                   ) : produceListings?.length > 0 ? (
                     produceListings?.slice(0, 4)?.map((listing) => (
-=======
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-                  {produceListings?.slice(0, 4)?.map((listing) => (
->>>>>>> 3eda38a82d432751664176e4f857952c5804203a
                     <ProduceListingCard
                       key={listing.id}
                       listing={listing}

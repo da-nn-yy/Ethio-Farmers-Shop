@@ -208,7 +208,7 @@ const BrowseListingsBuyerHome = () => {
     const loadInitialData = async () => {
       setIsLoading(true);
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
 
         // Fetch real listings from API
         const response = await axios.get(`${API_BASE}/public/listings`);
