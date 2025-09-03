@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+import { getAuth } from 'firebase/auth';
 
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -7,16 +9,39 @@ import Select from '../../../components/ui/Select';
 const AccountInformation = ({ userRole, currentLanguage }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: userRole === 'farmer' ? 'Abebe' : 'Sarah',
-    lastName: userRole === 'farmer' ? 'Kebede' : 'Johnson',
-    firstNameAm: userRole === 'farmer' ? 'አበበ' : 'ሳራ',
-    lastNameAm: userRole === 'farmer' ? 'ከበደ' : 'ጆንሰን',
-    email: userRole === 'farmer' ? 'abebe.kebede@gmail.com' : 'sarah.johnson@email.com',
-    phone: userRole === 'farmer' ? '+251911234567' : '+251922345678',
-    region: userRole === 'farmer' ? 'oromia' : 'addis-ababa',
-    woreda: userRole === 'farmer' ? 'adama' : 'bole',
+    fullName: '',
+    email: '',
+    phone: '',
+    region: '',
+    woreda: '',
     language: currentLanguage
   });
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+        if (!user) return;
+        const token = await user.getIdToken();
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const { data } = await axios.get(`${API_BASE}/users/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setFormData(prev => ({
+          ...prev,
+          fullName: data.fullName || '',
+          email: data.email || '',
+          phone: data.phoneNumber || '',
+          region: data.region || '',
+          woreda: data.woreda || ''
+        }));
+      } catch (e) {
+        // ignore load failure here
+      }
+    };
+    loadProfile();
+  }, []);
 
   const regions = [
     { value: 'addis-ababa', label: 'Addis Ababa', labelAm: 'አዲስ አበባ' },
@@ -64,9 +89,27 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
     }));
   };
 
-  const handleSave = () => {
-    // Save logic here
-    setIsEditing(false);
+  const handleSave = async () => {
+    try {
+      const auth = getAuth();
+      const user = auth.currentUser;
+      if (!user) return;
+      const token = await user.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      await axios.put(`${API_BASE}/users/me`, {
+        fullName: formData.fullName,
+        phoneNumber: formData.phone,
+        email: formData.email,
+        region: formData.region,
+        woreda: formData.woreda
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setIsEditing(false);
+      alert(currentLanguage === 'en' ? 'Profile updated.' : 'መገለጫ ተዘምኗል።');
+    } catch (e) {
+      alert(currentLanguage === 'en' ? 'Failed to update profile.' : 'መገለጫ ማዘመን አልተሳካም።');
+    }
   };
 
   const handleCancel = () => {
@@ -125,45 +168,18 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
           <h3 className="text-lg font-semibold text-text-primary mb-4">
             {getLabel('Personal Information', 'የግል መረጃ')}
           </h3>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Input
-              label={getLabel('First Name', 'ስም')}
+              label={getLabel('Full Name', 'ሙሉ ስም')}
               type="text"
-              value={formData?.firstName}
-              onChange={(e) => handleInputChange('firstName', e?.target?.value)}
-              disabled={!isEditing}
-              required
-            />
-            
-            <Input
-              label={getLabel('Last Name', 'የአባት ስም')}
-              type="text"
-              value={formData?.lastName}
-              onChange={(e) => handleInputChange('lastName', e?.target?.value)}
+              value={formData?.fullName}
+              onChange={(e) => handleInputChange('fullName', e?.target?.value)}
               disabled={!isEditing}
               required
             />
 
-            {currentLanguage === 'am' && (
-              <>
-                <Input
-                  label="ስም (አማርኛ)"
-                  type="text"
-                  value={formData?.firstNameAm}
-                  onChange={(e) => handleInputChange('firstNameAm', e?.target?.value)}
-                  disabled={!isEditing}
-                />
-                
-                <Input
-                  label="የአባት ስም (አማርኛ)"
-                  type="text"
-                  value={formData?.lastNameAm}
-                  onChange={(e) => handleInputChange('lastNameAm', e?.target?.value)}
-                  disabled={!isEditing}
-                />
-              </>
-            )}
+            {/* Amharic name fields optional in future */}
           </div>
         </div>
 
@@ -172,7 +188,7 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
           <h3 className="text-lg font-semibold text-text-primary mb-4">
             {getLabel('Contact Information', 'የመገናኛ መረጃ')}
           </h3>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Input
               label={getLabel('Email Address', 'ኢሜይል አድራሻ')}
@@ -182,7 +198,7 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
               disabled={!isEditing}
               required
             />
-            
+
             <Input
               label={getLabel('Phone Number', 'ስልክ ቁጥር')}
               type="tel"
@@ -199,7 +215,7 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
           <h3 className="text-lg font-semibold text-text-primary mb-4">
             {getLabel('Location Information', 'የአካባቢ መረጃ')}
           </h3>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Select
               label={getLabel('Region', 'ክልል')}
@@ -212,7 +228,7 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
               disabled={!isEditing}
               required
             />
-            
+
             <Select
               label={getLabel('Woreda/Sub-city', 'ወረዳ/ክፍለ ከተማ')}
               options={(woredas?.[formData?.region] || [])?.map(woreda => ({
@@ -232,7 +248,7 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
           <h3 className="text-lg font-semibold text-text-primary mb-4">
             {getLabel('Preferences', 'ምርጫዎች')}
           </h3>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Select
               label={getLabel('Preferred Language', 'የተመረጠ ቋንቋ')}

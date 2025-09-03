@@ -24,6 +24,7 @@ const AddListing = () => {
   // Form state
   const [formData, setFormData] = useState({
     // Product Details
+    productName: '',
     produceType: '',
     description: '',
     qualityGrade: '',
@@ -99,6 +100,9 @@ const AddListing = () => {
 
     switch (currentStep) {
       case 1: // Product Details
+        if (!formData?.productName?.trim()) {
+          errors.productName = currentLanguage === 'en' ? 'Please enter a product name' : 'እባክዎን የምርት ስም ያስገቡ';
+        }
         if (!formData?.produceType) {
           errors.produceType = currentLanguage === 'en' ?'Please select a produce type' :'እባክዎን የምርት አይነት ይምረጡ';
         }
@@ -191,16 +195,15 @@ const AddListing = () => {
       }
       const idToken = await currentUser.getIdToken();
 
-      // Prepare the listing data to match server expectations
+      // Prepare the listing data without image first
       const listingData = {
-        name: formData.produceType,
-        nameAm: formData.produceType || undefined,
+        name: formData.productName?.trim() || formData.produceType,
+        nameAm: undefined,
         description: formData.description,
         category: formData.produceType,
         pricePerKg: Number(formData.pricePerKg),
         availableQuantity: Number(formData.availableQuantity),
-        location: formData.region,
-        image: Array.isArray(formData.images) && formData.images.length > 0 ? formData.images[0] : undefined,
+        location: formData.region
       };
 
       const response = await axios.post(`${API_BASE}/farmer/listings`, listingData, {
@@ -211,6 +214,22 @@ const AddListing = () => {
       });
 
       if (response.status === 201 || response.data?.id) {
+        const createdId = response.data?.id;
+
+        // If image URLs exist, attach the first as primary
+        if (createdId && Array.isArray(formData.images) && formData.images.length > 0) {
+          try {
+            await axios.post(`${API_BASE}/farmer/listings/${createdId}/images`, { url: formData.images[0] }, {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${idToken}`
+              }
+            });
+          } catch (attachErr) {
+            console.warn('Image attach failed, continuing:', attachErr);
+          }
+        }
+
         alert(
           currentLanguage === 'en'
             ? 'Listing published successfully!'

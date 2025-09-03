@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getAuth } from 'firebase/auth';
+import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import TabNavigation from '../../components/ui/TabNavigation';
@@ -33,19 +34,18 @@ const UserProfileManagement = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const auth = getAuth();
-        const currentUser = auth.currentUser;
+        const authInstance = getAuth();
+        const currentUser = authInstance.currentUser;
         if (!currentUser) return;
         const token = await currentUser.getIdToken();
-        const res = await fetch('/users/me', {
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const { data } = await axios.get(`${API_BASE}/users/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        if (!res.ok) return;
-        const data = await res.json();
         setUser(data);
         setUserRole(data.role || 'farmer');
       } catch (e) {
-        // handle error
+        // handle error silently for now
       }
     };
     fetchUser();

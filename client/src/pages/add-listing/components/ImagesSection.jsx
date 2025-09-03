@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import axios from 'axios';
+import { auth } from '../../../firebase';
 
 const ImagesSection = ({ formData, formErrors, onUpdate, currentLanguage }) => {
   const [uploading, setUploading] = useState(false);
@@ -26,19 +28,35 @@ const ImagesSection = ({ formData, formErrors, onUpdate, currentLanguage }) => {
     setUploading(true);
 
     try {
-      // Create a simple file URL for preview (simplified approach)
-      const imageUrl = URL.createObjectURL(file);
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const currentUser = auth.currentUser;
+      if (!currentUser) {
+        alert(currentLanguage === 'en' ? 'Please log in again.' : 'እባክዎን እንደገና ይግቡ።');
+        return;
+      }
+      const idToken = await currentUser.getIdToken();
 
-      // Add the new image to the images array
-      const newImages = [...formData.images, imageUrl];
+      const form = new FormData();
+      form.append('image', file);
+
+      const response = await axios.post(`${API_BASE}/farmer/upload-image`, form, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${idToken}`
+        }
+      });
+
+      const uploadedUrl = response?.data?.imageUrl;
+      if (!uploadedUrl) {
+        throw new Error('Upload did not return imageUrl');
+      }
+
+      const newImages = [...(formData.images || []), uploadedUrl];
       onUpdate('images', newImages);
 
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
       alert(currentLanguage === 'en'
-        ? 'Image added successfully!'
-        : 'ምስሉ በተሳካ ሁኔታ ተጨመረ!');
+        ? 'Image uploaded successfully!'
+        : 'ምስሉ በተሳካ ሁኔታ ተጭኗል!');
     } catch (error) {
       console.error('Image upload failed:', error);
       alert(currentLanguage === 'en'

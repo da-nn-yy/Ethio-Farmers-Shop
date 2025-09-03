@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { auth } from '../../firebase';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import TabNavigation from '../../components/ui/TabNavigation';
 import MobileMenu from '../../components/ui/MobileMenu';
@@ -29,161 +31,57 @@ const OrderManagement = () => {
     sortBy: 'newest'
   });
 
-  // Mock data for orders
-  const mockOrders = [
-    {
-      id: 'ORD-2024-001',
-      orderNumber: '2024-001',
-      buyer: {
-        id: 'buyer-1',
-        name: 'Almaz Tesfaye',
-        avatar: 'https://randomuser.me/api/portraits/women/32.jpg',
-        phone: '+251911234567',
-        location: 'Addis Ababa, Bole',
-        businessType: 'Restaurant Owner',
-        verified: true
-      },
-      items: [
-        {
-          id: 'item-1',
-          name: 'Fresh Tomatoes',
-          quantity: 50,
-          unit: 'kg',
-          pricePerUnit: 25,
-          total: 1250,
-          image: 'https://images.pexels.com/photos/1327838/pexels-photo-1327838.jpeg'
-        },
-        {
-          id: 'item-2',
-          name: 'Red Onions',
-          quantity: 30,
-          unit: 'kg',
-          pricePerUnit: 20,
-          total: 600,
-          image: 'https://images.pexels.com/photos/144248/potatoes-vegetables-erdfrucht-bio-144248.jpeg'
-        }
-      ],
-      totalAmount: 1850,
-      status: 'pending',
-      createdAt: new Date('2024-08-27T10:30:00'),
-      specialInstructions: 'Please ensure tomatoes are firm and ripe. Delivery needed by 2 PM.',
-      pickupDetails: null
-    },
-    {
-      id: 'ORD-2024-002',
-      orderNumber: '2024-002',
-      buyer: {
-        id: 'buyer-2',
-        name: 'Dawit Bekele',
-        avatar: 'https://randomuser.me/api/portraits/men/45.jpg',
-        phone: '+251922345678',
-        location: 'Addis Ababa, Merkato',
-        businessType: 'Grocery Store',
-        verified: true
-      },
-      items: [
-        {
-          id: 'item-3',
-          name: 'Green Cabbage',
-          quantity: 25,
-          unit: 'kg',
-          pricePerUnit: 15,
-          total: 375,
-          image: 'https://images.pexels.com/photos/2255935/pexels-photo-2255935.jpeg'
-        }
-      ],
-      totalAmount: 375,
-      status: 'confirmed',
-      createdAt: new Date('2024-08-26T14:20:00'),
-      specialInstructions: 'Regular weekly order. Same quality as last time.',
-      pickupDetails: {
-        scheduledDate: new Date('2024-08-28T09:00:00'),
-        location: 'Farm Gate, Debre Zeit Road'
-      }
-    },
-    {
-      id: 'ORD-2024-003',
-      orderNumber: '2024-003',
-      buyer: {
-        id: 'buyer-3',
-        name: 'Sara Johnson',
-        avatar: 'https://randomuser.me/api/portraits/women/28.jpg',
-        phone: '+251933456789',
-        location: 'Addis Ababa, Kazanchis',
-        businessType: 'Individual Consumer',
-        verified: false
-      },
-      items: [
-        {
-          id: 'item-4',
-          name: 'Organic Carrots',
-          quantity: 10,
-          unit: 'kg',
-          pricePerUnit: 30,
-          total: 300,
-          image: 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg'
-        },
-        {
-          id: 'item-5',
-          name: 'Fresh Lettuce',
-          quantity: 5,
-          unit: 'kg',
-          pricePerUnit: 35,
-          total: 175,
-          image: 'https://images.pexels.com/photos/1656663/pexels-photo-1656663.jpeg'
-        }
-      ],
-      totalAmount: 475,
-      status: 'completed',
-      createdAt: new Date('2024-08-25T16:45:00'),
-      specialInstructions: 'First time buyer. Please pack carefully.',
-      pickupDetails: {
-        scheduledDate: new Date('2024-08-26T11:00:00'),
-        location: 'Farm Gate, Debre Zeit Road'
-      }
-    },
-    {
-      id: 'ORD-2024-004',
-      orderNumber: '2024-004',
-      buyer: {
-        id: 'buyer-4',
-        name: 'Meron Tadesse',
-        avatar: 'https://randomuser.me/api/portraits/women/41.jpg',
-        phone: '+251944567890',
-        location: 'Addis Ababa, Piassa',
-        businessType: 'Hotel Manager',
-        verified: true
-      },
-      items: [
-        {
-          id: 'item-6',
-          name: 'Bell Peppers',
-          quantity: 20,
-          unit: 'kg',
-          pricePerUnit: 40,
-          total: 800,
-          image: 'https://images.pexels.com/photos/1268101/pexels-photo-1268101.jpeg'
-        }
-      ],
-      totalAmount: 800,
-      status: 'cancelled',
-      createdAt: new Date('2024-08-24T12:15:00'),
-      specialInstructions: 'Mixed colors preferred - red, yellow, green.',
-      pickupDetails: null
-    }
-  ];
-
-  // Load language preference and mock data
+  // Load language preference and real orders
   useEffect(() => {
-    const savedLanguage = localStorage.getItem('farmconnect_language') || 'en';
-    setCurrentLanguage(savedLanguage);
-
-    // Simulate loading
-    setTimeout(() => {
-      setOrders(mockOrders);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    const load = async () => {
+      const savedLanguage = localStorage.getItem('farmconnect_language') || 'en';
+      setCurrentLanguage(savedLanguage);
+      try {
+        setIsLoading(true);
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const statusParam = activeTab === 'all' ? '' : `?status=${activeTab}`;
+        const res = await axios.get(`${API_BASE}/orders/buyer${statusParam}` , {
+          headers: { Authorization: `Bearer ${idToken}` }
+        });
+        // Normalize to UI model
+        const normalized = res.data.map((o) => ({
+          id: o.id,
+          orderNumber: String(o.id),
+          status: o.status,
+          createdAt: o.createdAt,
+          totalAmount: Number(o.totalPrice),
+          buyer: {
+            name: 'You',
+            avatar: '',
+            phone: '',
+            location: o.location,
+            verified: true
+          },
+          items: [
+            {
+              id: `listing-${o.id}`,
+              name: o.name,
+              quantity: o.quantity,
+              unit: 'kg',
+              pricePerUnit: Number(o.pricePerKg),
+              total: Number(o.totalPrice),
+              image: o.image || 'https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg'
+            }
+          ],
+          specialInstructions: o.notes || ''
+        }));
+        setOrders(normalized);
+      } catch (e) {
+        console.error('Failed to load orders', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   // Filter orders based on active tab and filters
   useEffect(() => {
@@ -271,17 +169,16 @@ const OrderManagement = () => {
     console.log(`Order ${orderId} accepted`);
   };
 
-  const handleDeclineOrder = (orderId, reason) => {
-    setOrders(prevOrders =>
-      prevOrders?.map(order =>
-        order?.id === orderId
-          ? { ...order, status: 'cancelled', declineReason: reason }
-          : order
-      )
-    );
-
-    // Show notification
-    console.log(`Order ${orderId} declined: ${reason}`);
+  const handleDeclineOrder = async (orderId) => {
+    try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      await axios.patch(`${API_BASE}/orders/${orderId}/cancel`, {}, { headers: { Authorization: `Bearer ${idToken}` } });
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+    } catch (e) {
+      console.error('Cancel failed', e);
+    }
   };
 
   const handleContactBuyer = (phoneNumber) => {

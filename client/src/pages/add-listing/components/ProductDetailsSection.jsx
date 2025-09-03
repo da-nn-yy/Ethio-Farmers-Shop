@@ -24,13 +24,31 @@ const ProductDetailsSection = ({ formData, formErrors, onUpdate, currentLanguage
           {currentLanguage === 'en' ? 'Product Details' : 'የምርት ዝርዝሮች'}
         </h2>
         <p className="text-muted-foreground mb-6">
-          {currentLanguage === 'en' 
-            ? 'Provide basic information about your produce' 
+          {currentLanguage === 'en'
+            ? 'Provide basic information about your produce'
             : 'ስለ ምርትዎ መሰረታዊ መረጃ ይስጡ'}
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Product Name */}
+        <div>
+          <label className="block text-sm font-medium text-foreground mb-2">
+            {currentLanguage === 'en' ? 'Product Name *' : 'የምርት ስም *'}
+          </label>
+          <input
+            type="text"
+            value={formData.productName}
+            onChange={(e) => onUpdate('productName', e.target.value)}
+            placeholder={currentLanguage === 'en' ? 'e.g., Fresh Tomatoes' : 'ለምሳሌ፣ ትኩስ ቲማቲም'}
+            className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${
+              formErrors.productName ? 'border-red-500' : 'border-border'
+            }`}
+          />
+          {formErrors.productName && (
+            <p className="mt-1 text-sm text-red-500">{formErrors.productName}</p>
+          )}
+        </div>
         {/* Produce Type */}
         <div>
           <label className="block text-sm font-medium text-foreground mb-2">
@@ -96,8 +114,8 @@ const ProductDetailsSection = ({ formData, formErrors, onUpdate, currentLanguage
           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent resize-none ${
             formErrors.description ? 'border-red-500' : 'border-border'
           }`}
-          placeholder={currentLanguage === 'en' 
-            ? 'Describe your produce, including freshness, size, and any special characteristics...' 
+          placeholder={currentLanguage === 'en'
+            ? 'Describe your produce, including freshness, size, and any special characteristics...'
             : 'ስለ ምርትዎ ይግለጹ፣ ትኩስነት፣ መጠን እና ማንኛውም ልዩ ባህሪያት ጨምሮ...'}
         />
         <div className="flex justify-between items-center mt-1">
