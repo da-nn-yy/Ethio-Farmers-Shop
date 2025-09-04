@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { auth } from "../../firebase"; // ✅ make sure you have firebase config
+import { dashboardService, farmerService } from "../../services/apiService";
+import { useAuth } from "../../hooks/useAuth";
 import GlobalHeader from "../../components/ui/GlobalHeader";
 import TabNavigation from "../../components/ui/TabNavigation";
 import MobileMenu from "../../components/ui/MobileMenu";
@@ -16,13 +16,10 @@ import RecentActivityFeed from "./components/RecentActivityFeed";
 
 const DashboardFarmerHome = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [currentLanguage, setCurrentLanguage] = useState("en");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // ✅ Add missing user & auth state
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Dashboard data state
   const [farmerMetrics, setFarmerMetrics] = useState([]);
@@ -45,62 +42,25 @@ const DashboardFarmerHome = () => {
     localStorage.setItem("farmconnect_language", newLanguage);
   };
 
-  // ✅ Fetch user data safely
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) return;
-
-        setIsAuthenticated(true);
-
-        const idToken = await currentUser.getIdToken();
-        const API_BASE =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-
-        const res = await axios.get(`${API_BASE}/users/me`, {
-          headers: { Authorization: `Bearer ${idToken}` },
-        });
-
-        setUser(res.data); // expect { fullName, avatar, role }
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        setIsAuthenticated(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
   // ✅ Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (!isAuthenticated || !user) return;
+      if (!isAuthenticated) return;
 
       try {
         setIsLoading(true);
         setError(null);
 
-        const currentUser = auth.currentUser;
-        const idToken = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-
-        // Fetch all dashboard data in parallel
+        // Fetch all dashboard data in parallel using new API service
         const [metricsRes, listingsRes, activityRes] = await Promise.all([
-          axios.get(`${API_BASE}/farmer/metrics`, {
-            headers: { Authorization: `Bearer ${idToken}` }
-          }),
-          axios.get(`${API_BASE}/farmer/listings?limit=6`, {
-            headers: { Authorization: `Bearer ${idToken}` }
-          }),
-          axios.get(`${API_BASE}/farmer/activity?limit=5`, {
-            headers: { Authorization: `Bearer ${idToken}` }
-          })
+          farmerService.getFarmerMetrics(),
+          farmerService.getFarmerListings({ limit: 6 }),
+          farmerService.getFarmerActivity({ limit: 5 })
         ]);
 
-        setFarmerMetrics(metricsRes.data);
-        setProduceListings(listingsRes.data);
-        setRecentActivity(activityRes.data);
+        setFarmerMetrics(metricsRes.metrics || []);
+        setProduceListings(listingsRes.listings || []);
+        setRecentActivity(activityRes.activities || []);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
         setError("Failed to load dashboard data");

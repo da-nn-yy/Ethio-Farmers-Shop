@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { listingService, orderService, favoriteService } from '../../services/apiService';
+import { useAuth } from '../../hooks/useAuth';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import TabNavigation from '../../components/ui/TabNavigation';
 import SearchHeader from './components/SearchHeader';
@@ -13,6 +14,7 @@ import EmptyState from './components/EmptyState';
 
 const BrowseListingsBuyerHome = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
@@ -22,8 +24,31 @@ const BrowseListingsBuyerHome = () => {
   const [filteredListings, setFilteredListings] = useState([]);
   const [bookmarkedFarmers, setBookmarkedFarmers] = useState(new Set());
   const [cartItems, setCartItems] = useState([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+
+  // Old-dashboard-style single-select filters
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedRegion, setSelectedRegion] = useState('all');
+  const categories = [
+    { value: 'all', label: 'All Categories', labelAm: 'ሁሉም ምድቦች' },
+    { value: 'vegetables', label: 'Vegetables', labelAm: 'አትክልቶች' },
+    { value: 'fruits', label: 'Fruits', labelAm: 'ፍራፍሬዎች' },
+    { value: 'grains', label: 'Grains', labelAm: 'እህሎች' },
+    { value: 'legumes', label: 'Legumes', labelAm: 'ጥራጥሮች' },
+    { value: 'spices', label: 'Spices', labelAm: 'ቅመሞች' }
+  ];
+  const regions = [
+    { value: 'all', label: 'All Regions', labelAm: 'ሁሉም ክልሎች' },
+    { value: 'Addis Ababa', label: 'Addis Ababa', labelAm: 'አዲስ አበባ' },
+    { value: 'Oromia', label: 'Oromia', labelAm: 'ኦሮሚያ' },
+    { value: 'Amhara', label: 'Amhara', labelAm: 'አማራ' },
+    { value: 'Tigray', label: 'Tigray', labelAm: 'ትግራይ' },
+    { value: 'SNNP', label: 'SNNP', labelAm: 'ደቡብ ብሔሮች' },
+    { value: 'Somali', label: 'Somali', labelAm: 'ሶማሌ' },
+    { value: 'Afar', label: 'Afar', labelAm: 'አፋር' }
+  ];
 
   // Filter state
   const [filters, setFilters] = useState({
@@ -208,30 +233,28 @@ const BrowseListingsBuyerHome = () => {
     const loadInitialData = async () => {
       setIsLoading(true);
       try {
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        // Use the new API service to fetch listings
+        const response = await listingService.getActiveListings();
 
-        // Fetch real listings from API
-        const response = await axios.get(`${API_BASE}/public/listings`);
-
-        if (response.data.success) {
+        if (response.listings) {
           // Transform API data to match component expectations
-          const transformedListings = response.data.listings.map(listing => ({
+          const transformedListings = response.listings.map(listing => ({
             id: listing.id,
-            name: listing.name,
-            nameAm: listing.category, // Using category as Amharic name for now
-            pricePerKg: parseFloat(listing.pricePerKg),
-            availableQuantity: parseFloat(listing.availableQuantity),
-            image: listing.image || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
+            name: listing.title,
+            nameAm: listing.crop, // Using crop as Amharic name for now
+            pricePerKg: parseFloat(listing.price_per_unit),
+            availableQuantity: parseFloat(listing.quantity),
+            image: listing.images?.[0]?.url || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
             freshness: "Fresh from farm",
-            category: listing.category,
+            category: listing.crop,
             farmer: {
-              id: listing.id, // Using listing id as farmer id for now
-              name: listing.farmerName,
+              id: listing.farmer_user_id,
+              name: listing.farmer_name,
               avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
-              location: listing.location,
+              location: `${listing.region}, ${listing.woreda}`,
               rating: 4.5,
               reviewCount: 50,
-              phone: "+251900000000",
+              phone: listing.farmer_phone || "+251900000000",
               isVerified: true
             }
           }));
@@ -239,13 +262,11 @@ const BrowseListingsBuyerHome = () => {
           setListings(transformedListings);
           setFilteredListings(transformedListings);
         } else {
-          // Fallback to mock data if API fails
-          setListings(mockListings);
-          setFilteredListings(mockListings);
+          throw new Error('API did not return listings');
         }
       } catch (error) {
         console.error('Failed to fetch listings:', error);
-        // Fallback to mock data
+        // Fallback to mock data if API fails
         setListings(mockListings);
         setFilteredListings(mockListings);
       } finally {
@@ -277,19 +298,15 @@ const BrowseListingsBuyerHome = () => {
       );
     }
 
-    // Apply filters
-    if (filters?.produceTypes?.length > 0) {
-      filtered = filtered?.filter(listing =>
-        filters?.produceTypes?.includes(listing?.category)
-      );
+    // Apply single-select filters like old dashboard
+    if (selectedCategory && selectedCategory !== 'all') {
+      filtered = filtered?.filter(listing => listing?.category === selectedCategory);
     }
 
-    if (filters?.regions?.length > 0) {
+    if (selectedRegion && selectedRegion !== 'all') {
       filtered = filtered?.filter(listing => {
-        const location = listing?.farmer?.location?.toLowerCase();
-        return filters?.regions?.some(region =>
-          location?.includes(region?.toLowerCase())
-        );
+        const location = (listing?.farmer?.location || listing?.location || '')?.toLowerCase();
+        return location === selectedRegion?.toLowerCase() || location?.includes(selectedRegion?.toLowerCase());
       });
     }
 
@@ -329,7 +346,7 @@ const BrowseListingsBuyerHome = () => {
     }
 
     setFilteredListings(filtered);
-  }, [listings, searchQuery, filters, currentSort]);
+  }, [listings, searchQuery, selectedCategory, selectedRegion, filters, currentSort]);
 
   useEffect(() => {
     applyFiltersAndSearch();
@@ -422,20 +439,22 @@ const BrowseListingsBuyerHome = () => {
   // Handle add to cart
   const handleAddToCart = async (listingId, quantity) => {
     const listing = listings?.find(l => l?.id === listingId);
-    if (listing) {
+    if (!listing) return;
       setCartItems(prev => {
-        const existingItem = prev?.find(item => item?.listingId === listingId);
+      const existingItem = prev?.find(item => item?.id === listingId);
         if (existingItem) {
-          return prev?.map(item =>
-            item?.listingId === listingId
-              ? { ...item, quantity: item?.quantity + quantity }
-              : item
-          );
-        } else {
-          return [...prev, { listingId, quantity, listing }];
-        }
-      });
-    }
+        return prev?.map(item => item?.id === listingId ? { ...item, quantity: item.quantity + quantity } : item);
+      }
+      const normalized = {
+        id: listing.id,
+        name: listing.name,
+        nameAm: listing.nameAm,
+        image: listing.image,
+        pricePerKg: listing.pricePerKg,
+        quantity: quantity
+      };
+      return [...prev, normalized];
+    });
   };
 
   // Handle contact farmer
@@ -456,28 +475,82 @@ const BrowseListingsBuyerHome = () => {
     });
   };
 
-  // Handle cart click
+  // Handle cart click -> open mini cart
   const handleCartClick = () => {
-    navigate('/order-management');
+    setIsCartOpen(true);
+  };
+
+  // Persist cart to localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('buyer_cart');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setCartItems(parsed);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('buyer_cart', JSON.stringify(cartItems));
+    } catch {}
+  }, [cartItems]);
+
+  // Cart helpers
+  const updateCartQuantity = (id, quantity) => {
+    setCartItems(prev => {
+      if (quantity <= 0) return prev.filter(i => i.id !== id);
+      return prev.map(i => i.id === id ? { ...i, quantity } : i);
+    });
+  };
+  const removeCartItem = (id) => setCartItems(prev => prev.filter(i => i.id !== id));
+  const clearCart = () => setCartItems([]);
+  const getCartTotal = () => cartItems.reduce((t, i) => t + (Number(i.pricePerKg) || 0) * (Number(i.quantity) || 0), 0);
+
+  const placeOrder = async () => {
+    if (!cartItems.length) return;
+
+    if (!isAuthenticated) {
+      navigate('/authentication-login-register');
+      return;
+    }
+
+    try {
+      // Create order with multiple items
+      const orderData = {
+        items: cartItems.map(item => ({
+          listingId: item.id,
+          quantity: item.quantity
+        })),
+        notes: 'Order placed from buyer dashboard',
+        deliveryFee: 0
+      };
+
+      await orderService.createOrder(orderData);
+      clearCart();
+      setIsCartOpen(false);
+      alert(currentLanguage === 'am' ? 'ትዕዛዝ ተልኳል!' : 'Order placed!');
+    } catch (error) {
+      console.error('placeOrder failed', error);
+      alert(currentLanguage === 'am' ? 'ትዕዛዝ አልተሳካም።' : 'Failed to place order.');
+    }
   };
 
   // Calculate total cart items
-  const totalCartItems = cartItems?.reduce((total, item) => total + item?.quantity, 0);
+  const totalCartItems = cartItems?.reduce((total, item) => total + (Number(item?.quantity) || 0), 0);
 
   return (
     <div className="min-h-screen bg-background">
       {/* Global Header */}
       <GlobalHeader
-        userRole="buyer"
-        isAuthenticated={true}
+        userRole={user?.role || "buyer"}
+        isAuthenticated={isAuthenticated}
         onLanguageChange={handleLanguageChange}
         currentLanguage={currentLanguage}
       />
-      {/* Tab Navigation */}
-      <TabNavigation
-        userRole="buyer"
-        notificationCounts={{ orders: 3 }}
-      />
+      {/* Tab Navigation - show Dashboard label for buyers */}
+      <TabNavigation userRole="buyer" notificationCounts={{ orders: 3 }} />
       {/* Search Header */}
       <SearchHeader
         searchQuery={searchQuery}
@@ -496,15 +569,25 @@ const BrowseListingsBuyerHome = () => {
       />
       {/* Main Content */}
       <div className="flex">
-        {/* Desktop Filter Sidebar */}
+        {/* Desktop Filter Sidebar from previous dashboard */}
         <div className="hidden lg:block w-80 shrink-0">
           <div className="sticky top-32 p-6">
             <FilterPanel
               isOpen={true}
               onClose={() => {}}
               filters={filters}
-              onApplyFilters={setFilters}
+              onApplyFilters={(f) => {
+                setFilters(f);
+                setSelectedCategory((f?.produceTypes && f.produceTypes[0]) || 'all');
+                setSelectedRegion((f?.regions && f.regions[0]) || 'all');
+                setCurrentSort(f?.sort || currentSort);
+              }}
               currentLanguage={currentLanguage}
+              selectedCategory={selectedCategory}
+              selectedRegion={selectedRegion}
+              currentSort={currentSort}
+              categoryOptions={categories.map(c => ({ id: c.value, label: currentLanguage === 'am' ? c.labelAm : c.label }))}
+              regionOptions={regions.map(r => ({ id: r.label, label: currentLanguage === 'am' ? r.labelAm : r.label }))}
             />
           </div>
         </div>
@@ -565,9 +648,69 @@ const BrowseListingsBuyerHome = () => {
         isOpen={isFilterPanelOpen}
         onClose={() => setIsFilterPanelOpen(false)}
         filters={filters}
-        onApplyFilters={setFilters}
+        onApplyFilters={(f) => {
+          setFilters(f);
+          setSelectedCategory((f?.produceTypes && f.produceTypes[0]) || 'all');
+          setSelectedRegion((f?.regions && f.regions[0]) || 'all');
+          setCurrentSort(f?.sort || currentSort);
+        }}
         currentLanguage={currentLanguage}
+        selectedCategory={selectedCategory}
+        selectedRegion={selectedRegion}
+        currentSort={currentSort}
+        categoryOptions={categories.map(c => ({ id: c.value, label: currentLanguage === 'am' ? c.labelAm : c.label }))}
+        regionOptions={regions.map(r => ({ id: r.label, label: currentLanguage === 'am' ? r.labelAm : r.label }))}
       />
+
+      {/* Mini Cart Modal */}
+      {isCartOpen && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-text-primary">{currentLanguage === 'am' ? 'የግዛት ካርት' : 'Shopping Cart'}</h3>
+              <button onClick={() => setIsCartOpen(false)} className="text-text-secondary">×</button>
+            </div>
+            <div className="p-4 overflow-y-auto max-h-96">
+              {cartItems.length === 0 ? (
+                <div className="text-center py-8">
+                  <Icon name="ShoppingCart" size={48} className="mx-auto text-gray-400 mb-4" />
+                  <p className="text-gray-500">{currentLanguage === 'am' ? 'ካርት ባዶ ነው' : 'Your cart is empty'}</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {cartItems.map(item => (
+                    <div key={item.id} className="flex items-center space-x-3 p-3 border border-border rounded-lg">
+                      <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                      <div className="flex-1">
+                        <h4 className="font-medium text-text-primary">{currentLanguage === 'am' ? item.nameAm || item.name : item.name}</h4>
+                        <p className="text-sm text-text-secondary">ETB {item.pricePerKg} × {item.quantity} kg</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => updateCartQuantity(item.id, item.quantity - 1)} iconName="Minus" />
+                        <span className="w-8 text-center">{item.quantity}</span>
+                        <Button variant="outline" size="sm" onClick={() => updateCartQuantity(item.id, item.quantity + 1)} iconName="Plus" />
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => removeCartItem(item.id)} iconName="Trash2" className="text-red-500 hover:text-red-700" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {cartItems.length > 0 && (
+              <div className="p-4 border-t border-border">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-semibold text-text-primary">{currentLanguage === 'am' ? 'ጠቅላላ' : 'Total'}</span>
+                  <span className="text-xl font-bold text-primary">ETB {getCartTotal()}</span>
+                </div>
+                <div className="flex space-x-2">
+                  <Button variant="outline" onClick={clearCart} className="flex-1">{currentLanguage === 'am' ? 'ካርት አጽዳ' : 'Clear Cart'}</Button>
+                  <Button variant="primary" onClick={placeOrder} className="flex-1" iconName="ShoppingBag" iconPosition="left">{currentLanguage === 'am' ? 'ትዕዛዝ አሳልም' : 'Place Order'}</Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
