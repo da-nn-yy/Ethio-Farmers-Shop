@@ -525,3 +525,4 @@ export const getReviewStats = async (req, res) => {
     res.status(500).json({ error: "Failed to get review statistics" });
   }
 };
+

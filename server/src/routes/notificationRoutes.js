@@ -29,3 +29,4 @@ router.post('/system', createSystemNotification);
 router.post('/', createNotification);
 
 export default router;
+
