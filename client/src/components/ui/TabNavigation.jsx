@@ -52,11 +52,11 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
     } else {
       return [
         {
-          id: 'browse',
-          label: 'Browse',
-          labelAm: 'ፈልግ',
-          icon: 'Search',
-          path: '/browse-listings-buyer-home',
+          id: 'dashboard',
+          label: 'Dashboard',
+          labelAm: 'ዳሽቦርድ',
+          icon: 'LayoutDashboard',
+          path: '/dashboard-buyer-home',
           roles: ['buyer']
         },
         {
@@ -97,7 +97,7 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
         <div className="flex w-full lg:w-auto">
           {navigationItems?.map((item, index) => {
             const active = isActive(item?.path);
-            
+
             return (
               <button
                 key={item?.id}
@@ -106,16 +106,16 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
                   relative flex-1 lg:flex-none flex flex-col lg:flex-row items-center justify-center lg:justify-start
                   px-3 lg:px-4 py-3 lg:py-4 space-y-1 lg:space-y-0 lg:space-x-2
                   text-sm font-medium transition-smooth min-h-[64px] lg:min-h-[56px]
-                  ${active 
+                  ${active
                     ? 'text-primary bg-primary/5 border-b-2 lg:border-b-0 lg:border-r-2 border-primary' :'text-text-secondary hover:text-primary hover:bg-primary/5'
                   }
                   ${index === 0 ? 'border-l-0' : 'border-l border-border lg:border-l-0'}
                 `}
               >
                 <div className="relative">
-                  <Icon 
-                    name={item?.icon} 
-                    size={20} 
+                  <Icon
+                    name={item?.icon}
+                    size={20}
                     className={`transition-smooth ${active ? 'text-primary' : 'text-current'}`}
                   />
                   {item?.badge && item?.badge > 0 && (

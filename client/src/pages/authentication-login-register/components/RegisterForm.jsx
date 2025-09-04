@@ -5,12 +5,11 @@ import Button from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import RoleSelector from './RoleSelector';
 import LocationSelector from './LocationSelector';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { auth } from '../../../firebase';
-import axios from 'axios';
+import { useAuth } from '../../../hooks/useAuth';
 
 const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
   const navigate = useNavigate();
+  const { register } = useAuth();
   const [formData, setFormData] = useState({
     role: '',
     fullName: '',
@@ -79,36 +78,29 @@ const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
     if (!validateForm()) return;
     setIsLoading(true);
     try {
-      // Require email for Firebase email/password. If missing, derive a pseudo-email from phone
-      const email = formData.email?.trim();
-      if (!email) {
-        setErrors({ email: currentLanguage === 'am' ? 'ኢሜይል ያስፈልጋል ለመጀመር' : 'Email is required to register' });
-        setIsLoading(false);
-        return;
-      }
-      const { user } = await createUserWithEmailAndPassword(auth, email, formData.password);
-      if (formData.fullName) {
-        try { await updateProfile(user, { displayName: formData.fullName }); } catch (_) {}
-      }
-      const idToken = await user.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-
-      await axios.post(`${API_BASE}/users`, {
+      const result = await register({
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.fullName,
+        phone: formData.phoneNumber,
         role: formData.role,
-        fullName: formData.fullName,
-        phoneNumber: formData.phoneNumber,
-        email: email,
         region: formData.region,
         woreda: formData.woreda
-      }, { headers: { Authorization: `Bearer ${idToken}` } });
+      });
 
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userRole', formData?.role);
-      localStorage.setItem('currentLanguage', currentLanguage);
-      onAuthSuccess(formData?.role);
-      navigate(formData?.role === 'farmer' ? '/dashboard-farmer-home' : '/browse-listings-buyer-home');
+      if (result.success) {
+        localStorage.setItem('currentLanguage', currentLanguage);
+        onAuthSuccess(formData.role);
+        navigate(formData.role === 'farmer' ? '/dashboard-farmer-home' : '/browse-listings-buyer-home');
+      } else {
+        setErrors({
+          general: result.error || (currentLanguage === 'am' ? 'ምዝገባ አልተሳካም' : 'Registration failed')
+        });
+      }
     } catch (error) {
-      setErrors({ general: currentLanguage === 'am' ? 'ምዝገባ አልተሳካም' : 'Registration failed' });
+      setErrors({
+        general: currentLanguage === 'am' ? 'ምዝገባ አልተሳካም' : 'Registration failed'
+      });
     } finally {
       setIsLoading(false);
     }

@@ -2,14 +2,15 @@ import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
+import FavoriteButton from '../../../components/FavoriteButton';
 
-const ProduceCard = ({ 
-  listing, 
-  onAddToCart, 
-  onContactFarmer, 
+const ProduceCard = ({
+  listing,
+  onAddToCart,
+  onContactFarmer,
   onToggleBookmark,
   isBookmarked = false,
-  currentLanguage = 'en' 
+  currentLanguage = 'en'
 }) => {
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
@@ -61,18 +62,14 @@ const ProduceCard = ({
           alt={currentLanguage === 'am' && listing?.nameAm ? listing?.nameAm : listing?.name}
           className="w-full h-full object-cover"
         />
-        
-        {/* Bookmark Button */}
-        <button
-          onClick={() => onToggleBookmark(listing?.id)}
-          className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center transition-smooth ${
-            isBookmarked 
-              ? 'bg-accent text-accent-foreground shadow-warm' 
-              : 'bg-white/90 text-text-secondary hover:bg-white hover:text-accent'
-          }`}
-        >
-          <Icon name={isBookmarked ? "Heart" : "Heart"} size={16} className={isBookmarked ? "fill-current" : ""} />
-        </button>
+
+        {/* Favorite Button */}
+        <div className="absolute top-3 right-3">
+          <FavoriteButton
+            listingId={listing?.id}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-smooth bg-white/90 text-text-secondary hover:bg-white hover:text-accent"
+          />
+        </div>
 
         {/* Verification Badge */}
         {listing?.farmer?.isVerified && (
@@ -127,7 +124,7 @@ const ProduceCard = ({
                 name="Star"
                 size={14}
                 className={`${
-                  i < Math.floor(listing?.farmer?.rating) 
+                  i < Math.floor(listing?.farmer?.rating)
                     ? 'text-accent fill-current' :'text-border'
                 }`}
               />

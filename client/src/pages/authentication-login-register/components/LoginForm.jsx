@@ -3,14 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../../../firebase';
-import axios from 'axios';
+import { useAuth } from '../../../hooks/useAuth';
 
 const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
-    identifier: '',
+    email: '',
     password: '',
     rememberMe: false
   });
@@ -30,8 +29,8 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData?.identifier?.trim()) {
-      newErrors.identifier = currentLanguage === 'am' ? 'ስልክ ቁጥር ወይም ኢሜይል ያስፈልጋል' : 'Phone number or email is required';
+    if (!formData?.email?.trim()) {
+      newErrors.email = currentLanguage === 'am' ? 'ኢሜይል ያስፈልጋል' : 'Email is required';
     }
     if (!formData?.password) {
       newErrors.password = currentLanguage === 'am' ? 'የይለፍ ቃል ያስፈልጋል' : 'Password is required';
@@ -44,33 +43,23 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
     e?.preventDefault();
     if (!validateForm()) return;
     setIsLoading(true);
+
     try {
-      const { user } = await signInWithEmailAndPassword(auth, formData.identifier, formData.password);
-      const idToken = await user.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:4000";
-      try {
-        await axios.post(`${API_BASE}/auth/sync`, {}, {
-          headers: { Authorization: `Bearer ${idToken}` }
-        });
-      } catch (_) {}
+      const result = await login(formData);
 
-      // Fetch profile to get role
-      let userRole = 'buyer';
-      try {
-        const { data: profile } = await axios.get(`${API_BASE}/users/me`, {
-          headers: { Authorization: `Bearer ${idToken}` }
-        });
-        if (profile?.role) userRole = profile.role;
-      } catch (_) {}
+      if (result.success) {
+        localStorage.setItem('currentLanguage', currentLanguage);
+        onAuthSuccess(result.user.role);
 
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('currentLanguage', currentLanguage);
-      localStorage.setItem('userRole', userRole);
-      onAuthSuccess(userRole);
-      if (userRole === 'farmer') {
-        navigate('/dashboard-farmer-home');
+        if (result.user.role === 'farmer') {
+          navigate('/dashboard-farmer-home');
+        } else {
+          navigate('/dashboard-buyer-home');
+        }
       } else {
-        navigate('/dashboard-buyer-home');
+        setErrors({
+          general: result.error || (currentLanguage === 'am' ? 'የተሳሳተ መለያ ወይም የይለፍ ቃል' : 'Invalid credentials')
+        });
       }
     } catch (error) {
       setErrors({
@@ -89,13 +78,13 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
         </div>
       )}
       <Input
-        label={currentLanguage === 'am' ? 'ስልክ ቁጥር ወይም ኢሜይል' : 'Phone Number or Email'}
-        type="text"
-        name="identifier"
-        placeholder={currentLanguage === 'am' ? '+251911234567 ወይም email@example.com' : '+251911234567 or email@example.com'}
-        value={formData?.identifier}
+        label={currentLanguage === 'am' ? 'ኢሜይል' : 'Email'}
+        type="email"
+        name="email"
+        placeholder={currentLanguage === 'am' ? 'email@example.com' : 'email@example.com'}
+        value={formData?.email}
         onChange={handleInputChange}
-        error={errors?.identifier}
+        error={errors?.email}
         required
       />
       <Input

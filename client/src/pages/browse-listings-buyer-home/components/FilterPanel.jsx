@@ -3,14 +3,22 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
 
-const FilterPanel = ({ 
-  isOpen, 
-  onClose, 
-  filters, 
+const FilterPanel = ({
+  isOpen,
+  onClose,
+  filters,
   onApplyFilters,
-  currentLanguage = 'en' 
+  currentLanguage = 'en',
+  selectedCategory = 'all',
+  selectedRegion = 'all',
+  currentSort = 'relevance',
+  categoryOptions = [],
+  regionOptions = []
 }) => {
   const [localFilters, setLocalFilters] = useState(filters);
+  const [localCategory, setLocalCategory] = useState(selectedCategory);
+  const [localRegion, setLocalRegion] = useState(selectedRegion);
+  const [localSort, setLocalSort] = useState(currentSort);
 
   const translations = {
     en: {
@@ -91,51 +99,78 @@ const FilterPanel = ({
 
   const t = translations?.[currentLanguage];
 
-  const produceTypes = Object.entries(t?.produces)?.map(([key, label]) => ({
-    id: key,
-    label,
-    checked: localFilters?.produceTypes?.includes(key)
-  }));
+  const builtCategoryOptions = categoryOptions?.length > 0
+    ? categoryOptions
+    : [{ id: 'all', label: currentLanguage === 'am' ? 'ሁሉም' : 'All' }];
 
-  const regions = Object.entries(t?.regions)?.map(([key, label]) => ({
-    id: key,
-    label,
-    checked: localFilters?.regions?.includes(key)
-  }));
+  const builtRegionOptions = regionOptions?.length > 0
+    ? regionOptions
+    : [{ id: 'all', label: currentLanguage === 'am' ? 'ሁሉም' : 'All' }];
 
-  const handleProduceTypeChange = (produceId, checked) => {
-    setLocalFilters(prev => ({
-      ...prev,
-      produceTypes: checked 
-        ? [...prev?.produceTypes, produceId]
-        : prev?.produceTypes?.filter(id => id !== produceId)
-    }));
+  const sortOptions = [
+    { id: 'relevance', label: currentLanguage === 'am' ? 'ተዛማጅነት' : 'Relevance' },
+    { id: 'newest', label: currentLanguage === 'am' ? 'አዲስ' : 'Newest' },
+    { id: 'priceLowHigh', label: currentLanguage === 'am' ? 'ዋጋ: ዝቅ ወደ ከፍ' : 'Price: Low → High' },
+    { id: 'priceHighLow', label: currentLanguage === 'am' ? 'ዋጋ: ከፍ ወደ ዝቅ' : 'Price: High → Low' },
+    { id: 'rating', label: currentLanguage === 'am' ? 'ደረጃ' : 'Rating' },
+    { id: 'freshness', label: currentLanguage === 'am' ? ' تازነት' : 'Freshness' }
+  ];
+
+  // Single-select handlers
+  const handleCategoryChange = (value) => {
+    setLocalCategory(value);
+    const mapped = {
+      ...localFilters,
+      produceTypes: value && value !== 'all' ? [value] : [],
+      regions: localRegion && localRegion !== 'all' ? [localRegion] : [],
+      sort: localSort
+    };
+    onApplyFilters(mapped);
   };
 
-  const handleRegionChange = (regionId, checked) => {
-    setLocalFilters(prev => ({
-      ...prev,
-      regions: checked 
-        ? [...prev?.regions, regionId]
-        : prev?.regions?.filter(id => id !== regionId)
-    }));
+  const handleRegionChange = (value) => {
+    setLocalRegion(value);
+    const mapped = {
+      ...localFilters,
+      produceTypes: localCategory && localCategory !== 'all' ? [localCategory] : [],
+      regions: value && value !== 'all' ? [value] : [],
+      sort: localSort
+    };
+    onApplyFilters(mapped);
   };
 
   const handlePriceChange = (field, value) => {
-    setLocalFilters(prev => ({
-      ...prev,
-      priceRange: {
-        ...prev?.priceRange,
-        [field]: value
-      }
-    }));
+    setLocalFilters(prev => {
+      const updated = {
+        ...prev,
+        priceRange: {
+          ...prev?.priceRange,
+          [field]: value
+        }
+      };
+      const mapped = {
+        ...updated,
+        produceTypes: localCategory && localCategory !== 'all' ? [localCategory] : [],
+        regions: localRegion && localRegion !== 'all' ? [localRegion] : [],
+        sort: localSort
+      };
+      onApplyFilters(mapped);
+      return updated;
+    });
   };
 
   const handleVerificationChange = (checked) => {
-    setLocalFilters(prev => ({
-      ...prev,
-      verifiedOnly: checked
-    }));
+    setLocalFilters(prev => {
+      const updated = { ...prev, verifiedOnly: checked };
+      const mapped = {
+        ...updated,
+        produceTypes: localCategory && localCategory !== 'all' ? [localCategory] : [],
+        regions: localRegion && localRegion !== 'all' ? [localRegion] : [],
+        sort: localSort
+      };
+      onApplyFilters(mapped);
+      return updated;
+    });
   };
 
   const handleClearAll = () => {
@@ -148,7 +183,14 @@ const FilterPanel = ({
   };
 
   const handleApply = () => {
-    onApplyFilters(localFilters);
+    // Map single-selects into expected filter structure for parent
+    const mapped = {
+      ...localFilters,
+      produceTypes: localCategory && localCategory !== 'all' ? [localCategory] : [],
+      regions: localRegion && localRegion !== 'all' ? [localRegion] : [],
+      sort: localSort
+    };
+    onApplyFilters(mapped);
     onClose();
   };
 
@@ -199,40 +241,32 @@ const FilterPanel = ({
             </Button>
           </div>
 
-          {/* Produce Type */}
+          {/* Category (single-select) */}
           <div className="space-y-3">
-            <h3 className="font-medium text-text-primary">
-              {t?.produceType}
-            </h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {produceTypes?.map((produce) => (
-                <Checkbox
-                  key={produce?.id}
-                  label={produce?.label}
-                  checked={produce?.checked}
-                  onChange={(e) => handleProduceTypeChange(produce?.id, e?.target?.checked)}
-                  size="sm"
-                />
+            <h3 className="font-medium text-text-primary">{t?.produceType}</h3>
+            <select
+              value={localCategory}
+              onChange={(e) => handleCategoryChange(e?.target?.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              {builtCategoryOptions?.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.label}</option>
               ))}
-            </div>
+            </select>
           </div>
 
-          {/* Location */}
+          {/* Region (single-select) */}
           <div className="space-y-3">
-            <h3 className="font-medium text-text-primary">
-              {t?.location}
-            </h3>
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {regions?.map((region) => (
-                <Checkbox
-                  key={region?.id}
-                  label={region?.label}
-                  checked={region?.checked}
-                  onChange={(e) => handleRegionChange(region?.id, e?.target?.checked)}
-                  size="sm"
-                />
+            <h3 className="font-medium text-text-primary">{t?.location}</h3>
+            <select
+              value={localRegion}
+              onChange={(e) => handleRegionChange(e?.target?.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              {builtRegionOptions?.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.label}</option>
               ))}
-            </div>
+            </select>
           </div>
 
           {/* Price Range */}
@@ -268,6 +302,20 @@ const FilterPanel = ({
             </div>
           </div>
 
+          {/* Sort */}
+          <div className="space-y-3">
+            <h3 className="font-medium text-text-primary">Sort</h3>
+            <select
+              value={localSort}
+              onChange={(e) => setLocalSort(e?.target?.value)}
+              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+            >
+              {sortOptions?.map(opt => (
+                <option key={opt.id} value={opt.id}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+
           {/* Verification */}
           <div className="space-y-3">
             <h3 className="font-medium text-text-primary">
@@ -282,25 +330,7 @@ const FilterPanel = ({
           </div>
         </div>
 
-        {/* Mobile Footer */}
-        <div className="lg:hidden sticky bottom-0 p-4 bg-surface border-t border-border">
-          <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={handleClearAll}
-              className="flex-1"
-            >
-              {t?.clearAll}
-            </Button>
-            <Button
-              variant="default"
-              onClick={handleApply}
-              className="flex-1"
-            >
-              {t?.apply}
-            </Button>
-          </div>
-        </div>
+        {/* Mobile Footer removed for instant apply */}
       </div>
     </>
   );
