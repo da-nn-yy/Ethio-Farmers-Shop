@@ -1,57 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase"; // Your Firebase config
-import axios from "axios";
+import { useAuth } from "../../hooks/useAuth.jsx";
 import Button from "./Button";
 import Icon from "../AppIcon";
+import NotificationBell from "../NotificationBell.jsx";
 
-const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLanguage = "en" }) => {
+const GlobalHeader = ({ onLanguageChange, currentLanguage = "en" }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // Fetch user data from Firebase and backend
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          setUser(null);
-          return;
-        }
-
-        const idToken = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-
-        const res = await axios.get(`${API_BASE}/users/me`, {
-          headers: { Authorization: `Bearer ${idToken}` },
-        });
-
-        setUser(res.data); // Expect API returns { name, avatar, role }
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-        setUser(null);
-      }
-    };
-
-    if (isAuthenticated) {
-      fetchUser();
-    } else {
-      setUser(null);
-    }
-  }, [isAuthenticated]);
-
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (_) {}
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userRole");
+    await logout();
     setIsMobileMenuOpen(false);
     setIsUserMenuOpen(false);
-    setUser(null);
     navigate("/authentication-login-register");
   };
 
@@ -93,12 +56,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
 
           {user ? (
             <div className="relative flex items-center space-x-4">
-              <Button variant="ghost" size="icon" className="relative text-text-secondary hover:text-primary">
-                <Icon name="Bell" size={20} />
-                <span className="absolute flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full -top-1 -right-1 bg-accent text-accent-foreground">
-                  3
-                </span>
-              </Button>
+              <NotificationBell />
 
               {/* User Menu */}
               <div className="flex items-center pl-4 space-x-3 border-l cursor-pointer border-border" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
@@ -118,6 +76,9 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
                 <div className="absolute right-0 w-56 p-2 border rounded-lg top-12 bg-surface border-border shadow-warm">
                   <Button variant="ghost" className="justify-start w-full px-3 py-2" onClick={() => { setIsUserMenuOpen(false); navigate("/user-profile-management"); }}>
                     <Icon name="User" size={16} className="mr-2" /> Profile
+                  </Button>
+                  <Button variant="ghost" className="justify-start w-full px-3 py-2" onClick={() => { setIsUserMenuOpen(false); navigate("/notifications"); }}>
+                    <Icon name="Bell" size={16} className="mr-2" /> Notifications
                   </Button>
                   <Button variant="ghost" className="justify-start w-full px-3 py-2" onClick={() => { setIsUserMenuOpen(false); navigate("/settings"); }}>
                     <Icon name="Settings" size={16} className="mr-2" /> Settings
