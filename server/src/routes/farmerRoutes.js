@@ -18,31 +18,21 @@ const router = Router();
 // All routes require authentication
 router.use(authGuard);
 
-// Get farmer dashboard metrics (active listings, pending orders, earnings, reviews)
-router.get('/farmer/metrics', getFarmerMetrics);
+// Farmer dashboard and metrics
+router.get('/metrics', getFarmerMetrics);
+router.get('/activity', getFarmerRecentActivity);
 
-// Get farmer's active produce listings
-router.get('/farmer/listings', getFarmerListings);
+// Farmer listings management
+router.get('/listings', getFarmerListings);
+router.post('/listings', createFarmerListing);
+router.put('/listings/:id', updateFarmerListing);
+router.patch('/listings/:id/status', updateListingStatus);
 
-// Get farmer's orders (pending, confirmed, completed)
-router.get('/farmer/orders', getFarmerOrders);
+// Farmer orders
+router.get('/orders', getFarmerOrders);
 
-// Get recent activity feed for farmer
-router.get('/farmer/activity', getFarmerRecentActivity);
-
-// Create new produce listing
-router.post('/farmer/listings', createFarmerListing);
-
-// Update existing produce listing
-router.put('/farmer/listings/:id', updateFarmerListing);
-
-// Update listing status
-router.patch('/farmer/listings/:id/status', updateListingStatus);
-
-// Upload image
-router.post('/farmer/upload-image', authGuard, upload.single('image'), handleUploadError, uploadImage);
-
-// Attach image to a specific listing (file or JSON url)
-router.post('/farmer/listings/:id/images', authGuard, upload.single('image'), handleUploadError, addListingImage);
+// Image upload
+router.post('/upload-image', upload.single('image'), handleUploadError, uploadImage);
+router.post('/listings/:id/images', upload.single('image'), handleUploadError, addListingImage);
 
 export default router;

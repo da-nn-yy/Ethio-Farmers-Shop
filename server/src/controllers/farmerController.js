@@ -1,4 +1,4 @@
-import { pool } from "../config/database.js";
+import { pool } from "../config/db.js";
 
 // Get comprehensive farmer dashboard metrics
 export const getFarmerMetrics = async (req, res) => {
@@ -540,69 +540,71 @@ export const uploadImage = async (req, res) => {
   }
 };
 
-// Attach an image (uploaded file or provided URL) to a specific listing
+// Add image to a specific listing
 export const addListingImage = async (req, res) => {
   try {
-    const firebaseUid = req.user.uid;
+    const uid = req.user.uid;
     const { id: listingId } = req.params;
-    const providedUrl = req.body && req.body.url ? String(req.body.url) : null;
+    const file = req.file;
 
-    // Resolve farmer DB id
-    const [userRows] = await pool.query(
-      'SELECT id FROM users WHERE firebase_uid = ? LIMIT 1',
-      [firebaseUid]
+    if (!file) {
+      return res.status(400).json({ error: "No image file provided" });
+    }
+
+    // Get user ID
+    let userId;
+
+    if (uid.startsWith('dev-uid-')) {
+      userId = req.user.id;
+    } else {
+      const [userRows] = await pool.query(
+        "SELECT id FROM users WHERE firebase_uid = ?",
+        [uid]
+      );
+
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      userId = userRows[0].id;
+    }
+
+    // Verify user owns the listing
+    const [listings] = await pool.query(
+      "SELECT * FROM produce_listings WHERE id = ? AND farmer_user_id = ?",
+      [listingId, userId]
     );
-    if (userRows.length === 0) {
-      return res.status(404).json({ error: 'Farmer not found' });
-    }
-    const farmerDbId = userRows[0].id;
 
-    // Ownership check
-    const [listingRows] = await pool.query(
-      'SELECT id FROM produce_listings WHERE id = ? AND farmer_user_id = ? LIMIT 1',
-      [listingId, farmerDbId]
-    );
-    if (listingRows.length === 0) {
-      return res.status(404).json({ error: 'Listing not found or not authorized' });
+    if (listings.length === 0) {
+      return res.status(404).json({ error: "Listing not found or not authorized" });
     }
 
-    // Determine imageUrl from file or provided url
-    let imageUrl = null;
-    if (req.file) {
-      imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
-    } else if (providedUrl) {
-      imageUrl = providedUrl;
-    }
-
-    if (!imageUrl) {
-      return res.status(400).json({ error: 'No image provided. Send multipart with field "image" or JSON { url }.' });
-    }
-
-    // Next sort order
-    const [sortRows] = await pool.query(
-      'SELECT COALESCE(MAX(sort_order) + 1, 0) AS nextSort FROM listing_images WHERE listing_id = ?',
+    // Get the next sort order for this listing
+    const [sortOrderResult] = await pool.query(
+      "SELECT COALESCE(MAX(sort_order), -1) + 1 as next_sort_order FROM listing_images WHERE listing_id = ?",
       [listingId]
     );
-    const nextSort = sortRows[0].nextSort ?? 0;
 
-    // Insert image
-    const [insertResult] = await pool.query(
-      'INSERT INTO listing_images (listing_id, url, sort_order) VALUES (?, ?, ?)',
-      [listingId, imageUrl, nextSort]
+    const nextSortOrder = sortOrderResult[0].next_sort_order;
+
+    // Insert image record
+    const [result] = await pool.query(
+      `INSERT INTO listing_images (listing_id, url, sort_order, created_at)
+       VALUES (?, ?, ?, NOW())`,
+      [listingId, file.path, nextSortOrder]
     );
 
-    // Return saved image row
-    const [imageRows] = await pool.query(
-      'SELECT id, listing_id as listingId, url, sort_order as sortOrder, created_at as createdAt FROM listing_images WHERE id = ?',
-      [insertResult.insertId]
-    );
-
-    return res.status(201).json({
-      message: 'Image attached successfully',
-      image: imageRows[0]
+    res.status(201).json({
+      message: "Image added to listing successfully",
+      image: {
+        id: result.insertId,
+        listing_id: listingId,
+        url: file.path,
+        sort_order: nextSortOrder
+      }
     });
+
   } catch (error) {
-    console.error('Error attaching image to listing:', error);
-    return res.status(500).json({ error: 'Failed to attach image' });
+    console.error('Error adding image to listing:', error);
+    res.status(500).json({ error: "Failed to add image to listing" });
   }
 };
