@@ -27,3 +27,4 @@ router.get('/status/:listingId', checkFavoriteStatus);
 router.post('/bulk', bulkUpdateFavorites);
 
 export default router;
+
