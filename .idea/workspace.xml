@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add comprehensive authentication context provider with token management and user state handling">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Update API base URL configuration from port 5001 to 5000 with /api prefix">
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756890953784-394494401.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756891974531-561637990.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892164761-633264186.png" afterDir="false" />
@@ -12,17 +12,6 @@
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756902942632-969190112.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906040447-182016306.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906153234-922297177.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/Routes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/Routes.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/ImageUpload.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/ImageUpload.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/add-listing/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/add-listing/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/order-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/order-management/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/components/AccountInformation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/components/AccountInformation.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/services/apiService.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/apiService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -101,15 +90,7 @@
       <workItem from="1756720869678" duration="4489000" />
       <workItem from="1756870063488" duration="1379000" />
       <workItem from="1756883162852" duration="369000" />
-      <workItem from="1757013757770" duration="2016000" />
-    </task>
-    <task id="LOCAL-00001" summary="Update server port configuration and add default user role assignment during user synchronization">
-      <option name="closed" value="true" />
-      <created>1756301755341</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1756301755341</updated>
+      <workItem from="1757013757770" duration="2688000" />
     </task>
     <task id="LOCAL-00002" summary="Refactor React imports to use named imports instead of default imports across multiple components">
       <option name="closed" value="true" />
@@ -479,7 +460,31 @@
       <option name="project" value="LOCAL" />
       <updated>1757016122979</updated>
     </task>
-    <option name="localTasksCounter" value="48" />
+    <task id="LOCAL-00048" summary="Update API base URL configuration from port 5001 to 5000">
+      <option name="closed" value="true" />
+      <created>1757020459260</created>
+      <option name="number" value="00048" />
+      <option name="presentableId" value="LOCAL-00048" />
+      <option name="project" value="LOCAL" />
+      <updated>1757020459260</updated>
+    </task>
+    <task id="LOCAL-00049" summary="Update API base URL configuration from port 5001 to 5000">
+      <option name="closed" value="true" />
+      <created>1757020491379</created>
+      <option name="number" value="00049" />
+      <option name="presentableId" value="LOCAL-00049" />
+      <option name="project" value="LOCAL" />
+      <updated>1757020491379</updated>
+    </task>
+    <task id="LOCAL-00050" summary="Update API base URL configuration from port 5001 to 5000 with /api prefix">
+      <option name="closed" value="true" />
+      <created>1757020508940</created>
+      <option name="number" value="00050" />
+      <option name="presentableId" value="LOCAL-00050" />
+      <option name="project" value="LOCAL" />
+      <updated>1757020508941</updated>
+    </task>
+    <option name="localTasksCounter" value="51" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -513,8 +518,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Fix image upload URL generation by removing hardcoded port number" />
-    <MESSAGE value="Update database schema references and add public listings endpoint for testing" />
     <MESSAGE value="Update API base URL configuration to use port 5001 for consistent backend connectivity" />
     <MESSAGE value="Add node-fetch dependency and fix file formatting inconsistencies" />
     <MESSAGE value="Update application branding from FarmConnect to KeGeberew and add development test login functionality" />
@@ -538,6 +541,8 @@
     <MESSAGE value="Fix import paths to include .jsx extension for useAuth hook" />
     <MESSAGE value="Fix import paths to include .jsx extension for useAuth hook across dashboard components" />
     <MESSAGE value="Add comprehensive authentication context provider with token management and user state handling" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add comprehensive authentication context provider with token management and user state handling" />
+    <MESSAGE value="Update API base URL configuration from port 5001 to 5000" />
+    <MESSAGE value="Update API base URL configuration from port 5001 to 5000 with /api prefix" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update API base URL configuration from port 5001 to 5000 with /api prefix" />
   </component>
 </project>
