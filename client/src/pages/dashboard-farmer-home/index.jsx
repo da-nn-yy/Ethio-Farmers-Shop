@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { dashboardService, farmerService } from "../../services/apiService";
-import { useAuth } from "../../hooks/useAuth";
+import { useAuth } from "../../hooks/useAuth.jsx";
 import GlobalHeader from "../../components/ui/GlobalHeader";
 import TabNavigation from "../../components/ui/TabNavigation";
 import MobileMenu from "../../components/ui/MobileMenu";

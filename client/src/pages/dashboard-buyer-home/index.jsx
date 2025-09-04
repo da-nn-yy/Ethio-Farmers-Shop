@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { dashboardService, orderService, favoriteService } from '../../services/apiService';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/useAuth.jsx';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import TabNavigation from '../../components/ui/TabNavigation';
 import ProduceListingCard from './components/ProduceListingCard';
