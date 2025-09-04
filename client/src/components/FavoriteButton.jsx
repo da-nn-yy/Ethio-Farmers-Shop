@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { favoriteService } from '../services/apiService';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../hooks/useAuth.jsx';
 
 const FavoriteButton = ({ listingId, className = "" }) => {
   const { isAuthenticated } = useAuth();
