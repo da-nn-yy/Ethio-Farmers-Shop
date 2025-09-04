@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
@@ -12,6 +13,7 @@ const ProduceCard = ({
   isBookmarked = false,
   currentLanguage = 'en'
 }) => {
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
 
@@ -21,14 +23,20 @@ const ProduceCard = ({
       available: 'Available',
       addToCart: 'Add to Cart',
       contact: 'Contact',
-      rating: 'rating'
+      rating: 'rating',
+      reviews: 'reviews',
+      viewReviews: 'View Reviews',
+      noReviews: 'No reviews yet'
     },
     am: {
       perKg: 'በኪሎ',
       available: 'ይገኛል',
       addToCart: 'ወደ ጋሪ ጨምር',
       contact: 'ያነጋግሩ',
-      rating: 'ደረጃ'
+      rating: 'ደረጃ',
+      reviews: 'ግምገማዎች',
+      viewReviews: 'ግምገማዎችን ይመልከቱ',
+      noReviews: 'ገና ግምገማ የለም'
     }
   };
 
@@ -43,6 +51,28 @@ const ProduceCard = ({
   const handleQuantityChange = (change) => {
     const newQuantity = Math.max(1, Math.min(listing?.availableQuantity, quantity + change));
     setQuantity(newQuantity);
+  };
+
+  const handleViewReviews = () => {
+    // Navigate to a reviews page or open a modal
+    navigate(`/listing/${listing.id}/reviews`);
+  };
+
+  const renderStarRating = (rating) => {
+    return (
+      <div className="flex items-center space-x-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <span
+            key={star}
+            className={`text-sm ${
+              star <= rating ? 'text-yellow-400' : 'text-gray-300'
+            }`}
+          >
+            ★
+          </span>
+        ))}
+      </div>
+    );
   };
 
   const formatPrice = (price) => {
@@ -133,6 +163,31 @@ const ProduceCard = ({
           <span className="text-sm text-text-secondary">
             ({listing?.farmer?.rating}) • {listing?.farmer?.reviewCount} {t?.rating}
           </span>
+        </div>
+
+        {/* Reviews Section */}
+        <div className="mb-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {renderStarRating(listing?.averageRating || 0)}
+              <span className="text-sm text-text-secondary">
+                {listing?.reviewCount || 0} {t?.reviews}
+              </span>
+            </div>
+            {(listing?.reviewCount || 0) > 0 && (
+              <button
+                onClick={handleViewReviews}
+                className="text-sm text-primary hover:text-primary-dark transition-colors"
+              >
+                {t?.viewReviews}
+              </button>
+            )}
+          </div>
+          {(!listing?.reviewCount || listing?.reviewCount === 0) && (
+            <p className="text-xs text-text-secondary mt-1">
+              {t?.noReviews}
+            </p>
+          )}
         </div>
 
         {/* Availability */}

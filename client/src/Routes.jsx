@@ -11,6 +11,8 @@ import MarketTrendsDashboard from './pages/market-trends-dashboard';
 import BrowseListingsBuyerHome from './pages/browse-listings-buyer-home';
 import BuyerDashboard from './pages/dashboard-buyer-home';
 import AddListing from './pages/add-listing';
+import ListingReviewsPage from './pages/listing-reviews';
+import NotificationsPage from './pages/notifications';
 import ProtectedRoute from './components/ProtectedRoute';
 import { Navigate } from "react-router-dom";
 
@@ -68,6 +70,16 @@ const Routes = () => {
         <Route path="/add-listing" element={
           <ProtectedRoute requiredRole="farmer">
             <AddListing />
+          </ProtectedRoute>
+        } />
+        <Route path="/listing/:id/reviews" element={
+          <ProtectedRoute requiredRole="buyer">
+            <ListingReviewsPage />
+          </ProtectedRoute>
+        } />
+        <Route path="/notifications" element={
+          <ProtectedRoute>
+            <NotificationsPage />
           </ProtectedRoute>
         } />
 

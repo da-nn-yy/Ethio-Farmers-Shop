@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Fix import paths to include .jsx extension for useAuth hook">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add comprehensive authentication context provider with token management and user state handling">
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756890953784-394494401.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756891974531-561637990.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892164761-633264186.png" afterDir="false" />
@@ -12,12 +12,17 @@
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756902942632-969190112.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906040447-182016306.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906153234-922297177.jpg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/LoginForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/LoginForm.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/RegisterForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/RegisterForm.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/Routes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/Routes.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/ImageUpload.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/ImageUpload.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/add-listing/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/add-listing/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/order-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/order-management/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/components/AccountInformation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/components/AccountInformation.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/services/apiService.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/apiService.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -96,7 +101,7 @@
       <workItem from="1756720869678" duration="4489000" />
       <workItem from="1756870063488" duration="1379000" />
       <workItem from="1756883162852" duration="369000" />
-      <workItem from="1757013757770" duration="1196000" />
+      <workItem from="1757013757770" duration="2016000" />
     </task>
     <task id="LOCAL-00001" summary="Update server port configuration and add default user role assignment during user synchronization">
       <option name="closed" value="true" />
@@ -450,7 +455,31 @@
       <option name="project" value="LOCAL" />
       <updated>1757016022924</updated>
     </task>
-    <option name="localTasksCounter" value="45" />
+    <task id="LOCAL-00045" summary="Fix import paths to include .jsx extension for useAuth hook">
+      <option name="closed" value="true" />
+      <created>1757016067513</created>
+      <option name="number" value="00045" />
+      <option name="presentableId" value="LOCAL-00045" />
+      <option name="project" value="LOCAL" />
+      <updated>1757016067513</updated>
+    </task>
+    <task id="LOCAL-00046" summary="Fix import paths to include .jsx extension for useAuth hook across dashboard components">
+      <option name="closed" value="true" />
+      <created>1757016087592</created>
+      <option name="number" value="00046" />
+      <option name="presentableId" value="LOCAL-00046" />
+      <option name="project" value="LOCAL" />
+      <updated>1757016087592</updated>
+    </task>
+    <task id="LOCAL-00047" summary="Add comprehensive authentication context provider with token management and user state handling">
+      <option name="closed" value="true" />
+      <created>1757016122979</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1757016122979</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -484,8 +513,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add development user auto-creation and comprehensive image upload component for farmer listings" />
-    <MESSAGE value="Remove test endpoints from server index to clean up production code" />
     <MESSAGE value="Fix image upload URL generation by removing hardcoded port number" />
     <MESSAGE value="Update database schema references and add public listings endpoint for testing" />
     <MESSAGE value="Update API base URL configuration to use port 5001 for consistent backend connectivity" />
@@ -509,6 +536,8 @@
     <MESSAGE value="Add comprehensive search system with advanced filtering and analytics capabilities" />
     <MESSAGE value="Add centralized API routing system with comprehensive route organization and health check endpoint" />
     <MESSAGE value="Fix import paths to include .jsx extension for useAuth hook" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix import paths to include .jsx extension for useAuth hook" />
+    <MESSAGE value="Fix import paths to include .jsx extension for useAuth hook across dashboard components" />
+    <MESSAGE value="Add comprehensive authentication context provider with token management and user state handling" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add comprehensive authentication context provider with token management and user state handling" />
   </component>
 </project>

@@ -58,7 +58,7 @@ const ImageUpload = ({
       }
       const idToken = await currentUser.getIdToken();
 
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
       const response = await fetch(`${API_BASE}/farmer/upload-image`, {
         method: 'POST',
         headers: {
