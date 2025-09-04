@@ -40,7 +40,7 @@ const OrderManagement = () => {
         setIsLoading(true);
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
         const statusParam = activeTab === 'all' ? '' : `?status=${activeTab}`;
         const res = await axios.get(`${API_BASE}/orders/buyer${statusParam}` , {
           headers: { Authorization: `Bearer ${idToken}` }

@@ -38,7 +38,7 @@ const UserProfileManagement = () => {
         const currentUser = authInstance.currentUser;
         if (!currentUser) return;
         const token = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
         const { data } = await axios.get(`${API_BASE}/users/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });

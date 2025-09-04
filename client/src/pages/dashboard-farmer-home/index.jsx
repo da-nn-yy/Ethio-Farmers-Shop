@@ -104,7 +104,7 @@ const DashboardFarmerHome = () => {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
       // Refresh all dashboard data
       const [metricsRes, listingsRes, activityRes] = await Promise.all([
@@ -162,7 +162,7 @@ const DashboardFarmerHome = () => {
       setIsSubmitting(true);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
       const listingData = {
         ...editingListing,
@@ -214,7 +214,7 @@ const DashboardFarmerHome = () => {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
       const listing = produceListings.find(l => l.id === listingId);
       const newStatus = listing.status === 'sold_out' ? 'active' : 'sold_out';

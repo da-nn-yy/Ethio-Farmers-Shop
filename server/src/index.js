@@ -12,7 +12,32 @@ import { testConnection } from "./config/database.js";
 // App
 const app = express();
 app.use(cors());
-app.use(express.json());
+
+// JSON parsing with better error handling
+app.use(express.json({
+  limit: '10mb',
+  verify: (req, res, buf, encoding) => {
+    if (buf && buf.length > 0) {
+      try {
+        JSON.parse(buf);
+      } catch (e) {
+        console.error('JSON Parse Error:', e.message);
+        console.error('Raw buffer (first 100 chars):', buf.toString().substring(0, 100));
+        console.error('Buffer length:', buf.length);
+        // Don't throw error here, let express handle it
+      }
+    }
+  }
+}));
+
+// Debug middleware to log requests
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.path}`);
+  if (req.body && Object.keys(req.body).length > 0) {
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
 
 // Serve uploaded files
 app.use('/uploads', express.static('uploads'));
@@ -56,6 +81,18 @@ app.get("/public/listings", async (req, res) => {
     console.error('Public listings error:', error);
     res.status(500).json({ error: "Failed to fetch listings", details: error.message });
   }
+});
+
+// Global error handler for JSON parsing errors
+app.use((error, req, res, next) => {
+  if (error instanceof SyntaxError && error.status === 400 && 'body' in error) {
+    console.error('JSON Parse Error:', error.message);
+    return res.status(400).json({
+      error: 'Invalid JSON format',
+      message: 'The request body contains invalid JSON'
+    });
+  }
+  next(error);
 });
 
 // Mount API routes
