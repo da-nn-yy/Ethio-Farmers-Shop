@@ -473,3 +473,4 @@ export const createListingNotification = async (listingId, type, userId) => {
     console.error('Error creating listing notification:', error);
   }
 };
+

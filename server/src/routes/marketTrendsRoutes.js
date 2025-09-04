@@ -22,3 +22,4 @@ router.get('/popular-produce', getPopularProduce);
 router.post('/price-data', authGuard, addPriceData);
 
 export default router;
+

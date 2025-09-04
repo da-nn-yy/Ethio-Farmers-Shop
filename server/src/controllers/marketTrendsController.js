@@ -471,3 +471,4 @@ export const addPriceData = async (req, res) => {
     res.status(500).json({ error: "Failed to add price data" });
   }
 };
+
