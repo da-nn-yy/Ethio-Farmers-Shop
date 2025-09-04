@@ -4,9 +4,20 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Fix import paths to include .jsx extension for useAuth hook">
+      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756890953784-394494401.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756891974531-561637990.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892164761-633264186.png" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892270154-766923850.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756902942632-969190112.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906040447-182016306.jpg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906153234-922297177.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/LoginForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/LoginForm.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/RegisterForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/RegisterForm.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -85,6 +96,7 @@
       <workItem from="1756720869678" duration="4489000" />
       <workItem from="1756870063488" duration="1379000" />
       <workItem from="1756883162852" duration="369000" />
+      <workItem from="1757013757770" duration="1196000" />
     </task>
     <task id="LOCAL-00001" summary="Update server port configuration and add default user role assignment during user synchronization">
       <option name="closed" value="true" />
@@ -342,7 +354,103 @@
       <option name="project" value="LOCAL" />
       <updated>1756883236715</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="Refactor authentication to use custom auth hook and enhance filter panel with instant filtering and sort functionality">
+      <option name="closed" value="true" />
+      <created>1757013804419</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013804419</updated>
+    </task>
+    <task id="LOCAL-00034" summary="Add comprehensive user authentication system with Firebase integration and development testing support">
+      <option name="closed" value="true" />
+      <created>1757013822774</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013822774</updated>
+    </task>
+    <task id="LOCAL-00035" summary="Fix database import path and streamline farmer route structure">
+      <option name="closed" value="true" />
+      <created>1757013841463</created>
+      <option name="number" value="00035" />
+      <option name="presentableId" value="LOCAL-00035" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013841463</updated>
+    </task>
+    <task id="LOCAL-00036" summary="Refactor dashboard components to use centralized API services and custom auth hook">
+      <option name="closed" value="true" />
+      <created>1757013858861</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013858861</updated>
+    </task>
+    <task id="LOCAL-00037" summary="Add farmer order management and enhance listing controller with CRUD operations">
+      <option name="closed" value="true" />
+      <created>1757013889502</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013889502</updated>
+    </task>
+    <task id="LOCAL-00038" summary="Refactor user routes to use cleaner URL structure and centralized authentication middleware">
+      <option name="closed" value="true" />
+      <created>1757013911754</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013911754</updated>
+    </task>
+    <task id="LOCAL-00039" summary="Add comprehensive dashboard controller with role-based analytics and centralized API service layer">
+      <option name="closed" value="true" />
+      <created>1757013932236</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013932236</updated>
+    </task>
+    <task id="LOCAL-00040" summary="Add comprehensive favorites system with bulk operations and frontend integration">
+      <option name="closed" value="true" />
+      <created>1757013958147</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013958147</updated>
+    </task>
+    <task id="LOCAL-00041" summary="Add comprehensive market trends, reviews, and notifications system with full CRUD operations and analytics">
+      <option name="closed" value="true" />
+      <created>1757013978585</created>
+      <option name="number" value="00041" />
+      <option name="presentableId" value="LOCAL-00041" />
+      <option name="project" value="LOCAL" />
+      <updated>1757013978585</updated>
+    </task>
+    <task id="LOCAL-00042" summary="Add comprehensive search system with advanced filtering and analytics capabilities">
+      <option name="closed" value="true" />
+      <created>1757014006866</created>
+      <option name="number" value="00042" />
+      <option name="presentableId" value="LOCAL-00042" />
+      <option name="project" value="LOCAL" />
+      <updated>1757014006866</updated>
+    </task>
+    <task id="LOCAL-00043" summary="Add centralized API routing system with comprehensive route organization and health check endpoint">
+      <option name="closed" value="true" />
+      <created>1757014041033</created>
+      <option name="number" value="00043" />
+      <option name="presentableId" value="LOCAL-00043" />
+      <option name="project" value="LOCAL" />
+      <updated>1757014041033</updated>
+    </task>
+    <task id="LOCAL-00044" summary="Fix import paths to include .jsx extension for useAuth hook">
+      <option name="closed" value="true" />
+      <created>1757016022924</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1757016022924</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -376,18 +484,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Expand database schema with comprehensive marketplace tables and improve user management with role-based routing" />
-    <MESSAGE value="Add placeholder pages for farmer and buyer market trends with coming soon messaging" />
-    <MESSAGE value="Add API base URL configuration to environment variables" />
-    <MESSAGE value="Replace TabNavigation with RoleBasedNavigation in buyer dashboard and add language support to TabNavigation" />
-    <MESSAGE value="Add IDE workspace configuration files for IntelliJ IDEA" />
-    <MESSAGE value="Convert server modules from CommonJS to ES6 imports and fix import references" />
-    <MESSAGE value="Refactor server architecture by extracting configuration and routes into separate modules" />
-    <MESSAGE value="Integrate Firebase authentication with backend API for user data fetching and improve component state management" />
-    <MESSAGE value="Update IDE workspace configuration and improve API base URL handling in registration form" />
-    <MESSAGE value="Implement comprehensive buyer dashboard with produce browsing, cart functionality, and order placement" />
-    <MESSAGE value="Integrate real-time data fetching for farmer dashboard with API endpoints and loading states" />
-    <MESSAGE value="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration" />
     <MESSAGE value="Add development user auto-creation and comprehensive image upload component for farmer listings" />
     <MESSAGE value="Remove test endpoints from server index to clean up production code" />
     <MESSAGE value="Fix image upload URL generation by removing hardcoded port number" />
@@ -401,6 +497,18 @@
     <MESSAGE value="Add role-based sidebar navigation and activity feed components with bilingual support" />
     <MESSAGE value="Refactor farmer dashboard to use dedicated add-listing page and enhance public listings with image support" />
     <MESSAGE value="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication" />
+    <MESSAGE value="Refactor authentication to use custom auth hook and enhance filter panel with instant filtering and sort functionality" />
+    <MESSAGE value="Add comprehensive user authentication system with Firebase integration and development testing support" />
+    <MESSAGE value="Fix database import path and streamline farmer route structure" />
+    <MESSAGE value="Refactor dashboard components to use centralized API services and custom auth hook" />
+    <MESSAGE value="Add farmer order management and enhance listing controller with CRUD operations" />
+    <MESSAGE value="Refactor user routes to use cleaner URL structure and centralized authentication middleware" />
+    <MESSAGE value="Add comprehensive dashboard controller with role-based analytics and centralized API service layer" />
+    <MESSAGE value="Add comprehensive favorites system with bulk operations and frontend integration" />
+    <MESSAGE value="Add comprehensive market trends, reviews, and notifications system with full CRUD operations and analytics" />
+    <MESSAGE value="Add comprehensive search system with advanced filtering and analytics capabilities" />
+    <MESSAGE value="Add centralized API routing system with comprehensive route organization and health check endpoint" />
+    <MESSAGE value="Fix import paths to include .jsx extension for useAuth hook" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix import paths to include .jsx extension for useAuth hook" />
   </component>
 </project>

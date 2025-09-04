@@ -5,7 +5,7 @@ import Button from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import RoleSelector from './RoleSelector';
 import LocationSelector from './LocationSelector';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../hooks/useAuth.jsx';
 
 const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
   const navigate = useNavigate();
