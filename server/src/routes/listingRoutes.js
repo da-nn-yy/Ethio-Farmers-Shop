@@ -1,28 +1,37 @@
 import { Router } from "express";
+import { authGuard } from "../middleware/auth.js";
 import {
-  getAllActiveListings,
+  createListing,
+  getListings,
   getListingById,
+  updateListing,
+  deleteListing,
+  getFarmerListings,
   searchListings,
+  getAllActiveListings,
   getListingsByCategory,
   getListingsByRegion
 } from "../controllers/listingController.js";
 
 const router = Router();
 
-// Get all active listings (for buyer dashboard)
+// Public routes (no authentication required)
 router.get('/active', getAllActiveListings);
-
-// Get listing by ID
+router.get('/search', searchListings);
+router.get('/category/:category', getListingsByCategory);
+router.get('/region/:region', getListingsByRegion);
 router.get('/:id', getListingById);
 
-// Search listings with filters
-router.get('/search', searchListings);
+// Protected routes (authentication required)
+router.use(authGuard);
 
-// Get listings by category
-router.get('/category/:category', getListingsByCategory);
+// Listing management
+router.post('/', createListing);
+router.get('/', getListings);
+router.put('/:id', updateListing);
+router.delete('/:id', deleteListing);
 
-// Get listings by region
-router.get('/region/:region', getListingsByRegion);
+// Farmer-specific routes
+router.get('/farmer/my-listings', getFarmerListings);
 
 export default router;
-

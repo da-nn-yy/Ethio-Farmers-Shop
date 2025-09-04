@@ -341,3 +341,165 @@ export const cancelOrder = async (req, res) => {
     res.status(500).json({ error: 'Failed to cancel order' });
   }
 };
+
+// Get farmer's orders
+export const getFarmerOrders = async (req, res) => {
+  try {
+    const uid = req.user.uid;
+    const { status, page = 1, limit = 20 } = req.query;
+
+    // Get user ID
+    let userId;
+
+    if (uid.startsWith('dev-uid-')) {
+      // Dev user - use the ID from the token
+      userId = req.user.id;
+    } else {
+      // Real Firebase user - look up in database
+      const [userRows] = await pool.query(
+        "SELECT id FROM users WHERE firebase_uid = ?",
+        [uid]
+      );
+
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      userId = userRows[0].id;
+    }
+    let whereClause = "WHERE o.farmer_user_id = ?";
+    let params = [userId];
+
+    if (status) {
+      whereClause += " AND o.status = ?";
+      params.push(status);
+    }
+
+    const offset = (page - 1) * limit;
+
+    // Get orders with buyer info
+    const [orders] = await pool.query(
+      `SELECT
+        o.*,
+        u.full_name as buyer_name,
+        u.phone as buyer_phone,
+        u.region as buyer_region,
+        u.woreda as buyer_woreda,
+        bp.company_name,
+        bp.business_type
+      FROM orders o
+      JOIN users u ON o.buyer_user_id = u.id
+      LEFT JOIN buyer_profiles bp ON u.id = bp.user_id
+      ${whereClause}
+      ORDER BY o.created_at DESC
+      LIMIT ? OFFSET ?`,
+      [...params, parseInt(limit), offset]
+    );
+
+    // Get order items for each order
+    for (const order of orders) {
+      const [items] = await pool.query(
+        `SELECT
+          oi.*,
+          pl.title as listing_title,
+          NULL as image_url
+        FROM order_items oi
+        JOIN produce_listings pl ON oi.listing_id = pl.id
+        WHERE oi.order_id = ?`,
+        [order.id]
+      );
+      order.items = items;
+    }
+
+    // Get total count
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) as total FROM orders o ${whereClause}`,
+      params
+    );
+
+    const total = countResult[0].total;
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      orders,
+      pagination: {
+        currentPage: parseInt(page),
+        totalPages,
+        total,
+        limit: parseInt(limit),
+        hasNext: page < totalPages,
+        hasPrev: page > 1
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching farmer orders:', error);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+};
+
+// Get order statistics
+export const getOrderStats = async (req, res) => {
+  try {
+    const uid = req.user.uid;
+    const { period = 'month' } = req.query;
+
+    // Get user ID and role
+    let userId, userRole;
+
+    if (uid.startsWith('dev-uid-')) {
+      // Dev user - use the ID and role from the token
+      userId = req.user.id;
+      userRole = req.user.role;
+    } else {
+      // Real Firebase user - look up in database
+      const [userRows] = await pool.query(
+        "SELECT id, role FROM users WHERE firebase_uid = ?",
+        [uid]
+      );
+
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      userId = userRows[0].id;
+      userRole = userRows[0].role;
+    }
+
+    let dateFilter = '';
+    if (period === 'week') {
+      dateFilter = "AND o.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)";
+    } else if (period === 'month') {
+      dateFilter = "AND o.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
+    } else if (period === 'year') {
+      dateFilter = "AND o.created_at >= DATE_SUB(NOW(), INTERVAL 1 YEAR)";
+    }
+
+    let statsQuery = '';
+    if (userRole === 'buyer') {
+      statsQuery = `
+        SELECT
+          COUNT(*) as total_orders,
+          SUM(o.total) as total_spent,
+          COUNT(CASE WHEN o.status = 'pending' THEN 1 END) as pending_orders,
+          COUNT(CASE WHEN o.status = 'completed' THEN 1 END) as completed_orders
+        FROM orders o
+        WHERE o.buyer_user_id = ? ${dateFilter}
+      `;
+    } else {
+      statsQuery = `
+        SELECT
+          COUNT(*) as total_orders,
+          SUM(o.total) as total_earnings,
+          COUNT(CASE WHEN o.status = 'pending' THEN 1 END) as pending_orders,
+          COUNT(CASE WHEN o.status = 'completed' THEN 1 END) as completed_orders
+        FROM orders o
+        WHERE o.farmer_user_id = ? ${dateFilter}
+      `;
+    }
+
+    const [stats] = await pool.query(statsQuery, [userId]);
+
+    res.json({ stats: stats[0] });
+  } catch (error) {
+    console.error('Error fetching order stats:', error);
+    res.status(500).json({ error: "Failed to fetch order statistics" });
+  }
+};

@@ -5,12 +5,8 @@ import "dotenv/config";
 // Initialize Firebase Admin once
 import "./config/firebase.js";
 
-// Routers
-import authRouter from "./routes/authRoutes.js";
-import userRouter from "./routes/userRoutes.js";
-import farmerRouter from "./routes/farmerRoutes.js";
-import listingRouter from "./routes/listingRoutes.js";
-import orderRouter from "./routes/orderRoutes.js";
+// Main router with all routes
+import apiRouter from "./routes/index.js";
 // Initialize database connection
 import { testConnection } from "./config/database.js";
 // App
@@ -39,14 +35,15 @@ app.get("/public/listings", async (req, res) => {
         pl.quantity as availableQuantity,
         pl.region as location,
         pl.status,
+        u.id as farmerUserId,
         u.full_name as farmerName,
         li.url as image,
+        ua.url as farmerAvatar,
         pl.created_at as createdAt
       FROM produce_listings pl
       JOIN users u ON pl.farmer_user_id = u.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
-      WHERE pl.status = 'active'
-      AND pl.quantity > 0
+      LEFT JOIN user_avatars ua ON ua.user_id = u.id
       ORDER BY pl.created_at DESC
     `);
 
@@ -61,18 +58,19 @@ app.get("/public/listings", async (req, res) => {
   }
 });
 
-// Mount routes
-app.use(authRouter);
-app.use(userRouter);
-app.use(farmerRouter);
-app.use('/listings', listingRouter);
-app.use('/orders', orderRouter);
+// Mount API routes
+app.use('/api', apiRouter);
 
 // Start server
-const port = Number(process.env.PORT || 5001);
+const port = Number(process.env.PORT || 5000);
 app.listen(port, async () => {
   console.log(`API listening on http://localhost:${port}`);
 
-  // Test database connection
-  await testConnection();
+  // Test database connection (non-blocking)
+  try {
+    await testConnection();
+  } catch (error) {
+    console.warn('⚠️  Database connection failed, but server is running');
+    console.warn('   Make sure MySQL is running and the database exists');
+  }
 });
