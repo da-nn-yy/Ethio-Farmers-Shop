@@ -20,3 +20,4 @@ router.get('/popular', getPopularSearches);
 router.get('/analytics', authGuard, getSearchAnalytics);
 
 export default router;
+
