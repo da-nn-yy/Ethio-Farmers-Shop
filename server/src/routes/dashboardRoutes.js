@@ -21,3 +21,4 @@ router.get('/admin', getAdminDashboard);
 router.get('/analytics', getAnalyticsData);
 
 export default router;
+

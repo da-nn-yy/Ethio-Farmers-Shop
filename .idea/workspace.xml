@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Update API base URL configuration from port 5001 to 5000 with /api prefix">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add comprehensive notifications and listing reviews pages with full user interaction features">
+      <change afterPath="$PROJECT_DIR$/client/src/components/NotificationBell.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/components/NotificationCenter.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/components/ReviewForm.jsx" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/client/src/components/ReviewList.jsx" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756890953784-394494401.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756891974531-561637990.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892164761-633264186.png" afterDir="false" />
@@ -12,6 +16,23 @@
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756902942632-969190112.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906040447-182016306.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906153234-922297177.jpg" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/FRONTEND_BACKEND_INTEGRATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/client/FRONTEND_BACKEND_INTEGRATION.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/API_ENDPOINTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/API_ENDPOINTS.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/FRONTEND_INTEGRATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/FRONTEND_INTEGRATION.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/dashboardController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/dashboardController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/favoriteController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/favoriteController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/marketTrendsController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/marketTrendsController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/notificationController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/notificationController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/reviewController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/reviewController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/searchController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/searchController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/dashboardRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/dashboardRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/favoriteRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/favoriteRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/marketTrendsRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/marketTrendsRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/notificationRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/notificationRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/reviewRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/reviewRoutes.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/searchRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/searchRoutes.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -90,15 +111,7 @@
       <workItem from="1756720869678" duration="4489000" />
       <workItem from="1756870063488" duration="1379000" />
       <workItem from="1756883162852" duration="369000" />
-      <workItem from="1757013757770" duration="2688000" />
-    </task>
-    <task id="LOCAL-00002" summary="Refactor React imports to use named imports instead of default imports across multiple components">
-      <option name="closed" value="true" />
-      <created>1756301777109</created>
-      <option name="number" value="00002" />
-      <option name="presentableId" value="LOCAL-00002" />
-      <option name="project" value="LOCAL" />
-      <updated>1756301777110</updated>
+      <workItem from="1757013757770" duration="4792000" />
     </task>
     <task id="LOCAL-00003" summary="Update API base URL configuration with fallback values in authentication forms">
       <option name="closed" value="true" />
@@ -484,7 +497,15 @@
       <option name="project" value="LOCAL" />
       <updated>1757020508941</updated>
     </task>
-    <option name="localTasksCounter" value="51" />
+    <task id="LOCAL-00051" summary="Add comprehensive notifications and listing reviews pages with full user interaction features">
+      <option name="closed" value="true" />
+      <created>1757020931866</created>
+      <option name="number" value="00051" />
+      <option name="presentableId" value="LOCAL-00051" />
+      <option name="project" value="LOCAL" />
+      <updated>1757020931866</updated>
+    </task>
+    <option name="localTasksCounter" value="52" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -518,7 +539,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Update API base URL configuration to use port 5001 for consistent backend connectivity" />
     <MESSAGE value="Add node-fetch dependency and fix file formatting inconsistencies" />
     <MESSAGE value="Update application branding from FarmConnect to KeGeberew and add development test login functionality" />
     <MESSAGE value="Add dedicated add-listing route and remove hardcoded port from Vite configuration" />
@@ -543,6 +563,7 @@
     <MESSAGE value="Add comprehensive authentication context provider with token management and user state handling" />
     <MESSAGE value="Update API base URL configuration from port 5001 to 5000" />
     <MESSAGE value="Update API base URL configuration from port 5001 to 5000 with /api prefix" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update API base URL configuration from port 5001 to 5000 with /api prefix" />
+    <MESSAGE value="Add comprehensive notifications and listing reviews pages with full user interaction features" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add comprehensive notifications and listing reviews pages with full user interaction features" />
   </component>
 </project>
