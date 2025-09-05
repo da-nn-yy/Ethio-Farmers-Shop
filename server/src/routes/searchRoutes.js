@@ -21,3 +21,4 @@ router.get('/analytics', authGuard, getSearchAnalytics);
 
 export default router;
 
+

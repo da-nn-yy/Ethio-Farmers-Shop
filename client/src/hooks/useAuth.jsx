@@ -1,5 +1,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { authService } from '../services/apiService.js';
+import { authService, userService } from '../services/apiService.js';
+import { auth } from '../firebase.js';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
 // Create Auth Context
 const AuthContext = createContext();
@@ -25,13 +27,22 @@ export const AuthProvider = ({ children }) => {
         setToken(storedToken);
         setIsAuthenticated(true);
 
-        // Verify token and get user data
+        // Verify token and get user data from DB
         try {
-          const profileResponse = await authService.getUserProfile();
-          if (profileResponse.user) {
-            setUser(profileResponse.user);
+          const me = await userService.getMe();
+          if (me && me.id) {
+            setUser({
+              id: me.id,
+              firebase_uid: me.firebaseUid,
+              email: me.email,
+              fullName: me.fullName,
+              role: me.role,
+              region: me.region,
+              woreda: me.woreda,
+              avatarUrl: me.avatarUrl || null,
+              created_at: me.createdAt
+            });
           } else {
-            // Token might be invalid, clear auth
             logout();
           }
         } catch (error) {
@@ -50,22 +61,36 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       setLoading(true);
-      const response = await authService.devLogin(credentials);
+      const { email, password } = credentials;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
 
-      if (response.user) {
-        setUser(response.user);
-        setToken(response.devToken);
+      // Persist token for API calls
+      localStorage.setItem('authToken', idToken);
+      localStorage.setItem('isAuthenticated', 'true');
+
+      // Ensure user exists in MySQL and fetch profile
+      await authService.syncUser();
+      const me = await userService.getMe();
+
+      if (me && me.id) {
+        setUser({
+          id: me.id,
+          firebase_uid: me.firebaseUid,
+          email: me.email,
+          fullName: me.fullName,
+          role: me.role,
+          region: me.region,
+          woreda: me.woreda,
+          avatarUrl: me.avatarUrl || null,
+          created_at: me.createdAt
+        });
+        setToken(idToken);
         setIsAuthenticated(true);
-
-        // Store in localStorage
-        localStorage.setItem('authToken', response.devToken);
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userRole', response.user.role);
-
-        return { success: true, user: response.user };
-      } else {
-        return { success: false, error: 'Login failed' };
+        localStorage.setItem('userRole', me.role);
+        return { success: true, user: me };
       }
+      return { success: false, error: 'Login failed' };
     } catch (error) {
       console.error('Login error:', error);
       return {
@@ -93,7 +118,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
     setToken(null);
     setIsAuthenticated(false);
@@ -105,6 +130,7 @@ export const AuthProvider = ({ children }) => {
 
     // Call logout service
     authService.logout();
+    try { await signOut(auth); } catch {}
   };
 
   const updateUser = (userData) => {
