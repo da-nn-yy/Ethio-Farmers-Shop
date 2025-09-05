@@ -3,12 +3,13 @@ import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
 
-const ProduceListingCard = ({ 
-  listing, 
-  onEdit, 
-  onDuplicate, 
-  onToggleStatus, 
-  currentLanguage = 'en' 
+const ProduceListingCard = ({
+  listing,
+  onEdit,
+  onDuplicate,
+  onToggleStatus,
+  onDelete,
+  currentLanguage = 'en'
 }) => {
   const getStatusColor = (status) => {
     switch (status) {
@@ -130,10 +131,20 @@ const ProduceListingCard = ({
             iconPosition="left"
             className="flex-1"
           >
-            {listing?.status === 'sold_out' 
+            {listing?.status === 'sold_out'
               ? (currentLanguage === 'am' ? 'እንደገና ንቁ አድርግ' : 'Reactivate')
               : (currentLanguage === 'am' ? 'ተሽጧል ምልክት አድርግ' : 'Mark Sold')
             }
+          </Button>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => onDelete && onDelete(listing?.id)}
+            iconName="Trash2"
+            iconPosition="left"
+            className="flex-1"
+          >
+            {currentLanguage === 'am' ? 'ሰርዝ' : 'Delete'}
           </Button>
         </div>
       </div>

@@ -91,7 +91,12 @@ const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
       if (result.success) {
         localStorage.setItem('currentLanguage', currentLanguage);
         onAuthSuccess(formData.role);
-        navigate(formData.role === 'farmer' ? '/dashboard-farmer-home' : '/browse-listings-buyer-home');
+        // Redirect like sign-in: send users to their role-based home
+        if (formData.role === 'farmer') {
+          navigate('/dashboard-farmer-home');
+        } else {
+          navigate('/dashboard-buyer-home');
+        }
       } else {
         setErrors({
           general: result.error || (currentLanguage === 'am' ? 'ምዝገባ አልተሳካም' : 'Registration failed')

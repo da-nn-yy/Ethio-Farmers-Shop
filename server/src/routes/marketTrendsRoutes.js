@@ -23,3 +23,4 @@ router.post('/price-data', authGuard, addPriceData);
 
 export default router;
 
+
