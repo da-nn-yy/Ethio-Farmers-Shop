@@ -4,11 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add comprehensive notifications and listing reviews pages with full user interaction features">
-      <change afterPath="$PROJECT_DIR$/client/src/components/NotificationBell.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/client/src/components/NotificationCenter.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/client/src/components/ReviewForm.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/client/src/components/ReviewList.jsx" afterDir="false" />
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add account deletion functionality and improve authentication integration with Firebase">
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756890953784-394494401.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756891974531-561637990.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892164761-633264186.png" afterDir="false" />
@@ -17,22 +13,50 @@
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906040447-182016306.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906153234-922297177.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/client/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/FRONTEND_BACKEND_INTEGRATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/client/FRONTEND_BACKEND_INTEGRATION.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/FavoriteButton.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/FavoriteButton.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/NotificationBell.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/NotificationBell.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/NotificationCenter.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/NotificationCenter.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ReviewForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ReviewForm.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ReviewList.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ReviewList.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/ImageUpload.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/ImageUpload.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/add-listing/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/add-listing/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/RegisterForm.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/authentication-login-register/components/RegisterForm.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/authentication-login-register/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/authentication-login-register/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/components/ProduceListingCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/components/ProduceListingCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-buyer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/components/ProduceListingCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/components/ProduceListingCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/listing-reviews/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/listing-reviews/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/notifications/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/notifications/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/order-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/order-management/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/components/AccountInformation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/components/AccountInformation.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/services/apiService.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/apiService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/server/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/API_ENDPOINTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/API_ENDPOINTS.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/FRONTEND_INTEGRATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/FRONTEND_INTEGRATION.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/config/database.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/config/database.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/authController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/authController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/controllers/dashboardController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/dashboardController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/farmerController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/farmerController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/controllers/favoriteController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/favoriteController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/listingController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/listingController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/controllers/marketTrendsController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/marketTrendsController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/controllers/notificationController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/notificationController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/controllers/reviewController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/reviewController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/controllers/searchController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/searchController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/middleware/auth.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/middleware/auth.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/authRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/authRoutes.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/routes/dashboardRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/dashboardRoutes.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/routes/favoriteRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/favoriteRoutes.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/routes/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/routes/listingRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/listingRoutes.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/routes/marketTrendsRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/marketTrendsRoutes.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/routes/notificationRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/notificationRoutes.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/routes/reviewRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/reviewRoutes.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/routes/searchRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/searchRoutes.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -111,63 +135,9 @@
       <workItem from="1756720869678" duration="4489000" />
       <workItem from="1756870063488" duration="1379000" />
       <workItem from="1756883162852" duration="369000" />
-      <workItem from="1757013757770" duration="4792000" />
-    </task>
-    <task id="LOCAL-00003" summary="Update API base URL configuration with fallback values in authentication forms">
-      <option name="closed" value="true" />
-      <created>1756301799003</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1756301799003</updated>
-    </task>
-    <task id="LOCAL-00004" summary="Expand database schema with comprehensive marketplace tables and improve user management with role-based routing">
-      <option name="closed" value="true" />
-      <created>1756301832568</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1756301832568</updated>
-    </task>
-    <task id="LOCAL-00005" summary="Add placeholder pages for farmer and buyer market trends with coming soon messaging">
-      <option name="closed" value="true" />
-      <created>1756301872572</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1756301872572</updated>
-    </task>
-    <task id="LOCAL-00006" summary="Add placeholder pages for farmer and buyer market trends with coming soon messaging">
-      <option name="closed" value="true" />
-      <created>1756366191943</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1756366191943</updated>
-    </task>
-    <task id="LOCAL-00007" summary="Add API base URL configuration to environment variables">
-      <option name="closed" value="true" />
-      <created>1756366296787</created>
-      <option name="number" value="00007" />
-      <option name="presentableId" value="LOCAL-00007" />
-      <option name="project" value="LOCAL" />
-      <updated>1756366296787</updated>
-    </task>
-    <task id="LOCAL-00008" summary="Add API base URL configuration to environment variables">
-      <option name="closed" value="true" />
-      <created>1756367442905</created>
-      <option name="number" value="00008" />
-      <option name="presentableId" value="LOCAL-00008" />
-      <option name="project" value="LOCAL" />
-      <updated>1756367442905</updated>
-    </task>
-    <task id="LOCAL-00009" summary="Add IDE workspace configuration files for IntelliJ IDEA">
-      <option name="closed" value="true" />
-      <created>1756370503942</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1756370503942</updated>
+      <workItem from="1757013757770" duration="6110000" />
+      <workItem from="1757027686058" duration="929000" />
+      <workItem from="1757063180966" duration="2056000" />
     </task>
     <task id="LOCAL-00010" summary="Convert server modules from CommonJS to ES6 imports and fix import references">
       <option name="closed" value="true" />
@@ -505,7 +475,63 @@
       <option name="project" value="LOCAL" />
       <updated>1757020931866</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="Add uploaded image files and update IDE workspace configuration">
+      <option name="closed" value="true" />
+      <created>1757025626025</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1757025626026</updated>
+    </task>
+    <task id="LOCAL-00053" summary="Add uploaded image files and update IDE workspace configuration">
+      <option name="closed" value="true" />
+      <created>1757025643927</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1757025643927</updated>
+    </task>
+    <task id="LOCAL-00054" summary="Add line breaks to improve code formatting consistency across market trends and notification controllers">
+      <option name="closed" value="true" />
+      <created>1757025774286</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1757025774286</updated>
+    </task>
+    <task id="LOCAL-00055" summary="Add line breaks to improve code formatting consistency across review, search, and notification route files">
+      <option name="closed" value="true" />
+      <created>1757026304560</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1757026304560</updated>
+    </task>
+    <task id="LOCAL-00056" summary="Add comprehensive review and notification components with real-time user interaction features">
+      <option name="closed" value="true" />
+      <created>1757026329138</created>
+      <option name="number" value="00056" />
+      <option name="presentableId" value="LOCAL-00056" />
+      <option name="project" value="LOCAL" />
+      <updated>1757026329138</updated>
+    </task>
+    <task id="LOCAL-00057" summary="Refactor file structure by renaming component or module file">
+      <option name="closed" value="true" />
+      <created>1757063241838</created>
+      <option name="number" value="00057" />
+      <option name="presentableId" value="LOCAL-00057" />
+      <option name="project" value="LOCAL" />
+      <updated>1757063241838</updated>
+    </task>
+    <task id="LOCAL-00058" summary="Add account deletion functionality and improve authentication integration with Firebase">
+      <option name="closed" value="true" />
+      <created>1757074967409</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1757074967409</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -539,12 +565,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add node-fetch dependency and fix file formatting inconsistencies" />
-    <MESSAGE value="Update application branding from FarmConnect to KeGeberew and add development test login functionality" />
-    <MESSAGE value="Add dedicated add-listing route and remove hardcoded port from Vite configuration" />
-    <MESSAGE value="Add comprehensive add-listing page with multi-step form and breadcrumb navigation component" />
-    <MESSAGE value="Add multi-step form components for produce listing creation with bilingual support" />
-    <MESSAGE value="Add role-based sidebar navigation and activity feed components with bilingual support" />
     <MESSAGE value="Refactor farmer dashboard to use dedicated add-listing page and enhance public listings with image support" />
     <MESSAGE value="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication" />
     <MESSAGE value="Refactor authentication to use custom auth hook and enhance filter panel with instant filtering and sort functionality" />
@@ -564,6 +584,12 @@
     <MESSAGE value="Update API base URL configuration from port 5001 to 5000" />
     <MESSAGE value="Update API base URL configuration from port 5001 to 5000 with /api prefix" />
     <MESSAGE value="Add comprehensive notifications and listing reviews pages with full user interaction features" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add comprehensive notifications and listing reviews pages with full user interaction features" />
+    <MESSAGE value="Add uploaded image files and update IDE workspace configuration" />
+    <MESSAGE value="Add line breaks to improve code formatting consistency across market trends and notification controllers" />
+    <MESSAGE value="Add line breaks to improve code formatting consistency across review, search, and notification route files" />
+    <MESSAGE value="Add comprehensive review and notification components with real-time user interaction features" />
+    <MESSAGE value="Refactor file structure by renaming component or module file" />
+    <MESSAGE value="Add account deletion functionality and improve authentication integration with Firebase" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add account deletion functionality and improve authentication integration with Firebase" />
   </component>
 </project>
