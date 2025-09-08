@@ -28,3 +28,4 @@ router.post('/bulk', bulkUpdateFavorites);
 
 export default router;
 
+

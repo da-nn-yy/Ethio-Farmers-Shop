@@ -16,7 +16,7 @@ const FavoriteButton = ({ listingId, className = "" }) => {
   const checkFavoriteStatus = async () => {
     try {
       const response = await favoriteService.checkFavoriteStatus(listingId);
-      setIsFavorite(response.isFavorite);
+      setIsFavorite(Boolean(response.isFavorited));
     } catch (error) {
       console.error('Error checking favorite status:', error);
     }

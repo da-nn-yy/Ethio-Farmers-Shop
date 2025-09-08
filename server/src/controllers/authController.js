@@ -1,4 +1,4 @@
-import { pool } from "../config/db.js";
+import { pool } from "../config/database.js";
 import admin from "../config/firebase.js";
 
 export const syncUser = async (req, res) => {
@@ -104,76 +104,18 @@ export const registerUser = async (req, res) => {
 };
 
 // Development login (bypasses Firebase for testing)
-export const devLogin = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
-
-    // Find user in MySQL by email
-    const [users] = await pool.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
-
-    if (users.length === 0) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const user = users[0];
-
-    // Simple password check for development
-    if (password.length < 6) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    // Generate a simple dev token for testing
-    const devToken = `dev-token-${user.id}-${Date.now()}`;
-
-    res.json({
-      message: "Development login successful",
-      devToken, // Use this for testing protected endpoints
-      user: {
-        id: user.id,
-        firebase_uid: user.firebase_uid,
-        email: user.email,
-        full_name: user.full_name,
-        role: user.role,
-        region: user.region,
-        woreda: user.woreda
-      }
-    });
-
-  } catch (error) {
-    console.error('Dev login error:', error);
-    res.status(500).json({ error: "Failed to login" });
-  }
-};
+// removed devLogin: Firebase client should be used for auth
 
 // Get user profile
 export const getUserProfile = async (req, res) => {
   try {
     const uid = req.user.uid;
 
-    let users;
-
-    // Handle dev tokens differently
-    if (uid.startsWith('dev-uid-')) {
-      // Dev token - use the user ID directly
-      const userId = uid.replace('dev-uid-', '');
-      [users] = await pool.query(
-        "SELECT * FROM users WHERE id = ?",
-        [userId]
-      );
-    } else {
-      // Real Firebase token - search by firebase_uid
-      [users] = await pool.query(
-        "SELECT * FROM users WHERE firebase_uid = ?",
-        [uid]
-      );
-    }
+    // Look up user by Firebase UID
+    const [users] = await pool.query(
+      "SELECT * FROM users WHERE firebase_uid = ?",
+      [uid]
+    );
 
     if (users.length === 0) {
       return res.status(404).json({ error: "User not found" });

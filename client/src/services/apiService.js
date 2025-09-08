@@ -1,7 +1,10 @@
 import axios from 'axios';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+const API_BASE_URL = RAW_API_BASE_URL.endsWith('/api')
+  ? RAW_API_BASE_URL
+  : `${RAW_API_BASE_URL.replace(/\/+$/, '')}/api`;
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -45,17 +48,6 @@ export const authService = {
   // Register new user
   register: async (userData) => {
     const response = await apiClient.post('/auth/register', userData);
-    return response.data;
-  },
-
-  // Development login (for testing)
-  devLogin: async (credentials) => {
-    const response = await apiClient.post('/auth/dev-login', credentials);
-    if (response.data.devToken) {
-      localStorage.setItem('authToken', response.data.devToken);
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userRole', response.data.user.role);
-    }
     return response.data;
   },
 
