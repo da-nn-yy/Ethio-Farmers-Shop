@@ -11,6 +11,7 @@ import SortDropdown from './components/SortDropdown';
 import ProduceCard from './components/ProduceCard';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
+import Button from '../../components/ui/Button';
 
 const BrowseListingsBuyerHome = () => {
   const navigate = useNavigate();
@@ -22,11 +23,23 @@ const BrowseListingsBuyerHome = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
+  const [recommendedListings, setRecommendedListings] = useState([]);
   const [bookmarkedFarmers, setBookmarkedFarmers] = useState(new Set());
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
+
+  // Compute proximity score based on buyer's woreda and region vs listing location
+  const getProximityScore = useCallback((listing) => {
+    const buyerRegion = (user?.region || '').toLowerCase();
+    const buyerWoreda = (user?.woreda || '').toLowerCase();
+    const location = ((listing?.location || listing?.farmer?.location || '')).toLowerCase();
+    let score = 0;
+    if (buyerRegion && location.includes(buyerRegion)) score += 1;
+    if (buyerWoreda && location.includes(buyerWoreda)) score += 2;
+    return score;
+  }, [user?.region, user?.woreda]);
 
   // Old-dashboard-style single-select filters
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -237,30 +250,37 @@ const BrowseListingsBuyerHome = () => {
         const response = await listingService.getActiveListings();
 
         if (response.listings) {
-          // Transform API data to match component expectations
           const transformedListings = response.listings.map(listing => ({
             id: listing.id,
-            name: listing.title,
-            nameAm: listing.crop, // Using crop as Amharic name for now
-            pricePerKg: parseFloat(listing.price_per_unit),
-            availableQuantity: parseFloat(listing.quantity),
-            image: listing.images?.[0]?.url || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
+            name: listing.name,
+            nameAm: listing.nameAm,
+            pricePerKg: Number(listing.pricePerKg),
+            availableQuantity: Number(listing.availableQuantity),
+            image: listing.image || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
             freshness: "Fresh from farm",
-            category: listing.crop,
+            category: listing.category,
+            location: listing.location,
+            createdAt: listing.createdAt ? new Date(listing.createdAt) : null,
             farmer: {
-              id: listing.farmer_user_id,
-              name: listing.farmer_name,
-              avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
-              location: `${listing.region}, ${listing.woreda}`,
+              id: listing.farmerUserId || null,
+              name: listing.farmerName,
+              avatar: listing.farmerAvatar || "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
+              location: listing.location,
               rating: 4.5,
               reviewCount: 50,
-              phone: listing.farmer_phone || "+251900000000",
+              phone: listing.farmerPhone || "+251900000000",
               isVerified: true
             }
           }));
 
           setListings(transformedListings);
           setFilteredListings(transformedListings);
+          // Recommended: newest first (ignore region proximity)
+          const newestRecommended = [...transformedListings].sort((a, b) => {
+            if (a.createdAt && b.createdAt) return b.createdAt - a.createdAt;
+            return (b.id || 0) - (a.id || 0);
+          });
+          setRecommendedListings(newestRecommended.slice(0, 8));
         } else {
           throw new Error('API did not return listings');
         }
@@ -269,6 +289,7 @@ const BrowseListingsBuyerHome = () => {
         // Fallback to mock data if API fails
         setListings(mockListings);
         setFilteredListings(mockListings);
+        setRecommendedListings(mockListings.slice(0, 8));
       } finally {
         setIsLoading(false);
       }
@@ -341,7 +362,15 @@ const BrowseListingsBuyerHome = () => {
         filtered?.sort((a, b) => b?.id - a?.id);
         break;
       default:
-        // Keep original order for relevance
+        // Relevance: prioritize proximity to buyer
+        filtered?.sort((a, b) => {
+          const psA = getProximityScore(a);
+          const psB = getProximityScore(b);
+          if (psB !== psA) return psB - psA;
+          // tie-breaker by newest
+          if (a.createdAt && b.createdAt) return b.createdAt - a.createdAt;
+          return (b.id || 0) - (a.id || 0);
+        });
         break;
     }
 
@@ -440,10 +469,15 @@ const BrowseListingsBuyerHome = () => {
   const handleAddToCart = async (listingId, quantity) => {
     const listing = listings?.find(l => l?.id === listingId);
     if (!listing) return;
-      setCartItems(prev => {
+
+    setCartItems(prev => {
       const existingItem = prev?.find(item => item?.id === listingId);
-        if (existingItem) {
-        return prev?.map(item => item?.id === listingId ? { ...item, quantity: item.quantity + quantity } : item);
+      if (existingItem) {
+        return prev?.map(item =>
+          item?.id === listingId
+            ? { ...item, quantity: item.quantity + quantity }
+            : item
+        );
       }
       const normalized = {
         id: listing.id,
@@ -497,6 +531,16 @@ const BrowseListingsBuyerHome = () => {
     } catch {}
   }, [cartItems]);
 
+  // Auto-open cart when navigated with #cart and react to hash changes
+  useEffect(() => {
+    const openIfHashCart = () => {
+      if (window.location.hash === '#cart') setIsCartOpen(true);
+    };
+    openIfHashCart();
+    window.addEventListener('hashchange', openIfHashCart);
+    return () => window.removeEventListener('hashchange', openIfHashCart);
+  }, []);
+
   // Cart helpers
   const updateCartQuantity = (id, quantity) => {
     setCartItems(prev => {
@@ -531,6 +575,7 @@ const BrowseListingsBuyerHome = () => {
       clearCart();
       setIsCartOpen(false);
       alert(currentLanguage === 'am' ? 'ትዕዛዝ ተልኳል!' : 'Order placed!');
+      navigate('/order-management');
     } catch (error) {
       console.error('placeOrder failed', error);
       alert(currentLanguage === 'am' ? 'ትዕዛዝ አልተሳካም።' : 'Failed to place order.');
@@ -571,7 +616,7 @@ const BrowseListingsBuyerHome = () => {
       <div className="flex">
         {/* Desktop Filter Sidebar from previous dashboard */}
         <div className="hidden lg:block w-80 shrink-0">
-          <div className="sticky top-32 p-6">
+          <div className="sticky p-6 top-32">
             <FilterPanel
               isOpen={true}
               onClose={() => {}}
@@ -594,6 +639,8 @@ const BrowseListingsBuyerHome = () => {
 
         {/* Listings Content */}
         <div className="flex-1 p-4 lg:p-6">
+
+
           {/* Sort and Results Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="text-sm text-text-secondary">
@@ -627,7 +674,7 @@ const BrowseListingsBuyerHome = () => {
               currentLanguage={currentLanguage}
             />
           ) : (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
               {filteredListings?.map((listing) => (
                 <ProduceCard
                   key={listing?.id}
@@ -664,23 +711,23 @@ const BrowseListingsBuyerHome = () => {
 
       {/* Mini Cart Modal */}
       {isCartOpen && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
           <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden">
-            <div className="p-4 border-b border-border flex items-center justify-between">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-lg font-semibold text-text-primary">{currentLanguage === 'am' ? 'የግዛት ካርት' : 'Shopping Cart'}</h3>
               <button onClick={() => setIsCartOpen(false)} className="text-text-secondary">×</button>
             </div>
             <div className="p-4 overflow-y-auto max-h-96">
               {cartItems.length === 0 ? (
-                <div className="text-center py-8">
-                  <Icon name="ShoppingCart" size={48} className="mx-auto text-gray-400 mb-4" />
+                <div className="py-8 text-center">
+                  <Icon name="ShoppingCart" size={48} className="mx-auto mb-4 text-gray-400" />
                   <p className="text-gray-500">{currentLanguage === 'am' ? 'ካርት ባዶ ነው' : 'Your cart is empty'}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {cartItems.map(item => (
-                    <div key={item.id} className="flex items-center space-x-3 p-3 border border-border rounded-lg">
-                      <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
+                    <div key={item.id} className="flex items-center p-3 space-x-3 border rounded-lg border-border">
+                      <img src={item.image} alt={item.name} className="object-cover w-16 h-16 rounded" />
                       <div className="flex-1">
                         <h4 className="font-medium text-text-primary">{currentLanguage === 'am' ? item.nameAm || item.name : item.name}</h4>
                         <p className="text-sm text-text-secondary">ETB {item.pricePerKg} × {item.quantity} kg</p>

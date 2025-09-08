@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { auth } from '../../firebase';
+import { useAuth } from '../../hooks/useAuth.jsx';
 import GlobalHeader from '../../components/ui/GlobalHeader';
 import TabNavigation from '../../components/ui/TabNavigation';
 import MobileMenu from '../../components/ui/MobileMenu';
@@ -15,6 +16,7 @@ import Button from '../../components/ui/Button';
 
 const OrderManagement = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
@@ -40,38 +42,49 @@ const OrderManagement = () => {
         setIsLoading(true);
         const currentUser = auth.currentUser;
         const idToken = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+        const RAW = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+        const API_BASE = RAW.endsWith('/api') ? RAW : `${RAW}/api`;
         const statusParam = activeTab === 'all' ? '' : `?status=${activeTab}`;
-        const res = await axios.get(`${API_BASE}/orders/buyer${statusParam}` , {
+        // Role-aware fetch
+        const path = (user?.role === 'buyer') ? `/orders/buyer${statusParam}` : `/orders/farmer${statusParam}`;
+        const res = await axios.get(`${API_BASE}${path}` , {
           headers: { Authorization: `Bearer ${idToken}` }
         });
-        // Normalize to UI model
-        const normalized = res.data.map((o) => ({
-          id: o.id,
-          orderNumber: String(o.id),
-          status: o.status,
-          createdAt: o.createdAt,
-          totalAmount: Number(o.totalPrice),
-          buyer: {
-            name: 'You',
-            avatar: '',
-            phone: '',
-            location: o.location,
-            verified: true
-          },
-          items: [
-            {
-              id: `listing-${o.id}`,
-              name: o.name,
-              quantity: o.quantity,
-              unit: 'kg',
-              pricePerUnit: Number(o.pricePerKg),
-              total: Number(o.totalPrice),
-              image: o.image || 'https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg'
-            }
-          ],
-          specialInstructions: o.notes || ''
-        }));
+        const data = Array.isArray(res.data) ? { orders: res.data } : res.data;
+        // Normalize to UI model using server farmer fields
+        const normalized = (data?.orders || []).map((o) => {
+          const createdAt = o.createdAt || o.created_at;
+          const totalAmount = Number(
+            o.totalPrice ?? o.subtotal ?? o.total_amount ?? 0
+          );
+          const items = (o.items || []).map((it) => ({
+            id: it.id || `item-${it.order_id || o.id}-${it.listing_id || ''}`,
+            name: it.listing_title || it.name || 'Item',
+            quantity: it.quantity ?? 0,
+            unit: it.unit || 'unit',
+            pricePerUnit: Number(it.unit_price ?? it.pricePerUnit ?? 0),
+            total: Number(
+              it.total_price ?? (it.quantity && it.unit_price ? it.quantity * it.unit_price : 0)
+            ),
+            image: it.image_url || ''
+          }));
+          return {
+            id: o.id,
+            orderNumber: String(o.id),
+            status: o.status,
+            createdAt,
+            totalAmount,
+            buyer: {
+              name: o.buyer_name || o.buyerName || 'Buyer',
+              avatar: '',
+              phone: o.buyer_phone || o.buyerPhone || '',
+              location: [o.buyer_region || o.buyerRegion, o.buyer_woreda || o.buyerWoreda].filter(Boolean).join(', '),
+              verified: true
+            },
+            items,
+            specialInstructions: o.notes || ''
+          };
+        });
         setOrders(normalized);
       } catch (e) {
         console.error('Failed to load orders', e);
@@ -149,35 +162,55 @@ const OrderManagement = () => {
     localStorage.setItem('farmconnect_language', newLanguage);
   };
 
-  const handleAcceptOrder = (orderId) => {
-    setOrders(prevOrders =>
-      prevOrders?.map(order =>
-        order?.id === orderId
-          ? {
-              ...order,
-              status: 'confirmed',
-              pickupDetails: {
-                scheduledDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-                location: 'Farm Gate, Debre Zeit Road'
-              }
-            }
-          : order
-      )
-    );
-
-    // Show success notification
-    console.log(`Order ${orderId} accepted`);
+  const handleAcceptOrder = async (orderId) => {
+    try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const RAW = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const API_BASE = RAW.endsWith('/api') ? RAW : `${RAW}/api`;
+      await axios.patch(
+        `${API_BASE}/orders/${orderId}/status`,
+        { status: 'confirmed' },
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'confirmed' } : o));
+    } catch (e) {
+      console.error('Accept failed', e);
+    }
   };
 
   const handleDeclineOrder = async (orderId) => {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-      await axios.patch(`${API_BASE}/orders/${orderId}/cancel`, {}, { headers: { Authorization: `Bearer ${idToken}` } });
+      const RAW = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const API_BASE = RAW.endsWith('/api') ? RAW : `${RAW}/api`;
+      await axios.patch(
+        `${API_BASE}/orders/${orderId}/status`,
+        { status: 'cancelled' },
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
     } catch (e) {
       console.error('Cancel failed', e);
+    }
+  };
+
+  // Buyer cancel pending order
+  const handleBuyerCancel = async (orderId) => {
+    try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const RAW = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const API_BASE = RAW.endsWith('/api') ? RAW : `${RAW}/api`;
+      await axios.patch(
+        `${API_BASE}/orders/${orderId}/cancel`,
+        {},
+        { headers: { Authorization: `Bearer ${idToken}` } }
+      );
+      setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+    } catch (e) {
+      console.error('Buyer cancel failed', e);
     }
   };
 
@@ -186,9 +219,18 @@ const OrderManagement = () => {
     window.open(`tel:${phoneNumber}`, '_self');
   };
 
-  const handleViewDetails = (orderId) => {
-    // Navigate to order details or open modal
-    console.log(`View details for order ${orderId}`);
+  const handleViewDetails = async (orderId) => {
+    try {
+      const currentUser = auth.currentUser;
+      const idToken = await currentUser.getIdToken();
+      const RAW = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const API_BASE = RAW.endsWith('/api') ? RAW : `${RAW}/api`;
+      const res = await axios.get(`${API_BASE}/orders/${orderId}`, { headers: { Authorization: `Bearer ${idToken}` } });
+      console.log('Order details', res.data);
+      alert((currentLanguage === 'am' ? 'ዝርዝር: ' : 'Details: ') + JSON.stringify(res.data, null, 2));
+    } catch (e) {
+      console.error('View details failed', e);
+    }
   };
 
   const handleExport = () => {
@@ -252,19 +294,19 @@ const OrderManagement = () => {
   return (
     <div className="min-h-screen bg-background">
       <GlobalHeader
-        userRole="farmer"
+        userRole={user?.role || 'buyer'}
         isAuthenticated={true}
         onLanguageChange={handleLanguageChange}
         currentLanguage={currentLanguage}
       />
       <TabNavigation
-        userRole="farmer"
+        userRole={user?.role || 'buyer'}
         notificationCounts={notificationCounts}
       />
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
-        userRole="farmer"
+        userRole={user?.role || 'buyer'}
         isAuthenticated={true}
         notificationCounts={notificationCounts}
         currentLanguage={currentLanguage}
@@ -360,10 +402,10 @@ const OrderManagement = () => {
                     <OrderCard
                       key={order?.id}
                       order={order}
-                      onAccept={handleAcceptOrder}
-                      onDecline={handleDeclineOrder}
+                      onAccept={user?.role === 'farmer' ? handleAcceptOrder : undefined}
+                      onDecline={user?.role === 'farmer' ? handleDeclineOrder : (user?.role === 'buyer' ? handleBuyerCancel : undefined)}
                       onViewDetails={handleViewDetails}
-                      onContactBuyer={handleContactBuyer}
+                      onContactBuyer={user?.role === 'farmer' ? handleContactBuyer : undefined}
                       currentLanguage={currentLanguage}
                     />
                   ))}

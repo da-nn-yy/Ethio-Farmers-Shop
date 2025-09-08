@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { dashboardService, farmerService } from "../../services/apiService";
-import { useAuth } from "../../hooks/useAuth.jsx";
+import axios from "axios";
+import { auth } from "../../firebase"; // ✅ make sure you have firebase config
 import GlobalHeader from "../../components/ui/GlobalHeader";
 import TabNavigation from "../../components/ui/TabNavigation";
 import MobileMenu from "../../components/ui/MobileMenu";
@@ -16,10 +16,13 @@ import RecentActivityFeed from "./components/RecentActivityFeed";
 
 const DashboardFarmerHome = () => {
   const navigate = useNavigate();
-  const { user, isAuthenticated } = useAuth();
   const [currentLanguage, setCurrentLanguage] = useState("en");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // ✅ Add missing user & auth state
+  const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Dashboard data state
   const [farmerMetrics, setFarmerMetrics] = useState([]);
@@ -42,25 +45,64 @@ const DashboardFarmerHome = () => {
     localStorage.setItem("farmconnect_language", newLanguage);
   };
 
+  // ✅ Fetch user data safely
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const currentUser = auth.currentUser;
+        if (!currentUser) return;
+
+        setIsAuthenticated(true);
+
+        const idToken = await currentUser.getIdToken();
+        const API_BASE =
+          import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+        const API_URL = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
+
+        const res = await axios.get(`${API_URL}/users/me`, {
+          headers: { Authorization: `Bearer ${idToken}` },
+        });
+
+        setUser(res.data); // expect { fullName, avatar, role }
+      } catch (error) {
+        console.error("Failed to fetch user data:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   // ✅ Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated || !user) return;
 
       try {
         setIsLoading(true);
         setError(null);
 
-        // Fetch all dashboard data in parallel using new API service
+        const currentUser = auth.currentUser;
+        const idToken = await currentUser.getIdToken();
+        const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+        const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
+
+        // Fetch all dashboard data in parallel
         const [metricsRes, listingsRes, activityRes] = await Promise.all([
-          farmerService.getFarmerMetrics(),
-          farmerService.getFarmerListings({ limit: 6 }),
-          farmerService.getFarmerActivity({ limit: 5 })
+          axios.get(`${API_BASE}/farmers/metrics`, {
+            headers: { Authorization: `Bearer ${idToken}` }
+          }),
+          axios.get(`${API_BASE}/farmers/listings?limit=6`, {
+            headers: { Authorization: `Bearer ${idToken}` }
+          }),
+          axios.get(`${API_BASE}/farmers/activity?limit=5`, {
+            headers: { Authorization: `Bearer ${idToken}` }
+          })
         ]);
 
-        setFarmerMetrics(metricsRes.metrics || []);
-        setProduceListings(listingsRes.listings || []);
-        setRecentActivity(activityRes.activities || []);
+        setFarmerMetrics(metricsRes.data);
+        setProduceListings(listingsRes.data);
+        setRecentActivity(activityRes.data);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
         setError("Failed to load dashboard data");
@@ -104,17 +146,18 @@ const DashboardFarmerHome = () => {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
 
       // Refresh all dashboard data
       const [metricsRes, listingsRes, activityRes] = await Promise.all([
-        axios.get(`${API_BASE}/farmer/metrics`, {
+        axios.get(`${API_BASE}/farmers/metrics`, {
           headers: { Authorization: `Bearer ${idToken}` }
         }),
-        axios.get(`${API_BASE}/farmer/listings?limit=6`, {
+        axios.get(`${API_BASE}/farmers/listings?limit=6`, {
           headers: { Authorization: `Bearer ${idToken}` }
         }),
-        axios.get(`${API_BASE}/farmer/activity?limit=5`, {
+        axios.get(`${API_BASE}/farmers/activity?limit=5`, {
           headers: { Authorization: `Bearer ${idToken}` }
         })
       ]);
@@ -162,7 +205,8 @@ const DashboardFarmerHome = () => {
       setIsSubmitting(true);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
 
       const listingData = {
         ...editingListing,
@@ -170,7 +214,7 @@ const DashboardFarmerHome = () => {
         availableQuantity: Number(editingListing.availableQuantity)
       };
 
-      const response = await axios.put(`${API_BASE}/farmer/listings/${editingListing.id}`, listingData, {
+      const response = await axios.put(`${API_BASE}/farmers/listings/${editingListing.id}`, listingData, {
         headers: { Authorization: `Bearer ${idToken}` }
       });
 
@@ -214,12 +258,13 @@ const DashboardFarmerHome = () => {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
 
       const listing = produceListings.find(l => l.id === listingId);
       const newStatus = listing.status === 'sold_out' ? 'active' : 'sold_out';
 
-      const response = await axios.patch(`${API_BASE}/farmer/listings/${listingId}/status`, {
+      const response = await axios.patch(`${API_BASE}/farmers/listings/${listingId}/status`, {
         status: newStatus
       }, {
         headers: { Authorization: `Bearer ${idToken}` }

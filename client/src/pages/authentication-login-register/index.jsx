@@ -79,14 +79,14 @@ const AuthenticationPage = () => {
           <div className="flex items-center justify-between max-w-md mx-auto lg:max-w-lg">
             {/* Logo */}
             <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary">
                 <Icon name="Sprout" size={24} color="white" />
               </div>
               <div className="flex flex-col">
-                <span className="font-heading font-bold text-xl text-primary">
+                <span className="text-xl font-bold font-heading text-primary">
                   FarmConnect
                 </span>
-                <span className="font-caption text-xs text-text-secondary -mt-1">
+                <span className="-mt-1 text-xs font-caption text-text-secondary">
                   Ethiopia
                 </span>
               </div>
@@ -101,11 +101,11 @@ const AuthenticationPage = () => {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex items-center justify-center p-4 lg:p-6">
+        <main className="flex items-center justify-center flex-1 p-4 lg:p-6">
           <div className="w-full max-w-md lg:max-w-lg">
             {/* Welcome Section */}
-            <div className="text-center mb-8">
-              <h1 className="text-2xl lg:text-3xl font-bold text-text-primary mb-2">
+            <div className="mb-8 text-center">
+              <h1 className="mb-2 text-2xl font-bold lg:text-3xl text-text-primary">
                 {currentLanguage === 'am' ?'እንኳን ወደ FarmConnect በደህና መጡ' :'Welcome to FarmConnect'
                 }
               </h1>
@@ -116,7 +116,7 @@ const AuthenticationPage = () => {
             </div>
 
             {/* Auth Form Container */}
-            <div className="bg-surface rounded-2xl shadow-warm-lg border border-border p-6 lg:p-8">
+            <div className="p-6 border bg-surface rounded-2xl shadow-warm-lg border-border lg:p-8">
               <AuthTabs
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
@@ -142,33 +142,12 @@ const AuthenticationPage = () => {
               <TrustSignals currentLanguage={currentLanguage} />
             </div>
 
-            {/* Test Login Buttons for Development */}
-            <div className="mt-8 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <p className="text-sm text-yellow-800 mb-3 font-medium">
-                🚀 Development Mode - Quick Test Login:
-              </p>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleTestLogin('farmer')}
-                  className="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
-                >
-                  Login as Farmer
-                </button>
-                <button
-                  onClick={() => handleTestLogin('buyer')}
-                  className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
-                >
-                  Login as Buyer
-                </button>
-              </div>
-            </div>
-
             {/* Footer Help Text */}
             <div className="mt-8 text-center">
               <p className="text-sm text-text-secondary">
                 {currentLanguage === 'am' ?'ችግር አለብዎት? ' :'Need help? '
                 }
-                <button className="text-primary hover:text-primary/80 transition-smooth font-medium">
+                <button className="font-medium text-primary hover:text-primary/80 transition-smooth">
                   {currentLanguage === 'am' ? 'እርዳታ ያግኙ' : 'Get Support'}
                 </button>
               </p>
