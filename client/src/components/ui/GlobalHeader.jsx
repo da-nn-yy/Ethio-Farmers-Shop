@@ -5,6 +5,7 @@ import { auth } from "../../firebase"; // Your Firebase config
 import axios from "axios";
 import Button from "./Button";
 import Icon from "../AppIcon";
+import NotificationBell from "../NotificationBell";
 
 const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLanguage = "en" }) => {
   const navigate = useNavigate();
@@ -67,11 +68,14 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
       if (e.key === 'buyer_cart') readCartCount();
     };
     const onFocus = () => readCartCount();
+    const onCustom = () => readCartCount();
     window.addEventListener('storage', onStorage);
     window.addEventListener('focus', onFocus);
+    window.addEventListener('buyer_cart_updated', onCustom);
     return () => {
       window.removeEventListener('storage', onStorage);
       window.removeEventListener('focus', onFocus);
+      window.removeEventListener('buyer_cart_updated', onCustom);
     };
   }, []);
 
@@ -130,7 +134,14 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
                 variant="ghost"
                 size="icon"
                 className="relative text-text-secondary hover:text-primary"
-                onClick={() => navigate('/browse-listings-buyer-home#cart')}
+                onClick={() => {
+                  try {
+                    navigate('/browse-listings-buyer-home#cart');
+                    window.dispatchEvent(new Event('open_buyer_cart'));
+                  } catch {
+                    navigate('/browse-listings-buyer-home#cart');
+                  }
+                }}
               >
                 <Icon name="ShoppingCart" size={20} />
                 {cartCount > 0 && (
@@ -139,12 +150,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
                   </span>
                 )}
               </Button>
-              <Button variant="ghost" size="icon" className="relative text-text-secondary hover:text-primary">
-                <Icon name="Bell" size={20} />
-                <span className="absolute flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full -top-1 -right-1 bg-accent text-accent-foreground">
-                  3
-                </span>
-              </Button>
+              <NotificationBell />
 
               {/* User Menu */}
               <div className="flex items-center pl-4 space-x-3 border-l cursor-pointer border-border" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
@@ -217,7 +223,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
                   <Icon name="ShoppingCart" size={20} className="mr-3" /> Cart {cartCount > 0 ? `(${cartCount})` : ''}
                 </Button>
 
-                <Button variant="ghost" className="justify-start h-auto p-4" onClick={() => setIsMobileMenuOpen(false)}>
+                <Button variant="ghost" className="justify-start h-auto p-4" onClick={() => { setIsMobileMenuOpen(false); navigate('/notifications'); }}>
                   <Icon name="Bell" size={20} className="mr-3" /> Notifications
                 </Button>
 
