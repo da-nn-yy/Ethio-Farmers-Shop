@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Update API base URL configuration and fix farmer endpoint paths for listing and image upload functionality">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add line breaks to improve code formatting consistency and enhance notification integration with cart functionality">
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756890953784-394494401.png" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756891974531-561637990.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892164761-633264186.png" afterDir="false" />
@@ -13,26 +13,6 @@
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906040447-182016306.jpg" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906153234-922297177.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/FRONTEND_BACKEND_INTEGRATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/client/FRONTEND_BACKEND_INTEGRATION.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/NotificationBell.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/NotificationBell.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/NotificationCenter.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/NotificationCenter.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/TabNavigation.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/TabNavigation.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/firebase.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/firebase.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/hooks/useAuth.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/useAuth.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/dashboard-farmer-home/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/order-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/order-management/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/components/SecuritySection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/components/SecuritySection.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/API_ENDPOINTS.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/API_ENDPOINTS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/FRONTEND_INTEGRATION.md" beforeDir="false" afterPath="$PROJECT_DIR$/server/FRONTEND_INTEGRATION.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/controllers/listingController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/listingController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/controllers/notificationController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/notificationController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/controllers/orderController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/orderController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/routes/listingRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/listingRoutes.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/routes/notificationRoutes.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/routes/notificationRoutes.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -114,47 +94,7 @@
       <workItem from="1757013757770" duration="6110000" />
       <workItem from="1757027686058" duration="929000" />
       <workItem from="1757063180966" duration="4112000" />
-      <workItem from="1757326641249" duration="4030000" />
-    </task>
-    <task id="LOCAL-00016" summary="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration">
-      <option name="closed" value="true" />
-      <created>1756587089183</created>
-      <option name="number" value="00016" />
-      <option name="presentableId" value="LOCAL-00016" />
-      <option name="project" value="LOCAL" />
-      <updated>1756587089183</updated>
-    </task>
-    <task id="LOCAL-00017" summary="Add comprehensive new listing functionality to farmer dashboard with modal interface and API integration">
-      <option name="closed" value="true" />
-      <created>1756722591399</created>
-      <option name="number" value="00017" />
-      <option name="presentableId" value="LOCAL-00017" />
-      <option name="project" value="LOCAL" />
-      <updated>1756722591399</updated>
-    </task>
-    <task id="LOCAL-00018" summary="Add development user auto-creation and comprehensive image upload component for farmer listings">
-      <option name="closed" value="true" />
-      <created>1756724512657</created>
-      <option name="number" value="00018" />
-      <option name="presentableId" value="LOCAL-00018" />
-      <option name="project" value="LOCAL" />
-      <updated>1756724512657</updated>
-    </task>
-    <task id="LOCAL-00019" summary="Add development user auto-creation and comprehensive image upload component for farmer listings">
-      <option name="closed" value="true" />
-      <created>1756724550417</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1756724550417</updated>
-    </task>
-    <task id="LOCAL-00020" summary="I notice that the code diff provided is empty, which means there are no actual changes to analyze. Without any code changes (additions, deletions, or modifications), I cannot generate a meaningful commit message that describes what was actually changed in the codebase.&#10;&#10;Please provide the actual code diff showing the changes made in this commit.">
-      <option name="closed" value="true" />
-      <created>1756724578944</created>
-      <option name="number" value="00020" />
-      <option name="presentableId" value="LOCAL-00020" />
-      <option name="project" value="LOCAL" />
-      <updated>1756724578944</updated>
+      <workItem from="1757326641249" duration="5243000" />
     </task>
     <task id="LOCAL-00021" summary="Fix image upload URL generation by removing hardcoded port number">
       <option name="closed" value="true" />
@@ -508,7 +448,47 @@
       <option name="project" value="LOCAL" />
       <updated>1757331735769</updated>
     </task>
-    <option name="localTasksCounter" value="65" />
+    <task id="LOCAL-00065" summary="Update API base URL configuration and fix farmer endpoint paths for listing and image upload functionality">
+      <option name="closed" value="true" />
+      <created>1757341990978</created>
+      <option name="number" value="00065" />
+      <option name="presentableId" value="LOCAL-00065" />
+      <option name="project" value="LOCAL" />
+      <updated>1757341990978</updated>
+    </task>
+    <task id="LOCAL-00066" summary="Update avatar handling and add admin listing deletion functionality">
+      <option name="closed" value="true" />
+      <created>1757342077862</created>
+      <option name="number" value="00066" />
+      <option name="presentableId" value="LOCAL-00066" />
+      <option name="project" value="LOCAL" />
+      <updated>1757342077862</updated>
+    </task>
+    <task id="LOCAL-00067" summary="Add line breaks to improve code formatting consistency across notification components">
+      <option name="closed" value="true" />
+      <created>1757342096366</created>
+      <option name="number" value="00067" />
+      <option name="presentableId" value="LOCAL-00067" />
+      <option name="project" value="LOCAL" />
+      <updated>1757342096366</updated>
+    </task>
+    <task id="LOCAL-00068" summary="Update API base URL configuration from port 5000 to 5001 and add enhanced cart interaction features">
+      <option name="closed" value="true" />
+      <created>1757342151689</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1757342151689</updated>
+    </task>
+    <task id="LOCAL-00069" summary="Add line breaks to improve code formatting consistency and enhance notification integration with cart functionality">
+      <option name="closed" value="true" />
+      <created>1757342432135</created>
+      <option name="number" value="00069" />
+      <option name="presentableId" value="LOCAL-00069" />
+      <option name="project" value="LOCAL" />
+      <updated>1757342432135</updated>
+    </task>
+    <option name="localTasksCounter" value="70" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -542,9 +522,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Refactor user routes to use cleaner URL structure and centralized authentication middleware" />
-    <MESSAGE value="Add comprehensive dashboard controller with role-based analytics and centralized API service layer" />
-    <MESSAGE value="Add comprehensive favorites system with bulk operations and frontend integration" />
     <MESSAGE value="Add comprehensive market trends, reviews, and notifications system with full CRUD operations and analytics" />
     <MESSAGE value="Add comprehensive search system with advanced filtering and analytics capabilities" />
     <MESSAGE value="Add centralized API routing system with comprehensive route organization and health check endpoint" />
@@ -562,11 +539,14 @@
     <MESSAGE value="Add account deletion functionality and improve authentication integration with Firebase" />
     <MESSAGE value="Add line breaks to improve code formatting consistency across review components and routes" />
     <MESSAGE value="Add line breaks to improve code formatting consistency across market trends and review controllers" />
-    <MESSAGE value="Update avatar handling and add admin listing deletion functionality" />
     <MESSAGE value="Update API base URL configuration to use port 5001 and remove development authentication bypass" />
     <MESSAGE value="Fix authentication integration and update API base URL configuration across dashboard components" />
     <MESSAGE value="Update database import path and improve authentication handling across controllers and services" />
     <MESSAGE value="Update API base URL configuration and fix farmer endpoint paths for listing and image upload functionality" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update API base URL configuration and fix farmer endpoint paths for listing and image upload functionality" />
+    <MESSAGE value="Update avatar handling and add admin listing deletion functionality" />
+    <MESSAGE value="Add line breaks to improve code formatting consistency across notification components" />
+    <MESSAGE value="Update API base URL configuration from port 5000 to 5001 and add enhanced cart interaction features" />
+    <MESSAGE value="Add line breaks to improve code formatting consistency and enhance notification integration with cart functionality" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add line breaks to improve code formatting consistency and enhance notification integration with cart functionality" />
   </component>
 </project>
