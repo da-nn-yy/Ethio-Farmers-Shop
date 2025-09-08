@@ -1,10 +1,16 @@
 import { pool } from '../config/database.js';
+import { createOrderNotification } from './notificationController.js';
 
 // Create new order (buyer places order)
 export const createOrder = async (req, res) => {
   try {
-    const { listingId, quantity, totalPrice, notes } = req.body;
+    const { items, notes, deliveryFee = 0 } = req.body;
     const buyerFirebaseUid = req.user.uid; // From auth middleware
+
+    // Validate input
+    if (!items || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Items array is required' });
+    }
 
     const connection = await pool.getConnection();
 
@@ -24,65 +30,95 @@ export const createOrder = async (req, res) => {
       }
       const buyerId = buyerRows[0].id;
 
-      // Get listing details and check availability
-      const [listingRows] = await connection.execute(
-        'SELECT id, farmer_user_id, crop, unit, title as name, price_per_unit as pricePerUnit, quantity as availableQuantity, region as location FROM produce_listings WHERE id = ? AND status = "active"',
-        [listingId]
-      );
+      let totalSubtotal = 0;
+      const orderItems = [];
 
-      if (listingRows.length === 0) {
-        await connection.rollback();
-        connection.release();
-        return res.status(404).json({ error: 'Listing not found or inactive' });
+      // Process each item
+      for (const item of items) {
+        const { listingId, quantity } = item;
+
+        if (!listingId || !quantity) {
+          await connection.rollback();
+          connection.release();
+          return res.status(400).json({ error: 'Each item must have listingId and quantity' });
+        }
+
+        // Get listing details and check availability
+        const [listingRows] = await connection.execute(
+          'SELECT id, farmer_user_id, crop, unit, title as name, price_per_unit as pricePerUnit, quantity as availableQuantity, region as location FROM produce_listings WHERE id = ? AND status = "active"',
+          [listingId]
+        );
+
+        if (listingRows.length === 0) {
+          await connection.rollback();
+          connection.release();
+          return res.status(404).json({ error: `Listing ${listingId} not found or inactive` });
+        }
+
+        const listing = listingRows[0];
+
+        if (listing.availableQuantity < quantity) {
+          await connection.rollback();
+          connection.release();
+          return res.status(400).json({ error: `Insufficient quantity available for ${listing.name}` });
+        }
+
+        // Calculate line total
+        const lineTotal = Number(listing.pricePerUnit) * Number(quantity);
+        totalSubtotal += lineTotal;
+
+        orderItems.push({
+          listingId,
+          quantity,
+          listing,
+          lineTotal
+        });
       }
 
-      const listing = listingRows[0];
+      // For multi-item orders, we'll use the first farmer as the primary farmer
+      // In a real system, you might want to create separate orders per farmer
+      const primaryFarmerId = orderItems[0].listing.farmer_user_id;
 
-      if (listing.availableQuantity < quantity) {
-        await connection.rollback();
-        connection.release();
-        return res.status(400).json({ error: 'Insufficient quantity available' });
-      }
-
-      // Calculate totals (server-trusted)
-      const lineTotal = Number(listing.pricePerUnit) * Number(quantity);
-
-      // Create order (subtotal only, delivery_fee default 0)
+      // Create order
       const [orderResult] = await connection.execute(
         `INSERT INTO orders (
           buyer_user_id,
           farmer_user_id,
           status,
           subtotal,
+          delivery_fee,
           currency,
           notes,
           created_at
-        ) VALUES (?, ?, 'pending', ?, 'ETB', ?, NOW())`,
-        [buyerId, listing.farmer_user_id, lineTotal, notes || null]
+        ) VALUES (?, ?, 'pending', ?, ?, 'ETB', ?, NOW())`,
+        [buyerId, primaryFarmerId, totalSubtotal, deliveryFee, notes || null]
       );
 
       const orderId = orderResult.insertId;
 
-      // Insert order item (snapshot)
-      await connection.execute(
-        `INSERT INTO order_items (
-          order_id,
-          listing_id,
-          crop,
-          unit,
-          price_per_unit,
-          quantity
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
-        [orderId, listingId, listing.crop, listing.unit || 'kg', listing.pricePerUnit, quantity]
-      );
+      // Insert order items and update listings
+      for (const item of orderItems) {
+        // Insert order item (snapshot)
+        await connection.execute(
+          `INSERT INTO order_items (
+            order_id,
+            listing_id,
+            crop,
+            unit,
+            price_per_unit,
+            quantity
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+          [orderId, item.listingId, item.listing.crop, item.listing.unit || 'kg', item.listing.pricePerUnit, item.quantity]
+        );
 
-      // Update listing availability
-      await connection.execute('UPDATE produce_listings SET quantity = quantity - ? WHERE id = ?', [quantity, listingId]);
+        // Update listing availability
+        await connection.execute('UPDATE produce_listings SET quantity = quantity - ? WHERE id = ?', [item.quantity, item.listingId]);
 
-      // Update listing status if quantity becomes 0
-      const remaining = listing.availableQuantity - Number(quantity);
-      if (remaining === 0) {
-        await connection.execute('UPDATE produce_listings SET status = "sold" WHERE id = ?', [listingId]);
+        // Update listing status if quantity becomes 0
+        const remaining = item.listing.availableQuantity - Number(item.quantity);
+        if (remaining === 0) {
+          await connection.execute('UPDATE produce_listings SET status = "sold" WHERE id = ?', [item.listingId]);
+        }
       }
 
       // Commit transaction
@@ -114,9 +150,17 @@ export const createOrder = async (req, res) => {
 
       connection.release();
 
+      // Notify farmer of new order
+      try {
+        await createOrderNotification(orderId, 'order_created', primaryFarmerId);
+      } catch (e) {
+        console.error('Failed to create order notification:', e);
+      }
+
       res.status(201).json({
         message: 'Order created successfully',
-        order: orderRows[0]
+        order: orderRows[0],
+        totalItems: orderItems.length
       });
 
     } catch (error) {
@@ -245,13 +289,24 @@ export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    const userId = req.user.id;
+    // Resolve current user DB id
+    const uid = req.user.uid;
+    let userId;
+    if (uid && uid.startsWith('dev-uid-')) {
+      userId = req.user.id;
+    } else {
+      const [userRows] = await pool.query('SELECT id FROM users WHERE firebase_uid = ?', [uid]);
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      userId = userRows[0].id;
+    }
 
     const connection = await pool.getConnection();
 
         // Verify the user is the farmer for this order
     const [orderRows] = await connection.execute(
-      `SELECT o.farmer_id FROM orders o WHERE o.id = ?`,
+      `SELECT o.farmer_user_id FROM orders o WHERE o.id = ?`,
       [id]
     );
 
@@ -260,7 +315,7 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    if (orderRows[0].farmer_id !== userId) {
+    if (orderRows[0].farmer_user_id !== userId) {
       connection.release();
       return res.status(403).json({ error: 'Not authorized to update this order' });
     }
@@ -273,6 +328,26 @@ export const updateOrderStatus = async (req, res) => {
 
     connection.release();
 
+    // Create notifications on important transitions
+    try {
+      if (status === 'confirmed') {
+        // Notify buyer that order confirmed
+        const [buyerRows] = await pool.query('SELECT buyer_user_id FROM orders WHERE id = ?', [id]);
+        const buyerUserId = buyerRows?.[0]?.buyer_user_id;
+        if (buyerUserId) await createOrderNotification(id, 'order_confirmed', buyerUserId);
+      } else if (status === 'completed') {
+        const [buyerRows] = await pool.query('SELECT buyer_user_id FROM orders WHERE id = ?', [id]);
+        const buyerUserId = buyerRows?.[0]?.buyer_user_id;
+        if (buyerUserId) await createOrderNotification(id, 'order_completed', buyerUserId);
+      } else if (status === 'cancelled') {
+        const [buyerRows] = await pool.query('SELECT buyer_user_id FROM orders WHERE id = ?', [id]);
+        const buyerUserId = buyerRows?.[0]?.buyer_user_id;
+        if (buyerUserId) await createOrderNotification(id, 'order_cancelled', buyerUserId);
+      }
+    } catch (e) {
+      console.error('Failed to create status notification:', e);
+    }
+
     res.json({ message: 'Order status updated successfully' });
   } catch (error) {
     console.error('Error updating order status:', error);
@@ -284,7 +359,18 @@ export const updateOrderStatus = async (req, res) => {
 export const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    const buyerId = req.user.id;
+    // Resolve buyer user id
+    const uid = req.user.uid;
+    let buyerId;
+    if (uid && uid.startsWith('dev-uid-')) {
+      buyerId = req.user.id;
+    } else {
+      const [userRows] = await pool.query('SELECT id FROM users WHERE firebase_uid = ?', [uid]);
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      buyerId = userRows[0].id;
+    }
 
     const connection = await pool.getConnection();
 
@@ -294,7 +380,7 @@ export const cancelOrder = async (req, res) => {
     try {
       // Get order details
       const [orderRows] = await connection.execute(
-        'SELECT * FROM orders WHERE id = ? AND buyer_id = ? AND status = "pending"',
+        'SELECT id FROM orders WHERE id = ? AND buyer_user_id = ? AND status = "pending"',
         [id, buyerId]
       );
 
@@ -304,25 +390,28 @@ export const cancelOrder = async (req, res) => {
         return res.status(404).json({ error: 'Order not found or cannot be cancelled' });
       }
 
-      const order = orderRows[0];
-
       // Update order status to cancelled
       await connection.execute(
         'UPDATE orders SET status = "cancelled", updated_at = NOW() WHERE id = ?',
         [id]
       );
 
-      // Restore listing quantity
-      await connection.execute(
-        'UPDATE produce_listings SET available_quantity = available_quantity + ? WHERE id = ?',
-        [order.quantity, order.listing_id]
+      // Restore listing quantities for items in this order
+      const [items] = await connection.execute(
+        'SELECT listing_id, quantity FROM order_items WHERE order_id = ?',
+        [id]
       );
-
-      // Update listing status back to active if it was sold out
-      await connection.execute(
-        'UPDATE produce_listings SET status = "active" WHERE id = ? AND status = "sold_out"',
-        [order.listing_id]
-      );
+      for (const it of items) {
+        await connection.execute(
+          'UPDATE produce_listings SET quantity = quantity + ? WHERE id = ?',
+          [it.quantity, it.listing_id]
+        );
+        // If previously sold, ensure status is active again when quantity > 0
+        await connection.execute(
+          'UPDATE produce_listings SET status = "active" WHERE id = ? AND quantity > 0',
+          [it.listing_id]
+        );
+      }
 
       // Commit transaction
       await connection.commit();

@@ -17,20 +17,21 @@ export const getAllActiveListings = async (req, res) => {
         pl.created_at as createdAt,
         pl.updated_at as updatedAt,
         u.full_name as farmerName,
-        u.avatar_url as farmerAvatar,
+        ua.url as farmerAvatar,
         pl.region as location,
         pl.unit,
         pl.currency
       FROM produce_listings pl
       JOIN users u ON pl.farmer_user_id = u.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
+      LEFT JOIN user_avatars ua ON ua.user_id = u.id
       WHERE pl.status = 'active'
       AND pl.quantity > 0
       ORDER BY pl.created_at DESC
     `;
 
     const [rows] = await pool.query(query);
-    res.json(rows);
+    res.json({ listings: rows });
   } catch (error) {
     console.error('Error fetching active listings:', error);
     res.status(500).json({ error: 'Failed to fetch listings' });
@@ -56,7 +57,7 @@ export const getListingById = async (req, res) => {
         pl.created_at as createdAt,
         pl.updated_at as updatedAt,
         u.full_name as farmerName,
-        u.avatar_url as farmerAvatar,
+        ua.url as farmerAvatar,
         pl.region as location,
         u.phone as farmerPhone,
         u.email as farmerEmail,
@@ -65,6 +66,7 @@ export const getListingById = async (req, res) => {
       FROM produce_listings pl
       JOIN users u ON pl.farmer_user_id = u.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
+      LEFT JOIN user_avatars ua ON ua.user_id = u.id
       WHERE pl.id = ?
     `;
 
@@ -159,13 +161,14 @@ export const searchListings = async (req, res) => {
         pl.created_at as createdAt,
         pl.updated_at as updatedAt,
         u.full_name as farmerName,
-        u.avatar_url as farmerAvatar,
+        ua.url as farmerAvatar,
         pl.region as location,
         pl.unit,
         pl.currency
       FROM produce_listings pl
       JOIN users u ON pl.farmer_user_id = u.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
+      LEFT JOIN user_avatars ua ON ua.user_id = u.id
       ${whereClause}
       ${orderClause}
       LIMIT ? OFFSET ?
@@ -200,13 +203,14 @@ export const getListingsByCategory = async (req, res) => {
         pl.created_at as createdAt,
         pl.updated_at as updatedAt,
         u.full_name as farmerName,
-        u.avatar_url as farmerAvatar,
+        ua.url as farmerAvatar,
         pl.region as location,
         pl.unit,
         pl.currency
       FROM produce_listings pl
       JOIN users u ON pl.farmer_user_id = u.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
+      LEFT JOIN user_avatars ua ON ua.user_id = u.id
       WHERE pl.crop = ?
       AND pl.status = 'active'
       AND pl.quantity > 0
@@ -240,13 +244,14 @@ export const getListingsByRegion = async (req, res) => {
         pl.created_at as createdAt,
         pl.updated_at as updatedAt,
         u.full_name as farmerName,
-        u.avatar_url as farmerAvatar,
+        ua.url as farmerAvatar,
         pl.region as location,
         pl.unit,
         pl.currency
       FROM produce_listings pl
       JOIN users u ON pl.farmer_user_id = u.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
+      LEFT JOIN user_avatars ua ON ua.user_id = u.id
       WHERE pl.region = ?
       AND pl.status = 'active'
       AND pl.quantity > 0
@@ -556,6 +561,31 @@ export const deleteListing = async (req, res) => {
   } catch (error) {
     console.error('Error deleting listing:', error);
     res.status(500).json({ error: "Failed to delete listing" });
+  }
+};
+
+// ADMIN: Delete all listings and related data
+export const deleteAllListings = async (req, res) => {
+  try {
+    const uid = req.user?.uid;
+    // Optional: verify user is admin; if no role system, skip
+    // Best-effort cleanup of dependent tables before deleting listings
+    // Favorites
+    await pool.query(
+      `DELETE f FROM favorites f WHERE f.listing_id IN (SELECT id FROM produce_listings)`
+    );
+    // Order items referencing listings
+    await pool.query(
+      `DELETE oi FROM order_items oi WHERE oi.listing_id IN (SELECT id FROM produce_listings)`
+    );
+    // Listing images
+    await pool.query(`DELETE FROM listing_images`);
+    // Finally delete listings
+    const [result] = await pool.query(`DELETE FROM produce_listings`);
+    res.json({ message: "All listings deleted", deleted: result.affectedRows });
+  } catch (error) {
+    console.error('Error deleting all listings:', error);
+    res.status(500).json({ error: "Failed to delete all listings" });
   }
 };
 
