@@ -144,7 +144,7 @@ const SecuritySection = ({ currentLanguage }) => {
         return;
       }
       const token = await user.getIdToken();
-      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
       const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
 
       // Fetch own user id

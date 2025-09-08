@@ -1,11 +1,31 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
+import { orderService } from '../../services/apiService';
+import { useAuth } from '../../hooks/useAuth.jsx';
 
 
 const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
+  const [ordersBadge, setOrdersBadge] = useState(0);
+
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        if (!isAuthenticated) return;
+        const data = await orderService.getOrderStats();
+        const pending = data?.stats?.pending_orders ?? 0;
+        setOrdersBadge(Number(pending) || 0);
+      } catch (_) {
+        setOrdersBadge(0);
+      }
+    };
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 30000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   // Role-based navigation configuration
   const getNavigationItems = () => {
@@ -37,7 +57,7 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
           icon: 'ShoppingBag',
           path: '/order-management',
           roles: ['farmer'],
-          badge: notificationCounts?.orders || 0
+          badge: (typeof notificationCounts?.orders === 'number' ? notificationCounts.orders : ordersBadge)
         },
         {
           id: 'market',
@@ -66,7 +86,7 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
           icon: 'ShoppingBag',
           path: '/order-management',
           roles: ['buyer'],
-          badge: notificationCounts?.orders || 0
+          badge: (typeof notificationCounts?.orders === 'number' ? notificationCounts.orders : ordersBadge)
         },
         {
           id: 'market',
@@ -92,7 +112,7 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
   };
 
   return (
-    <nav className="fixed top-16 lg:top-18 left-0 right-0 z-40 bg-surface border-b border-border shadow-warm">
+    <nav className="fixed left-0 right-0 z-40 border-b top-16 lg:top-18 bg-surface border-border shadow-warm">
       <div className="flex items-center justify-center lg:justify-start lg:px-6">
         <div className="flex w-full lg:w-auto">
           {navigationItems?.map((item, index) => {
@@ -118,8 +138,8 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
                     size={20}
                     className={`transition-smooth ${active ? 'text-primary' : 'text-current'}`}
                   />
-                  {item?.badge && item?.badge > 0 && (
-                    <span className="absolute -top-2 -right-2 w-5 h-5 bg-accent text-accent-foreground text-xs font-medium rounded-full flex items-center justify-center">
+                  {typeof item?.badge === 'number' && (
+                    <span className="absolute flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full -top-2 -right-2 bg-accent text-accent-foreground">
                       {item?.badge > 99 ? '99+' : item?.badge}
                     </span>
                   )}
@@ -129,7 +149,7 @@ const TabNavigation = ({ userRole = 'farmer', notificationCounts = {} }) => {
                 </span>
                 {/* Active indicator for desktop */}
                 {active && (
-                  <div className="hidden lg:block absolute right-0 top-1/2 transform -translate-y-1/2 w-1 h-8 bg-primary rounded-l-full" />
+                  <div className="absolute right-0 hidden w-1 h-8 transform -translate-y-1/2 rounded-l-full lg:block top-1/2 bg-primary" />
                 )}
               </button>
             );

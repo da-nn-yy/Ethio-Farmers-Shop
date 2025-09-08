@@ -16,6 +16,8 @@ const ProduceCard = ({
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
+  const [isPressed, setIsPressed] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
 
   const translations = {
     en: {
@@ -46,6 +48,8 @@ const ProduceCard = ({
     setIsAdding(true);
     await onAddToCart(listing?.id, quantity);
     setIsAdding(false);
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 1500);
   };
 
   const handleQuantityChange = (change) => {
@@ -237,12 +241,17 @@ const ProduceCard = ({
             size="sm"
             onClick={handleAddToCart}
             loading={isAdding}
-            className="flex-1"
+            className={`flex-1 transition-transform ${isPressed ? 'scale-95 ring-2 ring-primary' : ''}`}
+            onMouseDown={() => setIsPressed(true)}
+            onMouseUp={() => setIsPressed(false)}
+            onMouseLeave={() => setIsPressed(false)}
+            onTouchStart={() => setIsPressed(true)}
+            onTouchEnd={() => setIsPressed(false)}
             iconName="ShoppingCart"
             iconPosition="left"
             iconSize={16}
           >
-            {t?.addToCart}
+            {justAdded ? (currentLanguage === 'am' ? 'ታክሏል' : 'Added') : t?.addToCart}
           </Button>
           <Button
             variant="outline"
@@ -254,6 +263,11 @@ const ProduceCard = ({
             {t?.contact}
           </Button>
         </div>
+        {justAdded && (
+          <div className="mt-3 p-2 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
+            {currentLanguage === 'am' ? 'ንጥል ወደ ጋሪ ታክሏል!' : 'Item added to cart!'}
+          </div>
+        )}
       </div>
     </div>
   );

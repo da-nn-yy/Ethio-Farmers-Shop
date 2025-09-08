@@ -15,6 +15,39 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     initializeAuth();
+    // Keep Firebase auth state in sync across refreshes
+    const unsubscribe = auth.onIdTokenChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        const idToken = await firebaseUser.getIdToken();
+        localStorage.setItem('authToken', idToken);
+        localStorage.setItem('isAuthenticated', 'true');
+        try {
+          const me = await userService.getMe();
+          if (me && me.id) {
+            setUser({
+              id: me.id,
+              firebase_uid: me.firebaseUid,
+              email: me.email,
+              fullName: me.fullName,
+              role: me.role,
+              region: me.region,
+              woreda: me.woreda,
+              avatarUrl: me.avatarUrl || null,
+              created_at: me.createdAt
+            });
+            setIsAuthenticated(true);
+            localStorage.setItem('userRole', me.role);
+          }
+        } catch {}
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userRole');
+      }
+    });
+    return () => unsubscribe();
   }, []);
 
   const initializeAuth = async () => {
@@ -47,7 +80,7 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error('Token verification failed:', error);
-          logout();
+          // keep local session; will re-sync via onIdTokenChanged
         }
       }
     } catch (error) {
