@@ -18,21 +18,31 @@ const router = Router();
 // All routes require authentication
 router.use(authGuard);
 
-// Farmer dashboard and metrics
+// Get farmer dashboard metrics (active listings, pending orders, earnings, reviews)
 router.get('/metrics', getFarmerMetrics);
-router.get('/activity', getFarmerRecentActivity);
 
-// Farmer listings management
+// Get farmer's active produce listings
 router.get('/listings', getFarmerListings);
-router.post('/listings', createFarmerListing);
-router.put('/listings/:id', updateFarmerListing);
-router.patch('/listings/:id/status', updateListingStatus);
 
-// Farmer orders
+// Get farmer's orders (pending, confirmed, completed)
 router.get('/orders', getFarmerOrders);
 
-// Image upload
+// Get recent activity feed for farmer
+router.get('/activity', getFarmerRecentActivity);
+
+// Create new produce listing
+router.post('/listings', createFarmerListing);
+
+// Update existing produce listing
+router.put('/listings/:id', updateFarmerListing);
+
+// Update listing status
+router.patch('/listings/:id/status', updateListingStatus);
+
+// Upload image
 router.post('/upload-image', upload.single('image'), handleUploadError, uploadImage);
+
+// Attach image to a specific listing (file or JSON url)
 router.post('/listings/:id/images', upload.single('image'), handleUploadError, addListingImage);
 
 export default router;

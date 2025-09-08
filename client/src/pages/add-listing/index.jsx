@@ -187,7 +187,8 @@ const AddListing = () => {
     setIsSubmitting(true);
 
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
+      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
+      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
       const currentUser = auth.currentUser;
       if (!currentUser) {
         navigate('/authentication-login-register');
@@ -206,7 +207,7 @@ const AddListing = () => {
         location: formData.region
       };
 
-      const response = await axios.post(`${API_BASE}/farmer/listings`, listingData, {
+      const response = await axios.post(`${API_BASE}/farmers/listings`, listingData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${idToken}`
@@ -219,7 +220,7 @@ const AddListing = () => {
         // If image URLs exist, attach the first as primary
         if (createdId && Array.isArray(formData.images) && formData.images.length > 0) {
           try {
-            await axios.post(`${API_BASE}/farmer/listings/${createdId}/images`, { url: formData.images[0] }, {
+            await axios.post(`${API_BASE}/farmers/listings/${createdId}/images`, { imageUrl: formData.images[0] }, {
               headers: {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${idToken}`

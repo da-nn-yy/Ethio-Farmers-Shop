@@ -28,7 +28,8 @@ const ImagesSection = ({ formData, formErrors, onUpdate, currentLanguage }) => {
     setUploading(true);
 
     try {
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
       const currentUser = auth.currentUser;
       if (!currentUser) {
         alert(currentLanguage === 'en' ? 'Please log in again.' : 'እባክዎን እንደገና ይግቡ።');
@@ -39,7 +40,7 @@ const ImagesSection = ({ formData, formErrors, onUpdate, currentLanguage }) => {
       const form = new FormData();
       form.append('image', file);
 
-      const response = await axios.post(`${API_BASE}/farmer/upload-image`, form, {
+      const response = await axios.post(`${API_BASE}/farmers/upload-image`, form, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${idToken}`
