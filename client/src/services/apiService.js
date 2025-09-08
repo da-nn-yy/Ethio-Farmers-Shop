@@ -32,13 +32,7 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('userRole');
-      window.location.href = '/authentication-login-register';
-    }
+    // Avoid hard redirects on 401; let auth layer handle re-auth or state
     return Promise.reject(error);
   }
 );

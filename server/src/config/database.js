@@ -19,6 +19,7 @@ export const testConnection = async () => {
     connection.release();
   } catch (error) {
     console.error('❌ Database connection failed:', error.message);
-    process.exit(1);
+    // Do not exit; let the server continue and handle DB-less endpoints
+    throw error;
   }
 };
