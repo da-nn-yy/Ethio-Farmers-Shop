@@ -12,6 +12,7 @@ import ProduceCard from './components/ProduceCard';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
 import Button from '../../components/ui/Button';
+import Icon from '../../components/AppIcon';
 
 const BrowseListingsBuyerHome = () => {
   const navigate = useNavigate();
@@ -528,6 +529,8 @@ const BrowseListingsBuyerHome = () => {
   useEffect(() => {
     try {
       localStorage.setItem('buyer_cart', JSON.stringify(cartItems));
+      // Notify other components (e.g., header) in the same tab
+      window.dispatchEvent(new Event('buyer_cart_updated'));
     } catch {}
   }, [cartItems]);
 
@@ -538,6 +541,8 @@ const BrowseListingsBuyerHome = () => {
     };
     openIfHashCart();
     window.addEventListener('hashchange', openIfHashCart);
+    const openOnEvent = () => setIsCartOpen(true);
+    window.addEventListener('open_buyer_cart', openOnEvent);
     return () => window.removeEventListener('hashchange', openIfHashCart);
   }, []);
 
@@ -573,6 +578,10 @@ const BrowseListingsBuyerHome = () => {
 
       await orderService.createOrder(orderData);
       clearCart();
+      try {
+        localStorage.setItem('buyer_cart', JSON.stringify([]));
+        window.dispatchEvent(new Event('buyer_cart_updated'));
+      } catch {}
       setIsCartOpen(false);
       alert(currentLanguage === 'am' ? 'ትዕዛዝ ተልኳል!' : 'Order placed!');
       navigate('/order-management');
@@ -595,7 +604,7 @@ const BrowseListingsBuyerHome = () => {
         currentLanguage={currentLanguage}
       />
       {/* Tab Navigation - show Dashboard label for buyers */}
-      <TabNavigation userRole="buyer" notificationCounts={{ orders: 3 }} />
+      <TabNavigation userRole="buyer" />
       {/* Search Header */}
       <SearchHeader
         searchQuery={searchQuery}
@@ -715,7 +724,7 @@ const BrowseListingsBuyerHome = () => {
           <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden">
             <div className="flex items-center justify-between p-4 border-b border-border">
               <h3 className="text-lg font-semibold text-text-primary">{currentLanguage === 'am' ? 'የግዛት ካርት' : 'Shopping Cart'}</h3>
-              <button onClick={() => setIsCartOpen(false)} className="text-text-secondary">×</button>
+              <button onClick={() => { setIsCartOpen(false); try { if (window.location.hash === '#cart') window.location.hash = ''; } catch {} }} className="text-text-secondary">×</button>
             </div>
             <div className="p-4 overflow-y-auto max-h-96">
               {cartItems.length === 0 ? (

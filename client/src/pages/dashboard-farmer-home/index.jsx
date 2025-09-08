@@ -301,7 +301,7 @@ const DashboardFarmerHome = () => {
         currentLanguage={currentLanguage}
       />
 
-      <TabNavigation userRole="farmer" notificationCounts={notificationCounts} />
+      <TabNavigation userRole="farmer" />
 
       <MobileMenu
         isOpen={isMobileMenuOpen}

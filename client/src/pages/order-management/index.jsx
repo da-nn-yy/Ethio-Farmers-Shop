@@ -301,7 +301,6 @@ const OrderManagement = () => {
       />
       <TabNavigation
         userRole={user?.role || 'buyer'}
-        notificationCounts={notificationCounts}
       />
       <MobileMenu
         isOpen={isMobileMenuOpen}

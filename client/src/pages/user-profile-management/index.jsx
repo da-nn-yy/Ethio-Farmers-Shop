@@ -66,17 +66,25 @@ const UserProfileManagement = () => {
       if (!currentUser || !file) return;
       const token = await currentUser.getIdToken();
       const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
+      const API_URL = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
       const form = new FormData();
       form.append('image', file);
-      const { data } = await axios.post(`${API_BASE}/users/me/avatar`, form, {
+      // Optimistic preview
+      const optimisticUrl = URL.createObjectURL(file);
+      setUser(prev => ({ ...(prev || {}), avatarUrl: optimisticUrl }));
+
+      const { data } = await axios.post(`${API_URL}/users/me/avatar`, form, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${token}`
         }
       });
-      setUser(prev => ({ ...(prev || {}), avatarUrl: data.avatarUrl }));
+      const finalUrl = data?.avatarUrl ? `${data.avatarUrl}${data.avatarUrl.includes('?') ? '&' : '?'}cb=${Date.now()}` : optimisticUrl;
+      setUser(prev => ({ ...(prev || {}), avatarUrl: finalUrl }));
     } catch (e) {
-      // ignore for now
+      // Revert optimistic update on failure
+      await new Promise(r => setTimeout(r, 0));
+      setUser(prev => ({ ...(prev || {}), avatarUrl: prev?.avatarUrl }));
     }
   };
 
