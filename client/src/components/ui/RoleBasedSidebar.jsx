@@ -9,7 +9,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
   const navigate = useNavigate();
   const { language } = useLanguage();
   const { logout } = useAuth();
-  
+
   // State for enhanced admin features
   const [searchQuery, setSearchQuery] = useState('');
   const [notificationCount, setNotificationCount] = useState(12);
@@ -298,10 +298,10 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
 
   const filteredAdminSections = useMemo(() => {
     if (!searchQuery) return adminMenuSections;
-    
+
     return adminMenuSections.map(section => ({
       ...section,
-      items: section.items.filter(item => 
+      items: section.items.filter(item =>
         item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (item.nameAm && item.nameAm.includes(searchQuery))
       )
@@ -331,7 +331,6 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
     if (userRole !== 'admin') return;
 
     const handleKeyPress = (e) => {
-      // Handle Ctrl/Cmd shortcuts for quick actions
       if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
           case 'u':
@@ -352,8 +351,6 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
             return;
         }
       }
-      
-      // Handle single key shortcuts for menu items
       const sections = adminMenuSections;
       for (const section of sections) {
         for (const item of section.items) {
@@ -375,47 +372,43 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
   }
 
   return (
-    <div className={`fixed left-0 top-0 h-full bg-gradient-to-b from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300 z-40 ${
+    <div className={`fixed left-0 top-16 h-[calc(100vh-4rem)] bg-surface border-r border-border transition-all duration-300 z-40 ${
       isCollapsed ? 'w-16' : 'w-72'
     }`}>
       {/* Toggle Button */}
       <button
         onClick={onToggleCollapse}
-        className={`absolute -right-3 top-4 w-6 h-6 text-white rounded-full flex items-center justify-center transition-colors shadow-lg ${
-          userRole === 'admin' 
-            ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
-            : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700'
-        }`}
+        className={`absolute -right-3 top-4 w-6 h-6 text-white rounded-full flex items-center justify-center transition-colors shadow-lg bg-primary hover:bg-primary/90`}
+        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
       >
         <Icon name={isCollapsed ? 'ChevronRight' : 'ChevronLeft'} className="w-4 h-4" />
       </button>
 
       {/* Admin Header */}
       {userRole === 'admin' && (
-        <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+        <div className="px-4 py-3 border-b border-border">
           {!isCollapsed ? (
             <div className="space-y-3">
-              {/* Admin Badge */}
-              <div className="flex items-center space-x-2 px-3 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg shadow-md">
-                <Icon name="Shield" className="w-4 h-4" />
+              <div className="flex items-center space-x-2 px-3 py-2 rounded-lg text-white bg-primary">
+                <div className="w-10 h-10 rounded-md flex items-center justify-center bg-primary/90">
+                  <Icon name="Shield" className="w-5 h-5" />
+                </div>
                 <span className="text-sm font-semibold">Admin Panel</span>
                 <div className="ml-auto w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
               </div>
-              
-              {/* Search Bar */}
               <div className="relative">
-                <Icon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Icon name="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-secondary" />
                 <input
                   type="text"
                   placeholder={language === 'am' ? 'ፍለጋ...' : 'Search...'}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  className="w-full pl-9 pr-3 py-2 text-sm rounded-lg bg-muted border border-border focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-secondary hover:text-text-primary"
                   >
                     <Icon name="X" className="w-4 h-4" />
                   </button>
@@ -424,8 +417,8 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
             </div>
           ) : (
             <div className="flex justify-center">
-              <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-md">
-                <Icon name="Shield" className="w-4 h-4 text-white" />
+              <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary text-white">
+                <Icon name="Shield" className="w-4 h-4" />
               </div>
             </div>
           )}
@@ -435,50 +428,49 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
       {/* Menu Items */}
       <nav className="flex-1 overflow-y-auto py-4">
         {userRole === 'admin' ? (
-          <div className="px-4 space-y-1">
+          <div className="px-2 space-y-1">
             {filteredAdminSections.map((section) => (
               <div key={section.id} className="space-y-1">
-                {/* Section Header */}
                 {!isCollapsed && (
                   <button
                     onClick={() => toggleSection(section.id)}
-                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 uppercase tracking-wider hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+                    className="w-full flex items-center justify-between px-2 py-2 text-xs font-semibold uppercase tracking-wider rounded-lg text-text-secondary hover:bg-accent"
                   >
                     <div className="flex items-center space-x-2">
-                      <Icon name={section.icon} className="w-3 h-3" />
+                      <div className="w-10 h-10 rounded-md flex items-center justify-center">
+                        <Icon name={section.icon} className="w-4 h-4" />
+                      </div>
                       <span>{language === 'am' ? section.nameAm : section.name}</span>
                     </div>
-                    <Icon 
-                      name={expandedSections[section.id] ? 'ChevronUp' : 'ChevronDown'} 
-                      className="w-3 h-3 transition-transform" 
+                    <Icon
+                      name={expandedSections[section.id] ? 'ChevronUp' : 'ChevronDown'}
+                      className="w-3 h-3 transition-transform"
                     />
                   </button>
                 )}
-                
-                {/* Section Items */}
                 {expandedSections[section.id] && (
-                  <div className="space-y-1 ml-2">
+                  <div className="space-y-1">
                     {section.items.map((item) => (
                       <Link
                         key={item.path}
                         to={item.path}
                         title={`${language === 'am' ? (item.nameAm || item.name) : item.name}${item.shortcut ? ` (${item.shortcut})` : ''}`}
-                        className={`flex items-center justify-between px-3 py-2 rounded-lg transition-all duration-200 group ${
+                        className={`flex items-center justify-between px-2 py-1.5 rounded-lg transition-all duration-200 group ${
                           isActive(item.path)
-                            ? 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-md'
-                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:shadow-sm'
+                            ? 'bg-primary text-white shadow-md'
+                            : 'text-text-secondary hover:bg-accent hover:text-accent-foreground'
                         }`}
                       >
-                        <div className="flex items-center space-x-3">
-                          <Icon name={item.icon} className="w-4 h-4 flex-shrink-0" />
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-md flex items-center justify-center">
+                            <Icon name={item.icon} className="w-5 h-5" />
+                          </div>
                           {!isCollapsed && (
-                            <span className="text-sm font-medium">
+                            <span className="ml-3 text-sm font-medium">
                               {language === 'am' ? (item.nameAm || item.name) : item.name}
                             </span>
                           )}
                         </div>
-                        
-                        {/* Badge and Shortcut */}
                         <div className="flex items-center space-x-2">
                           {item.badge && !isCollapsed && (
                             <span className={`px-2 py-1 text-xs font-bold text-white rounded-full ${item.badgeColor || 'bg-blue-500'}`}>
@@ -486,7 +478,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
                             </span>
                           )}
                           {!isCollapsed && item.shortcut && (
-                            <span className="text-xs text-slate-400 dark:text-slate-500 bg-slate-200 dark:bg-slate-600 px-1.5 py-0.5 rounded">
+                            <span className="text-xs text-text-secondary bg-muted px-1.5 py-0.5 rounded">
                               {item.shortcut}
                             </span>
                           )}
@@ -499,21 +491,23 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
             ))}
           </div>
         ) : (
-          <div className="px-4 space-y-2">
-            {menuItems.map((item, index) => (
+          <div className="px-2 space-y-1">
+            {menuItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
                 title={(language === 'am' ? (item.nameAm || item.name) : item.name) || item.name}
-                className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                className={`flex items-center px-2 py-1.5 rounded-lg transition-colors ${
                   isActive(item.path)
                     ? 'bg-primary text-white shadow-md'
-                    : 'text-foreground hover:bg-accent hover:text-accent-foreground'
+                    : 'text-text-secondary hover:bg-accent hover:text-accent-foreground'
                 }`}
               >
-                <Icon name={item.icon} className="w-5 h-5 flex-shrink-0" />
+                <div className="w-10 h-10 rounded-md flex items-center justify-center">
+                  <Icon name={item.icon} className="w-5 h-5" />
+                </div>
                 {!isCollapsed && (
-                  <span className="font-medium">{language === 'am' ? (item.nameAm || item.name) : item.name}</span>
+                  <span className="ml-3 font-medium">{language === 'am' ? (item.nameAm || item.name) : item.name}</span>
                 )}
               </Link>
             ))}
@@ -523,39 +517,33 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
 
       {/* Admin Footer */}
       {userRole === 'admin' && (
-        <div className="bg-slate-50 dark:bg-slate-800/50">
-          {/* Stats and Logout */}
-          <div className="border-t border-slate-200 dark:border-slate-700">
+        <div className="bg-surface">
+          <div className="border-t border-border">
             {!isCollapsed ? (
               <div className="p-4 space-y-3">
-                {/* Quick Stats */}
                 <div className="grid grid-cols-2 gap-2">
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 p-2 rounded-lg text-center">
-                    <div className="font-bold text-green-700 dark:text-green-400 text-sm">{adminStats.activeUsers.toLocaleString()}</div>
-                    <div className="text-xs text-green-600 dark:text-green-500">Users</div>
+                  <div className="p-2 rounded-lg text-center bg-primary/10">
+                    <div className="font-bold text-primary text-sm">{adminStats.activeUsers.toLocaleString()}</div>
+                    <div className="text-xs text-text-secondary">Users</div>
                   </div>
-                  <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 p-2 rounded-lg text-center">
-                    <div className="font-bold text-orange-700 dark:text-orange-400 text-sm">{adminStats.pendingApprovals}</div>
-                    <div className="text-xs text-orange-600 dark:text-orange-500">Pending</div>
+                  <div className="p-2 rounded-lg text-center bg-orange-100">
+                    <div className="font-bold text-orange-700 text-sm">{adminStats.pendingApprovals}</div>
+                    <div className="text-xs text-orange-600">Pending</div>
                   </div>
                 </div>
-                
-                {/* System Status */}
-                <div className="flex items-center justify-between px-2 py-1 bg-slate-100 dark:bg-slate-700 rounded-lg">
-                  <span className="text-xs text-slate-600 dark:text-slate-400">System Status</span>
+                <div className="flex items-center justify-between px-2 py-1 rounded-lg bg-muted">
+                  <span className="text-xs text-text-secondary">System Status</span>
                   <div className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                    <span className="text-xs text-green-600 dark:text-green-400 font-medium">Online</span>
+                    <span className="text-xs text-green-600 font-medium">Online</span>
                   </div>
                 </div>
-                
-                {/* Logout Button */}
                 <button
                   onClick={() => {
                     logout();
                     navigate('/authentication-login-register');
                   }}
-                  className="w-full flex items-center space-x-2 px-3 py-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  className="w-full flex items-center space-x-2 px-3 py-2 text-error hover:text-error hover:bg-error/10 rounded-lg transition-colors"
                 >
                   <Icon name="LogOut" className="w-4 h-4" />
                   <span className="text-sm font-medium">
@@ -565,8 +553,8 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
               </div>
             ) : (
               <div className="flex justify-center py-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-red-500 to-red-600 rounded-lg flex items-center justify-center shadow-md">
-                  <Icon name="Shield" className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-primary text-white">
+                  <Icon name="Shield" className="w-4 h-4" />
                 </div>
               </div>
             )}

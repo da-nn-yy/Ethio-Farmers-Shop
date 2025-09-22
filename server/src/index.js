@@ -17,6 +17,17 @@ import { globalErrorHandler, notFoundHandler } from "./utils/errorHandler.js";
 // App
 const app = express();
 
+// Base URL for building absolute URLs for uploaded assets
+const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+
+const normalizeImageUrl = (rawUrl) => {
+  if (!rawUrl) return rawUrl;
+  const url = String(rawUrl).replace(/\\/g, '/');
+  if (/^https?:\/\//i.test(url)) return url;
+  const trimmed = url.replace(/^\/?/, '');
+  return `${PUBLIC_BASE_URL}/${trimmed}`;
+};
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -134,10 +145,16 @@ app.get("/public/listings", async (req, res) => {
       LIMIT 50
     `);
 
+    const listings = rows.map((r) => ({
+      ...r,
+      image: normalizeImageUrl(r.image),
+      farmerAvatar: normalizeImageUrl(r.farmerAvatar),
+    }));
+
     res.json({
       success: true,
-      count: rows.length,
-      listings: rows
+      count: listings.length,
+      listings
     });
   } catch (error) {
     console.error('Public listings error:', error);
