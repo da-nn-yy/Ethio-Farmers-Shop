@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import RoleBasedSidebar from './RoleBasedSidebar.jsx';
 import AdminSidebar from './AdminSidebar.jsx';
-import AuthenticatedTopBar from './AuthenticatedTopBar.jsx';
+import GlobalHeader from './GlobalHeader.jsx';
 
 const AuthenticatedLayout = ({ children }) => {
   const { user, isAuthenticated } = useAuth();
@@ -11,8 +11,12 @@ const AuthenticatedLayout = ({ children }) => {
 
   return (
     <div className="min-h-screen bg-background">
-      <AuthenticatedTopBar />
-      
+      <GlobalHeader
+        showSidebarToggle
+        onToggleSidebar={() => setIsCollapsed((v) => !v)}
+        isSidebarCollapsed={isCollapsed}
+      />
+
       {userRole === 'admin' ? (
         <AdminSidebar
           isCollapsed={isCollapsed}
@@ -27,7 +31,7 @@ const AuthenticatedLayout = ({ children }) => {
         />
       )}
 
-      <div className={`pt-14 ${isCollapsed ? 'pl-16' : 'pl-72'} transition-all ${userRole === 'admin' ? 'pb-20' : ''}`}>
+      <div className={`pt-16 ${isCollapsed ? 'pl-16' : 'pl-72'} transition-all`}>
         <main className="p-4 lg:p-6">
           {children}
         </main>
@@ -37,5 +41,3 @@ const AuthenticatedLayout = ({ children }) => {
 };
 
 export default AuthenticatedLayout;
-
-
