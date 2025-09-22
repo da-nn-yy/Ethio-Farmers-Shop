@@ -10,8 +10,7 @@ import {
   searchListings,
   getAllActiveListings,
   getListingsByCategory,
-  getListingsByRegion,
-  deleteAllListings
+  getListingsByRegion
 } from "../controllers/listingController.js";
 
 const router = Router();
@@ -31,8 +30,6 @@ router.post('/', createListing);
 router.get('/', getListings);
 router.put('/:id', updateListing);
 router.delete('/:id', deleteListing);
-// Danger: delete all listings (optionally secure with role check)
-router.delete('/admin/all', deleteAllListings);
 
 // Farmer-specific routes
 router.get('/farmer/my-listings', getFarmerListings);

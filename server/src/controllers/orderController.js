@@ -4,12 +4,16 @@ import { createOrderNotification } from './notificationController.js';
 // Create new order (buyer places order)
 export const createOrder = async (req, res) => {
   try {
-    const { items, notes, deliveryFee = 0 } = req.body;
+    const { listingId, quantity, totalPrice, notes } = req.body;
     const buyerFirebaseUid = req.user.uid; // From auth middleware
 
-    // Validate input
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return res.status(400).json({ error: 'Items array is required' });
+    // Validate required parameters
+    if (!listingId || !quantity) {
+      return res.status(400).json({ error: 'Missing required parameters: listingId and quantity are required' });
+    }
+
+    if (quantity <= 0) {
+      return res.status(400).json({ error: 'Quantity must be greater than 0' });
     }
 
     const connection = await pool.getConnection();
@@ -18,107 +22,107 @@ export const createOrder = async (req, res) => {
     await connection.beginTransaction();
 
     try {
+      // Small utility to detect schema at runtime
+      const hasColumn = async (table, column) => {
+        const [rows] = await connection.execute(
+          `SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ? LIMIT 1`,
+          [table, column]
+        );
+        return rows.length > 0;
+      };
+
       // Resolve buyer user_id from firebase_uid
       const [buyerRows] = await connection.execute(
         'SELECT id FROM users WHERE firebase_uid = ?',
         [buyerFirebaseUid]
       );
+      let buyerId;
       if (buyerRows.length === 0) {
+        const insRes = await connection.execute('INSERT INTO users (firebase_uid, role) VALUES (?, ?)', [buyerFirebaseUid, 'buyer']);
+        buyerId = insRes[0].insertId;
+      } else {
+        buyerId = buyerRows[0].id;
+      }
+
+      // Get listing details and check availability (adapt to schema)
+      const useNewListingsSchema = await hasColumn('produce_listings', 'farmer_user_id');
+      const listingSelectSql = useNewListingsSchema
+        ? 'SELECT id, farmer_user_id as farmerId, crop as category, unit, title as name, price_per_unit as pricePerUnit, quantity as availableQuantity, region as location FROM produce_listings WHERE id = ? AND status = "active"'
+        : 'SELECT id, farmer_id as farmerId, category as category, unit, name as name, price_per_kg as pricePerUnit, available_quantity as availableQuantity, location as location FROM produce_listings WHERE id = ? AND status = "active"';
+      const [listingRows] = await connection.execute(listingSelectSql, [listingId]);
+
+      if (listingRows.length === 0) {
         await connection.rollback();
         connection.release();
-        return res.status(404).json({ error: 'Buyer not found' });
-      }
-      const buyerId = buyerRows[0].id;
-
-      let totalSubtotal = 0;
-      const orderItems = [];
-
-      // Process each item
-      for (const item of items) {
-        const { listingId, quantity } = item;
-
-        if (!listingId || !quantity) {
-          await connection.rollback();
-          connection.release();
-          return res.status(400).json({ error: 'Each item must have listingId and quantity' });
-        }
-
-        // Get listing details and check availability
-        const [listingRows] = await connection.execute(
-          'SELECT id, farmer_user_id, crop, unit, title as name, price_per_unit as pricePerUnit, quantity as availableQuantity, region as location FROM produce_listings WHERE id = ? AND status = "active"',
-          [listingId]
-        );
-
-        if (listingRows.length === 0) {
-          await connection.rollback();
-          connection.release();
-          return res.status(404).json({ error: `Listing ${listingId} not found or inactive` });
-        }
-
-        const listing = listingRows[0];
-
-        if (listing.availableQuantity < quantity) {
-          await connection.rollback();
-          connection.release();
-          return res.status(400).json({ error: `Insufficient quantity available for ${listing.name}` });
-        }
-
-        // Calculate line total
-        const lineTotal = Number(listing.pricePerUnit) * Number(quantity);
-        totalSubtotal += lineTotal;
-
-        orderItems.push({
-          listingId,
-          quantity,
-          listing,
-          lineTotal
-        });
+        return res.status(404).json({ error: 'Listing not found or inactive' });
       }
 
-      // For multi-item orders, we'll use the first farmer as the primary farmer
-      // In a real system, you might want to create separate orders per farmer
-      const primaryFarmerId = orderItems[0].listing.farmer_user_id;
+      const listing = listingRows[0];
 
-      // Create order
-      const [orderResult] = await connection.execute(
-        `INSERT INTO orders (
-          buyer_user_id,
-          farmer_user_id,
-          status,
-          subtotal,
-          delivery_fee,
-          currency,
-          notes,
-          created_at
-        ) VALUES (?, ?, 'pending', ?, ?, 'ETB', ?, NOW())`,
-        [buyerId, primaryFarmerId, totalSubtotal, deliveryFee, notes || null]
-      );
+      if (listing.availableQuantity < quantity) {
+        await connection.rollback();
+        connection.release();
+        return res.status(400).json({ error: 'Insufficient quantity available' });
+      }
+
+      // Calculate totals (server-trusted)
+      const pricePerUnit = Number(listing.pricePerUnit) || 0;
+      const quantityNum = Number(quantity) || 0;
+      const lineTotal = pricePerUnit * quantityNum;
+
+      // Create order (handle legacy/new orders schema)
+      const useNewOrdersSchema = await hasColumn('orders', 'buyer_user_id');
+      const hasSubtotalCol = await hasColumn('orders', 'subtotal');
+      const hasTotalCol = await hasColumn('orders', 'total');
+
+      const buyerCol = useNewOrdersSchema ? 'buyer_user_id' : 'buyer_id';
+      const farmerCol = useNewOrdersSchema ? 'farmer_user_id' : 'farmer_id';
+
+      // Build dynamic insert
+      const cols = [buyerCol, farmerCol, 'status'];
+      const placeholders = ['?', '?', `'pending'`];
+      const params = [buyerId, listing.farmerId];
+
+      if (hasSubtotalCol) {
+        cols.push('subtotal'); placeholders.push('?'); params.push(lineTotal);
+      } else if (hasTotalCol) {
+        cols.push('total'); placeholders.push('?'); params.push(lineTotal);
+      }
+
+      cols.push('currency'); placeholders.push(`'ETB'`);
+      cols.push('notes'); placeholders.push('?'); params.push(notes ?? null);
+      cols.push('created_at'); placeholders.push('NOW()');
+
+      const insertOrderSql = `INSERT INTO orders (${cols.join(', ')}) VALUES (${placeholders.join(', ')})`;
+      const [orderResult] = await connection.execute(insertOrderSql, params);
 
       const orderId = orderResult.insertId;
 
-      // Insert order items and update listings
-      for (const item of orderItems) {
-        // Insert order item (snapshot)
-        await connection.execute(
-          `INSERT INTO order_items (
-            order_id,
-            listing_id,
-            crop,
-            unit,
-            price_per_unit,
-            quantity
-          ) VALUES (?, ?, ?, ?, ?, ?)`,
-          [orderId, item.listingId, item.listing.crop, item.listing.unit || 'kg', item.listing.pricePerUnit, item.quantity]
-        );
+      // Insert order item (snapshot)
+      await connection.execute(
+        `INSERT INTO order_items (
+          order_id,
+          listing_id,
+          crop,
+          unit,
+          price_per_unit,
+          quantity
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
+        [orderId, listingId, listing.category || null, listing.unit || 'kg', listing.pricePerUnit || 0, quantity]
+      );
 
-        // Update listing availability
-        await connection.execute('UPDATE produce_listings SET quantity = quantity - ? WHERE id = ?', [item.quantity, item.listingId]);
+      // Update listing availability (handle both schemas)
+      const hasQuantityCol = await hasColumn('produce_listings', 'quantity');
+      if (hasQuantityCol) {
+        await connection.execute('UPDATE produce_listings SET quantity = quantity - ? WHERE id = ?', [quantity, listingId]);
+      } else {
+        await connection.execute('UPDATE produce_listings SET available_quantity = available_quantity - ? WHERE id = ?', [quantity, listingId]);
+      }
 
-        // Update listing status if quantity becomes 0
-        const remaining = item.listing.availableQuantity - Number(item.quantity);
-        if (remaining === 0) {
-          await connection.execute('UPDATE produce_listings SET status = "sold" WHERE id = ?', [item.listingId]);
-        }
+      // Update listing status if quantity becomes 0
+      const remaining = listing.availableQuantity - Number(quantity);
+      if (remaining === 0) {
+        await connection.execute('UPDATE produce_listings SET status = "sold_out" WHERE id = ?', [listingId]);
       }
 
       // Commit transaction
@@ -150,17 +154,14 @@ export const createOrder = async (req, res) => {
 
       connection.release();
 
-      // Notify farmer of new order
+      // Notify farmer about new order
       try {
-        await createOrderNotification(orderId, 'order_created', primaryFarmerId);
-      } catch (e) {
-        console.error('Failed to create order notification:', e);
-      }
+        await createOrderNotification(orderId, 'order_created', listing.farmerId);
+      } catch (_) {}
 
       res.status(201).json({
         message: 'Order created successfully',
-        order: orderRows[0],
-        totalItems: orderItems.length
+        order: orderRows[0]
       });
 
     } catch (error) {
@@ -187,7 +188,19 @@ export const getBuyerOrders = async (req, res) => {
     if (buyerRows.length === 0) return res.json([]);
     const buyerId = buyerRows[0].id;
 
-    let whereClause = 'WHERE o.buyer_user_id = ?';
+    // Detect schema variants
+    const hasBuyerUserId = (await pool.query(`SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'buyer_user_id' LIMIT 1`))[0].length > 0;
+    const hasSubtotal = (await pool.query(`SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'subtotal' LIMIT 1`))[0].length > 0;
+    const listingsNewSchema = (await pool.query(`SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'produce_listings' AND COLUMN_NAME = 'farmer_user_id' LIMIT 1`))[0].length > 0;
+
+    const buyerCol = hasBuyerUserId ? 'buyer_user_id' : 'buyer_id';
+    const totalExpr = hasSubtotal ? 'o.subtotal' : 'o.total';
+    const listingName = listingsNewSchema ? 'pl.title' : 'pl.name';
+    const listingPrice = listingsNewSchema ? 'pl.price_per_unit' : 'pl.price_per_kg';
+    const listingRegion = listingsNewSchema ? 'pl.region' : 'pl.location';
+    const joinFarmerUser = listingsNewSchema ? 'pl.farmer_user_id' : 'pl.farmer_id';
+
+    let whereClause = `WHERE o.${buyerCol} = ?`;
     const params = [buyerId];
 
     if (status && status !== 'all') {
@@ -201,25 +214,27 @@ export const getBuyerOrders = async (req, res) => {
     const query = `
       SELECT
         o.id,
-        o.subtotal as totalPrice,
+        ${totalExpr} as totalPrice,
         o.status,
         o.notes,
         o.created_at as createdAt,
         o.updated_at as updatedAt,
         oi.quantity,
-        pl.title as name,
+        pl.id as listing_id,
+        ${listingName} as name,
         li.url as image,
-        pl.price_per_unit as pricePerKg,
+        ${listingPrice} as pricePerKg,
         u.full_name as farmerName,
         NULL as farmerAvatar,
-        pl.region as location,
+        ${listingRegion} as location,
         u.phone as farmerPhone,
-        u.email as farmerEmail
+        u.email as farmerEmail,
+        u.id as farmer_id
       FROM orders o
       JOIN order_items oi ON oi.order_id = o.id
       JOIN produce_listings pl ON oi.listing_id = pl.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
-      JOIN users u ON pl.farmer_user_id = u.id
+      JOIN users u ON ${joinFarmerUser} = u.id
       ${whereClause}
       ORDER BY o.created_at DESC
       LIMIT ${limitInt} OFFSET ${offsetInt}
@@ -265,9 +280,9 @@ export const getOrderById = async (req, res) => {
       FROM orders o
       JOIN order_items oi ON oi.order_id = o.id
       JOIN produce_listings pl ON oi.listing_id = pl.id
-      JOIN users u ON pl.farmer_user_id = u.id
+      JOIN users u ON pl.farmer_id = u.id
       LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
-      WHERE o.id = ? AND (o.buyer_user_id = (SELECT id FROM users WHERE firebase_uid = ?) OR pl.farmer_user_id = (SELECT id FROM users WHERE firebase_uid = ?))
+      WHERE o.id = ? AND (o.buyer_id = (SELECT id FROM users WHERE firebase_uid = ?) OR pl.farmer_id = (SELECT id FROM users WHERE firebase_uid = ?))
     `;
 
     const [rows] = await connection.execute(query, [id, userFirebaseUid, userFirebaseUid]);
@@ -289,24 +304,13 @@ export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    // Resolve current user DB id
-    const uid = req.user.uid;
-    let userId;
-    if (uid && uid.startsWith('dev-uid-')) {
-      userId = req.user.id;
-    } else {
-      const [userRows] = await pool.query('SELECT id FROM users WHERE firebase_uid = ?', [uid]);
-      if (userRows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      userId = userRows[0].id;
-    }
+    const userId = req.user.id;
 
     const connection = await pool.getConnection();
 
         // Verify the user is the farmer for this order
     const [orderRows] = await connection.execute(
-      `SELECT o.farmer_user_id FROM orders o WHERE o.id = ?`,
+      `SELECT o.farmer_id FROM orders o WHERE o.id = ?`,
       [id]
     );
 
@@ -315,7 +319,7 @@ export const updateOrderStatus = async (req, res) => {
       return res.status(404).json({ error: 'Order not found' });
     }
 
-    if (orderRows[0].farmer_user_id !== userId) {
+    if (orderRows[0].farmer_id !== userId) {
       connection.release();
       return res.status(403).json({ error: 'Not authorized to update this order' });
     }
@@ -328,27 +332,26 @@ export const updateOrderStatus = async (req, res) => {
 
     connection.release();
 
-    // Create notifications on important transitions
-    try {
-      if (status === 'confirmed') {
-        // Notify buyer that order confirmed
-        const [buyerRows] = await pool.query('SELECT buyer_user_id FROM orders WHERE id = ?', [id]);
-        const buyerUserId = buyerRows?.[0]?.buyer_user_id;
-        if (buyerUserId) await createOrderNotification(id, 'order_confirmed', buyerUserId);
-      } else if (status === 'completed') {
-        const [buyerRows] = await pool.query('SELECT buyer_user_id FROM orders WHERE id = ?', [id]);
-        const buyerUserId = buyerRows?.[0]?.buyer_user_id;
-        if (buyerUserId) await createOrderNotification(id, 'order_completed', buyerUserId);
-      } else if (status === 'cancelled') {
-        const [buyerRows] = await pool.query('SELECT buyer_user_id FROM orders WHERE id = ?', [id]);
-        const buyerUserId = buyerRows?.[0]?.buyer_user_id;
-        if (buyerUserId) await createOrderNotification(id, 'order_cancelled', buyerUserId);
-      }
-    } catch (e) {
-      console.error('Failed to create status notification:', e);
-    }
-
     res.json({ message: 'Order status updated successfully' });
+
+    // Fire notification to buyer based on new status (best-effort)
+    try {
+      // Lookup buyer id for this order
+      const [rows] = await pool.query('SELECT buyer_id FROM orders WHERE id = ? LIMIT 1', [id]);
+      if (rows.length > 0) {
+        const buyerId = rows[0].buyer_id;
+        const statusToType = {
+          confirmed: 'order_confirmed',
+          shipped: 'order_shipped',
+          completed: 'order_completed',
+          cancelled: 'order_cancelled'
+        };
+        const notifType = statusToType[status];
+        if (notifType) {
+          await createOrderNotification(Number(id), notifType, buyerId);
+        }
+      }
+    } catch (_) {}
   } catch (error) {
     console.error('Error updating order status:', error);
     res.status(500).json({ error: 'Failed to update order status' });
@@ -359,18 +362,7 @@ export const updateOrderStatus = async (req, res) => {
 export const cancelOrder = async (req, res) => {
   try {
     const { id } = req.params;
-    // Resolve buyer user id
-    const uid = req.user.uid;
-    let buyerId;
-    if (uid && uid.startsWith('dev-uid-')) {
-      buyerId = req.user.id;
-    } else {
-      const [userRows] = await pool.query('SELECT id FROM users WHERE firebase_uid = ?', [uid]);
-      if (userRows.length === 0) {
-        return res.status(404).json({ error: 'User not found' });
-      }
-      buyerId = userRows[0].id;
-    }
+    const buyerId = req.user.id;
 
     const connection = await pool.getConnection();
 
@@ -380,7 +372,7 @@ export const cancelOrder = async (req, res) => {
     try {
       // Get order details
       const [orderRows] = await connection.execute(
-        'SELECT id FROM orders WHERE id = ? AND buyer_user_id = ? AND status = "pending"',
+        'SELECT * FROM orders WHERE id = ? AND buyer_id = ? AND status = "pending"',
         [id, buyerId]
       );
 
@@ -390,28 +382,25 @@ export const cancelOrder = async (req, res) => {
         return res.status(404).json({ error: 'Order not found or cannot be cancelled' });
       }
 
+      const order = orderRows[0];
+
       // Update order status to cancelled
       await connection.execute(
         'UPDATE orders SET status = "cancelled", updated_at = NOW() WHERE id = ?',
         [id]
       );
 
-      // Restore listing quantities for items in this order
-      const [items] = await connection.execute(
-        'SELECT listing_id, quantity FROM order_items WHERE order_id = ?',
-        [id]
+      // Restore listing quantity
+      await connection.execute(
+        'UPDATE produce_listings SET available_quantity = available_quantity + ? WHERE id = ?',
+        [order.quantity, order.listing_id]
       );
-      for (const it of items) {
-        await connection.execute(
-          'UPDATE produce_listings SET quantity = quantity + ? WHERE id = ?',
-          [it.quantity, it.listing_id]
-        );
-        // If previously sold, ensure status is active again when quantity > 0
-        await connection.execute(
-          'UPDATE produce_listings SET status = "active" WHERE id = ? AND quantity > 0',
-          [it.listing_id]
-        );
-      }
+
+      // Update listing status back to active if it was sold out
+      await connection.execute(
+        'UPDATE produce_listings SET status = "active" WHERE id = ? AND status = "sold_out"',
+        [order.listing_id]
+      );
 
       // Commit transaction
       await connection.commit();
@@ -419,6 +408,14 @@ export const cancelOrder = async (req, res) => {
       connection.release();
 
       res.json({ message: 'Order cancelled successfully' });
+
+      // Notify farmer that buyer cancelled (best-effort)
+      try {
+        const [farmerRows] = await pool.query('SELECT farmer_id FROM orders WHERE id = ? LIMIT 1', [id]);
+        if (farmerRows.length > 0) {
+          await createOrderNotification(Number(id), 'order_cancelled', farmerRows[0].farmer_id);
+        }
+      } catch (_) {}
 
     } catch (error) {
       await connection.rollback();
@@ -455,7 +452,7 @@ export const getFarmerOrders = async (req, res) => {
       }
       userId = userRows[0].id;
     }
-    let whereClause = "WHERE o.farmer_user_id = ?";
+    let whereClause = "WHERE o.farmer_id = ?";
     let params = [userId];
 
     if (status) {
@@ -476,7 +473,7 @@ export const getFarmerOrders = async (req, res) => {
         bp.company_name,
         bp.business_type
       FROM orders o
-      JOIN users u ON o.buyer_user_id = u.id
+      JOIN users u ON o.buyer_id = u.id
       LEFT JOIN buyer_profiles bp ON u.id = bp.user_id
       ${whereClause}
       ORDER BY o.created_at DESC
@@ -570,7 +567,7 @@ export const getOrderStats = async (req, res) => {
           COUNT(CASE WHEN o.status = 'pending' THEN 1 END) as pending_orders,
           COUNT(CASE WHEN o.status = 'completed' THEN 1 END) as completed_orders
         FROM orders o
-        WHERE o.buyer_user_id = ? ${dateFilter}
+        WHERE o.buyer_id = ? ${dateFilter}
       `;
     } else {
       statsQuery = `
@@ -580,7 +577,7 @@ export const getOrderStats = async (req, res) => {
           COUNT(CASE WHEN o.status = 'pending' THEN 1 END) as pending_orders,
           COUNT(CASE WHEN o.status = 'completed' THEN 1 END) as completed_orders
         FROM orders o
-        WHERE o.farmer_user_id = ? ${dateFilter}
+        WHERE o.farmer_id = ? ${dateFilter}
       `;
     }
 

@@ -37,7 +37,7 @@ const TrustSignals = ({ currentLanguage }) => {
   return (
     <div className="mt-8 pt-8 border-t border-border">
       <h3 className="text-lg font-semibold text-text-primary text-center mb-6">
-        {currentLanguage === 'am' ? 'ለምን FarmConnect?' : 'Why FarmConnect?'}
+        {currentLanguage === 'am' ? 'ለምን Ke geberew?' : 'Why Ke geberew?'}
       </h3>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         {trustElements?.map((element, index) => (

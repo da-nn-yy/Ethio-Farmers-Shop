@@ -64,32 +64,7 @@ const SearchHeader = ({
             </div>
           </div>
 
-          {/* Filter Button */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onFilterClick}
-            className="shrink-0"
-          >
-            <Icon name="SlidersHorizontal" size={18} />
-          </Button>
-
-          {/* Cart Button */}
-          <Button
-            variant="outline"
-            onClick={onCartClick}
-            className="shrink-0 relative"
-          >
-            <Icon name="ShoppingCart" size={18} className="mr-2" />
-            <span className="hidden sm:inline">{t?.cart}</span>
-            
-            {/* Cart Badge */}
-            {cartItemCount > 0 && (
-              <span className="absolute -top-2 -right-2 w-5 h-5 bg-accent text-accent-foreground text-xs font-medium rounded-full flex items-center justify-center">
-                {cartItemCount > 99 ? '99+' : cartItemCount}
-              </span>
-            )}
-          </Button>
+          {/* Buttons removed from search bar per request */}
         </div>
       </div>
     </div>

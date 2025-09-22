@@ -1,0 +1,31 @@
+﻿
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Builds
+dist/
+build/
+client/dist/
+client/build/
+server/dist/
+server/build/
+
+# Env
+.env
+client/.env
+server/.env
+
+# OS/Logs
+.DS_Store
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Misc
+.vscode/
+.idea/
+.turbo/
+.next/
+.cache/

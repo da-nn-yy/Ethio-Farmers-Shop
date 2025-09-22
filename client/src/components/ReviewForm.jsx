@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { reviewService } from '../services/apiService.js';
 import { useAuth } from '../hooks/useAuth.jsx';
 
-const ReviewForm = ({ listingId, onReviewSubmitted, onCancel }) => {
+const ReviewForm = ({ listingId, farmerId, onReviewSubmitted, onCancel }) => {
   const { user } = useAuth();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
@@ -26,11 +26,15 @@ const ReviewForm = ({ listingId, onReviewSubmitted, onCancel }) => {
     setError('');
 
     try {
-      await reviewService.createReview({
-        listingId,
-        rating,
-        comment: comment.trim()
-      });
+      if (farmerId) {
+        await reviewService.createFarmerReview(farmerId, { rating, comment: comment.trim() });
+      } else {
+        await reviewService.createReview({
+          listingId,
+          rating,
+          comment: comment.trim()
+        });
+      }
 
       // Reset form
       setRating(0);
@@ -133,5 +137,4 @@ const ReviewForm = ({ listingId, onReviewSubmitted, onCancel }) => {
 };
 
 export default ReviewForm;
-
 

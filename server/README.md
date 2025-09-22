@@ -14,12 +14,12 @@
    DB_HOST=localhost
    DB_USER=root
    DB_PASSWORD=your_password
-   DB_NAME=farmconnect
+   DB_NAME=ke_geberew
    GOOGLE_APPLICATION_CREDENTIALS=./serviceAccountKey.json
    ```
 
 3. **Database Setup:**
-   - Create a MySQL database named `farmconnect`
+   - Create a MySQL database named `ke_geberew`
    - Import the database schema (see `database/schema.sql`)
    - Update `.env` with your database credentials
 

@@ -5,12 +5,16 @@ import LanguageToggle from './components/LanguageToggle';
 import AuthTabs from './components/AuthTabs';
 import LoginForm from './components/LoginForm';
 import RegisterForm from './components/RegisterForm';
+import ForgotPasswordForm from './components/ForgotPasswordForm';
+import ResetPasswordForm from './components/ResetPasswordForm';
 import TrustSignals from './components/TrustSignals';
 
 const AuthenticationPage = () => {
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [activeTab, setActiveTab] = useState('login');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   useEffect(() => {
     // Check for saved language preference
@@ -23,6 +27,12 @@ const AuthenticationPage = () => {
     const authStatus = localStorage.getItem('isAuthenticated');
     if (authStatus === 'true') {
       setIsAuthenticated(true);
+    }
+
+    // Check if this is a password reset page
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('token')) {
+      setShowResetPassword(true);
     }
   }, []);
 
@@ -38,24 +48,14 @@ const AuthenticationPage = () => {
     localStorage.setItem('userName', userRole === 'farmer' ? 'Test Farmer' : 'Test Buyer');
   };
 
-  // Test authentication for development
-  const handleTestLogin = (role) => {
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('userRole', role);
-    localStorage.setItem('userName', role === 'farmer' ? 'Test Farmer' : 'Test Buyer');
-    setIsAuthenticated(true);
-
-    // Navigate to appropriate dashboard
-    if (role === 'farmer') {
-      window.location.href = '/dashboard-farmer-home';
-    } else {
-      window.location.href = '/dashboard-buyer-home';
-    }
-  };
 
   const getPageTitle = () => {
-    const baseTitle = 'FarmConnect Ethiopia';
-    if (activeTab === 'login') {
+    const baseTitle = 'Ke geberew Ethiopia';
+    if (showResetPassword) {
+      return currentLanguage === 'am' ? `ፓስዎርድ አስተካከል - ${baseTitle}` : `Reset Password - ${baseTitle}`;
+    } else if (showForgotPassword) {
+      return currentLanguage === 'am' ? `ፓስዎርድ ረሳሁ - ${baseTitle}` : `Forgot Password - ${baseTitle}`;
+    } else if (activeTab === 'login') {
       return currentLanguage === 'am' ? `ግባ - ${baseTitle}` : `Sign In - ${baseTitle}`;
     } else {
       return currentLanguage === 'am' ? `ተመዝገብ - ${baseTitle}` : `Register - ${baseTitle}`;
@@ -79,14 +79,14 @@ const AuthenticationPage = () => {
           <div className="flex items-center justify-between max-w-md mx-auto lg:max-w-lg">
             {/* Logo */}
             <div className="flex items-center space-x-2">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary">
+              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
                 <Icon name="Sprout" size={24} color="white" />
               </div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold font-heading text-primary">
-                  FarmConnect
+                <span className="font-heading font-bold text-xl text-primary">
+                  Ke geberew
                 </span>
-                <span className="-mt-1 text-xs font-caption text-text-secondary">
+                <span className="font-caption text-xs text-text-secondary -mt-1">
                   Ethiopia
                 </span>
               </div>
@@ -101,12 +101,12 @@ const AuthenticationPage = () => {
         </header>
 
         {/* Main Content */}
-        <main className="flex items-center justify-center flex-1 p-4 lg:p-6">
+        <main className="flex-1 flex items-center justify-center p-4 lg:p-6">
           <div className="w-full max-w-md lg:max-w-lg">
             {/* Welcome Section */}
-            <div className="mb-8 text-center">
-              <h1 className="mb-2 text-2xl font-bold lg:text-3xl text-text-primary">
-                {currentLanguage === 'am' ?'እንኳን ወደ FarmConnect በደህና መጡ' :'Welcome to FarmConnect'
+            <div className="text-center mb-8">
+              <h1 className="text-2xl lg:text-3xl font-bold text-text-primary mb-2">
+                {currentLanguage === 'am' ?'እንኳን ወደ Ke geberew በደህና መጡ' :'Welcome to Ke geberew'
                 }
               </h1>
               <p className="text-text-secondary">
@@ -116,19 +116,29 @@ const AuthenticationPage = () => {
             </div>
 
             {/* Auth Form Container */}
-            <div className="p-6 border bg-surface rounded-2xl shadow-warm-lg border-border lg:p-8">
-              <AuthTabs
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                currentLanguage={currentLanguage}
-              />
+            <div className="bg-surface rounded-2xl shadow-warm-lg border border-border p-6 lg:p-8">
+              {!showForgotPassword && !showResetPassword && (
+                <AuthTabs
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  currentLanguage={currentLanguage}
+                />
+              )}
 
               {/* Form Content */}
               <div className="space-y-6">
-                {activeTab === 'login' ? (
+                {showResetPassword ? (
+                  <ResetPasswordForm currentLanguage={currentLanguage} />
+                ) : showForgotPassword ? (
+                  <ForgotPasswordForm 
+                    currentLanguage={currentLanguage}
+                    onBack={() => setShowForgotPassword(false)}
+                  />
+                ) : activeTab === 'login' ? (
                   <LoginForm
                     currentLanguage={currentLanguage}
                     onAuthSuccess={handleAuthSuccess}
+                    onForgotPassword={() => setShowForgotPassword(true)}
                   />
                 ) : (
                   <RegisterForm
@@ -139,15 +149,18 @@ const AuthenticationPage = () => {
               </div>
 
               {/* Trust Signals */}
-              <TrustSignals currentLanguage={currentLanguage} />
+              {!showForgotPassword && !showResetPassword && (
+                <TrustSignals currentLanguage={currentLanguage} />
+              )}
             </div>
+
 
             {/* Footer Help Text */}
             <div className="mt-8 text-center">
               <p className="text-sm text-text-secondary">
                 {currentLanguage === 'am' ?'ችግር አለብዎት? ' :'Need help? '
                 }
-                <button className="font-medium text-primary hover:text-primary/80 transition-smooth">
+                <button className="text-primary hover:text-primary/80 transition-smooth font-medium">
                   {currentLanguage === 'am' ? 'እርዳታ ያግኙ' : 'Get Support'}
                 </button>
               </p>
@@ -158,7 +171,7 @@ const AuthenticationPage = () => {
         {/* Footer */}
         <footer className="flex-shrink-0 p-4 text-center">
           <p className="text-xs text-text-secondary">
-            © {new Date()?.getFullYear()} FarmConnect Ethiopia.
+            © {new Date()?.getFullYear()} Ke geberew Ethiopia.
             {currentLanguage === 'am' ? ' ሁሉም መብቶች የተጠበቁ ናቸው።' : ' All rights reserved.'}
           </p>
         </footer>

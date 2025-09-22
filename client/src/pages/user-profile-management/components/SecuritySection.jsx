@@ -3,8 +3,6 @@ import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { Checkbox } from '../../../components/ui/Checkbox';
-import axios from 'axios';
-import { getAuth, signOut } from 'firebase/auth';
 
 const SecuritySection = ({ currentLanguage }) => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -14,7 +12,6 @@ const SecuritySection = ({ currentLanguage }) => {
     newPassword: '',
     confirmPassword: ''
   });
-  const [isDeleting, setIsDeleting] = useState(false);
 
   const securitySettings = [
     {
@@ -128,52 +125,6 @@ const SecuritySection = ({ currentLanguage }) => {
     return date?.toLocaleString();
   };
 
-  const handleDeleteAccount = async () => {
-    const confirmed = window.confirm(
-      currentLanguage === 'am'
-        ? 'መለያዎን ማጥፋት ይፈልጋሉ? ይህ እርምጃ የማይመለስ ነው።'
-        : 'Are you sure you want to delete your account? This action is irreversible.'
-    );
-    if (!confirmed) return;
-    try {
-      setIsDeleting(true);
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) {
-        setIsDeleting(false);
-        return;
-      }
-      const token = await user.getIdToken();
-      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
-
-      // Fetch own user id
-      const { data } = await axios.get(`${API_BASE}/users/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const userId = data?.id;
-      if (!userId) {
-        setIsDeleting(false);
-        alert(currentLanguage === 'am' ? 'የተጠቃሚ መለያ አልተገኘም።' : 'User id not found.');
-        return;
-      }
-
-      // Delete account on backend
-      await axios.delete(`${API_BASE}/users/${userId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-
-      // Sign out from Firebase and redirect to auth page
-      await signOut(auth);
-      alert(currentLanguage === 'am' ? 'መለያ ተሰርዟል።' : 'Account deleted.');
-      window.location.href = '/authentication-login-register';
-    } catch (e) {
-      alert(currentLanguage === 'am' ? 'መለያ ማጥፋት አልተሳካም።' : 'Failed to delete account.');
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
   return (
     <div className="space-y-6">
       {/* Password Change Section */}
@@ -216,7 +167,7 @@ const SecuritySection = ({ currentLanguage }) => {
                 onChange={(e) => handlePasswordChange('currentPassword', e?.target?.value)}
                 required
               />
-
+              
               <Input
                 label={getLabel('New Password', 'አዲስ የይለፍ ቃል')}
                 type="password"
@@ -225,7 +176,7 @@ const SecuritySection = ({ currentLanguage }) => {
                 description={getLabel('Must be at least 8 characters long', 'ቢያንስ 8 ቁምፊዎች ሊኖሩት ይገባል')}
                 required
               />
-
+              
               <Input
                 label={getLabel('Confirm New Password', 'አዲሱን የይለፍ ቃል አረጋግጥ')}
                 type="password"
@@ -267,7 +218,7 @@ const SecuritySection = ({ currentLanguage }) => {
             </div>
             <div className="flex items-center space-x-2">
               <span className={`text-sm ${twoFactorEnabled ? 'text-success' : 'text-text-secondary'}`}>
-                {twoFactorEnabled
+                {twoFactorEnabled 
                   ? getLabel('Enabled', 'ነቅቷል')
                   : getLabel('Disabled', 'ተዘግቷል')
                 }
@@ -279,7 +230,7 @@ const SecuritySection = ({ currentLanguage }) => {
                 iconName={twoFactorEnabled ? "ShieldOff" : "Shield"}
                 iconPosition="left"
               >
-                {twoFactorEnabled
+                {twoFactorEnabled 
                   ? getLabel('Disable', 'አሰናክል')
                   : getLabel('Enable', 'አንቃ')
                 }
@@ -330,12 +281,12 @@ const SecuritySection = ({ currentLanguage }) => {
         <div className="space-y-3">
           {recentActivity?.map((activity) => {
             const statusConfig = getActivityStatus(activity?.status);
-
+            
             return (
               <div key={activity?.id} className="flex items-start space-x-3 p-3 border border-border rounded-lg">
-                <Icon
-                  name={statusConfig?.icon}
-                  size={16}
+                <Icon 
+                  name={statusConfig?.icon} 
+                  size={16} 
                   className={`mt-1 ${statusConfig?.color}`}
                 />
                 <div className="flex-1 min-w-0">
@@ -363,31 +314,6 @@ const SecuritySection = ({ currentLanguage }) => {
         <div className="mt-4 text-center">
           <Button variant="ghost" size="sm" iconName="Eye" iconPosition="left">
             {getLabel('View All Activity', 'ሁሉንም እንቅስቃሴ ይመልከቱ')}
-          </Button>
-        </div>
-      </div>
-
-      {/* Danger Zone */}
-      <div className="bg-error/5 border border-error/30 rounded-xl p-6 shadow-warm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-error mb-1">
-              {getLabel('Delete Account', 'መለያ ሰርዝ')}
-            </h2>
-            <p className="text-sm text-text-secondary">
-              {getLabel('This will permanently delete your account and all associated data.', 'ይህ መለያዎን እና ከእሱ ጋር የተገናኙ መረጃዎችን በቋሚነት ያጠፋል።')}
-            </p>
-          </div>
-          <Button
-            variant="destructive"
-            onClick={handleDeleteAccount}
-            disabled={isDeleting}
-            iconName="Trash2"
-            iconPosition="left"
-          >
-            {isDeleting
-              ? getLabel('Deleting...', 'በማጥፋት ላይ...')
-              : getLabel('Delete Account', 'መለያ ሰርዝ')}
           </Button>
         </div>
       </div>

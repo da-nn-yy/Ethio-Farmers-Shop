@@ -1,13 +1,13 @@
-import { pool } from "../config/db.js";
+import { pool } from '../config/database.js';
 
 // Get buyer dashboard data
 export const getBuyerDashboard = async (req, res) => {
   try {
     const uid = req.user.uid;
 
-    // Get user ID and region
+    // Get user ID
     const [userRows] = await pool.query(
-      "SELECT id, region FROM users WHERE firebase_uid = ?",
+      "SELECT id FROM users WHERE firebase_uid = ?",
       [uid]
     );
 
@@ -16,7 +16,6 @@ export const getBuyerDashboard = async (req, res) => {
     }
 
     const userId = userRows[0].id;
-    const buyerRegion = userRows[0].region || null;
 
     // Get recent orders
     const [recentOrders] = await pool.query(
@@ -75,60 +74,30 @@ export const getBuyerDashboard = async (req, res) => {
        LIMIT 5`
     );
 
-    // Region-first recommendations (latest in buyer's region); fallback to global latest if needed
-    let recommendations = [];
-    if (buyerRegion) {
-      const [regionRecs] = await pool.query(
-        `SELECT DISTINCT
-           l.*,
-           u.full_name as farmer_name,
-           u.region as farmer_region,
-           li.url as image,
-           0 as farmer_rating,
-           0 as farmer_review_count
-         FROM produce_listings l
-         JOIN users u ON l.farmer_user_id = u.id
-         LEFT JOIN listing_images li ON l.id = li.listing_id AND li.sort_order = 0
-         WHERE l.status = 'active'
-         AND l.region = ?
-         AND l.id NOT IN (
-           SELECT listing_id FROM favorites WHERE buyer_user_id = ?
-         )
-         ORDER BY l.created_at DESC
-         LIMIT 6`,
-        [buyerRegion, userId]
-      );
-      recommendations = regionRecs;
-    }
-    if (recommendations.length < 6) {
-      const [globalRecs] = await pool.query(
-        `SELECT DISTINCT
-           l.*,
-           u.full_name as farmer_name,
-           u.region as farmer_region,
-           li.url as image,
-           0 as farmer_rating,
-           0 as farmer_review_count
-         FROM produce_listings l
-         JOIN users u ON l.farmer_user_id = u.id
-         LEFT JOIN listing_images li ON l.id = li.listing_id AND li.sort_order = 0
-         WHERE l.status = 'active'
-         AND l.id NOT IN (
-           SELECT listing_id FROM favorites WHERE buyer_user_id = ?
-         )
-         ORDER BY l.created_at DESC
-         LIMIT ?`,
-        [userId, 6 - recommendations.length || 6]
-      );
-      // Merge ensuring no duplicates
-      const existingIds = new Set(recommendations.map(r => r.id));
-      const merged = [...recommendations];
-      for (const rec of globalRecs) {
-        if (!existingIds.has(rec.id)) merged.push(rec);
-        if (merged.length >= 6) break;
-      }
-      recommendations = merged;
-    }
+    // Get recommended listings based on user's order history
+    const [recommendations] = await pool.query(
+      `SELECT DISTINCT
+        l.*,
+        u.full_name as farmer_name,
+        u.region as farmer_region,
+        u.avg_rating as farmer_rating,
+        u.review_count as farmer_review_count
+       FROM produce_listings l
+       JOIN users u ON l.farmer_user_id = u.id
+       WHERE l.status = 'active'
+       AND l.crop IN (
+         SELECT DISTINCT oi.crop
+         FROM order_items oi
+         JOIN orders o ON oi.order_id = o.id
+         WHERE o.buyer_user_id = ? AND o.status = 'completed'
+       )
+       AND l.id NOT IN (
+         SELECT listing_id FROM favorites WHERE buyer_user_id = ?
+       )
+       ORDER BY l.created_at DESC
+       LIMIT 6`,
+      [userId, userId]
+    );
 
     // Get spending trends (monthly)
     const [spendingTrends] = await pool.query(
@@ -141,7 +110,7 @@ export const getBuyerDashboard = async (req, res) => {
        AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
        ORDER BY month DESC`
-    , [userId]);
+    );
 
     res.json({
       recentOrders,
@@ -242,7 +211,7 @@ export const getFarmerDashboard = async (req, res) => {
        AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
        ORDER BY month DESC`
-    , [userId]);
+    );
 
     // Get top performing crops
     const [topCrops] = await pool.query(
@@ -579,3 +548,4 @@ export const getAnalyticsData = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch analytics data" });
   }
 };
+

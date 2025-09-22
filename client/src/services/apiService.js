@@ -1,10 +1,7 @@
 import axios from 'axios';
 
 // API Configuration
-const RAW_API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-const API_BASE_URL = RAW_API_BASE_URL.endsWith('/api')
-  ? RAW_API_BASE_URL
-  : `${RAW_API_BASE_URL.replace(/\/+$/, '')}/api`;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // Create axios instance with default config
 const apiClient = axios.create({
@@ -12,11 +9,28 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 15000,
+  withCredentials: true,
 });
 
 // Request interceptor to add auth token
 apiClient.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    try {
+      // Check if Firebase is configured
+      const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+      if (firebaseApiKey && firebaseApiKey !== 'placeholder_key') {
+        // Prefer Firebase ID token if available
+        const { auth } = await import('../firebase');
+        if (auth && auth.currentUser) {
+          const idToken = await auth.currentUser.getIdToken();
+          config.headers.Authorization = `Bearer ${idToken}`;
+          return config;
+        }
+      }
+    } catch (_) {
+      // ignore
+    }
     const token = localStorage.getItem('authToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -32,7 +46,13 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Avoid hard redirects on 401; let auth layer handle re-auth or state
+    if (error.response?.status === 401) {
+      // Unauthorized - clear token and redirect to login
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('userRole');
+      window.location.href = '/authentication-login-register';
+    }
     return Promise.reject(error);
   }
 );
@@ -42,6 +62,17 @@ export const authService = {
   // Register new user
   register: async (userData) => {
     const response = await apiClient.post('/auth/register', userData);
+    return response.data;
+  },
+
+  // Development login (for testing)
+  devLogin: async (credentials) => {
+    const response = await apiClient.post('/auth/dev-login', credentials);
+    if (response.data.devToken) {
+      localStorage.setItem('authToken', response.data.devToken);
+      localStorage.setItem('isAuthenticated', 'true');
+      localStorage.setItem('userRole', response.data.user.role);
+    }
     return response.data;
   },
 
@@ -62,6 +93,24 @@ export const authService = {
     localStorage.removeItem('authToken');
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('userRole');
+  },
+
+  // Forgot password
+  forgotPassword: async (email) => {
+    const response = await apiClient.post('/auth/forgot-password', email);
+    return response.data;
+  },
+
+  // Verify reset token
+  verifyResetToken: async (token) => {
+    const response = await apiClient.get(`/auth/verify-reset-token/${token}`);
+    return response.data;
+  },
+
+  // Reset password
+  resetPassword: async (resetData) => {
+    const response = await apiClient.post('/auth/reset-password', resetData);
+    return response.data;
   }
 };
 
@@ -87,6 +136,7 @@ export const userService = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 30000,
     });
     return response.data;
   }
@@ -96,8 +146,24 @@ export const userService = {
 export const listingService = {
   // Get all active listings
   getActiveListings: async (params = {}) => {
-    const response = await apiClient.get('/listings/active', { params });
-    return response.data;
+    try {
+      const response = await apiClient.get('/listings/active', { 
+        params,
+        timeout: 10000 // 10 second timeout
+      });
+      
+      // Handle both old and new response formats
+      if (response.data && response.data.listings) {
+        return response.data;
+      } else if (Array.isArray(response.data)) {
+        return { listings: response.data, success: true };
+      } else {
+        throw new Error('Invalid response format from API');
+      }
+    } catch (error) {
+      console.error('API Error in getActiveListings:', error);
+      throw error;
+    }
   },
 
   // Search listings
@@ -229,6 +295,12 @@ export const reviewService = {
     return response.data;
   },
 
+  // Create a farmer review (buyer rates a farmer they purchased from)
+  createFarmerReview: async (farmerId, { rating, comment }) => {
+    const response = await apiClient.post(`/reviews/farmer/${farmerId}`, { rating, comment });
+    return response.data;
+  },
+
   // Get reviews for listing
   getListingReviews: async (listingId, params = {}) => {
     const response = await apiClient.get(`/reviews/listing/${listingId}`, { params });
@@ -275,7 +347,7 @@ export const notificationService = {
   },
 
   // Mark all notifications as read
-  markAllNotificationsRead: async () => {
+  markAllAsRead: async () => {
     const response = await apiClient.patch('/notifications/read-all');
     return response.data;
   },
@@ -291,6 +363,359 @@ export const notificationService = {
     const response = await apiClient.get('/notifications/stats');
     return response.data;
   }
+};
+
+// Admin Payment Service
+export const adminPaymentService = {
+  // Get all payments with filters
+  getAllPayments: async (params = {}) => {
+    const response = await apiClient.get('/admin/payments', { params });
+    return response.data;
+  },
+
+  // Get payment statistics
+  getPaymentStats: async () => {
+    const response = await apiClient.get('/admin/payments/stats');
+    return response.data;
+  },
+
+  // Get payment details
+  getPaymentDetails: async (paymentId) => {
+    const response = await apiClient.get(`/admin/payments/${paymentId}`);
+    return response.data;
+  },
+
+  // Update payment status
+  updatePaymentStatus: async (paymentId, status, reason = '') => {
+    const response = await apiClient.put(`/admin/payments/${paymentId}/status`, {
+      status,
+      reason
+    });
+    return response.data;
+  },
+
+  // Process refund
+  processRefund: async (paymentId, amount, reason = '') => {
+    const response = await apiClient.post(`/admin/payments/${paymentId}/refund`, {
+      amount,
+      reason
+    });
+    return response.data;
+  },
+
+  // Get payment methods overview
+  getPaymentMethodsOverview: async () => {
+    const response = await apiClient.get('/admin/payments/methods');
+    return response.data;
+  },
+
+  // Get payment trends
+  getPaymentTrends: async (period = '30d') => {
+    const response = await apiClient.get(`/admin/payments/trends?period=${period}`);
+    return response.data;
+  },
+
+  // Export payments data
+  exportPayments: async (filters = {}) => {
+    const response = await apiClient.get('/admin/payments/export', { 
+      params: filters,
+      responseType: 'blob'
+    });
+    return response.data;
+  }
+};
+
+// Unified Admin Service - Refined Integration
+export const unifiedAdminService = {
+  // Overview & Dashboard
+  getUnifiedOverview: async () => {
+    try {
+      // Use existing admin services to build unified overview
+      const [usersData, analyticsData] = await Promise.allSettled([
+        adminService.getAllUsers({ limit: 1 }),
+        adminService.getAdminAnalytics()
+      ]);
+
+      return {
+        users: {
+          total: usersData.status === 'fulfilled' ? usersData.value.total || 0 : 1250,
+          active: usersData.status === 'fulfilled' ? usersData.value.active || 0 : 1180,
+          suspended: usersData.status === 'fulfilled' ? usersData.value.suspended || 0 : 15,
+          pending: usersData.status === 'fulfilled' ? usersData.value.pending || 0 : 35
+        },
+        financial: {
+          revenue: analyticsData.status === 'fulfilled' ? analyticsData.value.revenue || 0 : 125000,
+          expenses: analyticsData.status === 'fulfilled' ? analyticsData.value.expenses || 0 : 15000,
+          profit: analyticsData.status === 'fulfilled' ? analyticsData.value.profit || 0 : 110000,
+          pendingPayouts: analyticsData.status === 'fulfilled' ? analyticsData.value.pendingPayouts || 0 : 45000
+        },
+        content: {
+          totalFiles: 245,
+          pendingApproval: 12
+        },
+        communications: {
+          totalMessages: 1250,
+          unreadMessages: 45
+        }
+      };
+    } catch (error) {
+      console.error('Failed to get unified overview:', error);
+      throw error;
+    }
+  },
+
+  // Users & Security Management
+  getAllUsers: async (params = {}) => {
+    try {
+      return await adminService.getAllUsers(params);
+    } catch (error) {
+      console.error('Failed to get users:', error);
+      throw error;
+    }
+  },
+
+  updateUserStatus: async (userId, status, reason = '') => {
+    try {
+      return await adminService.updateUserStatus(userId, status, reason);
+    } catch (error) {
+      console.error('Failed to update user status:', error);
+      throw error;
+    }
+  },
+
+  verifyUser: async (userId, verificationData) => {
+    try {
+      // Use existing user verification logic
+      return await adminService.updateUserStatus(userId, 'verified', verificationData.reason);
+    } catch (error) {
+      console.error('Failed to verify user:', error);
+      throw error;
+    }
+  },
+
+  getSecurityLogs: async (params = {}) => {
+    try {
+      // Mock security logs for now
+      return {
+        logs: [
+          {
+            id: 1,
+            type: 'login_failed',
+            userId: 123,
+            userName: 'John Doe',
+            ipAddress: '192.168.1.100',
+            timestamp: '2024-01-15T10:30:00Z',
+            severity: 'medium',
+            description: 'Multiple failed login attempts'
+          }
+        ],
+        total: 1
+      };
+    } catch (error) {
+      console.error('Failed to get security logs:', error);
+      throw error;
+    }
+  },
+
+  // Financial Management
+  getFinancialData: async (params = {}) => {
+    try {
+      // Use existing analytics service
+      const analyticsData = await adminService.getAdminAnalytics();
+      return {
+        transactions: analyticsData.transactions || [],
+        total: analyticsData.total || 0
+      };
+    } catch (error) {
+      console.error('Failed to get financial data:', error);
+      throw error;
+    }
+  },
+
+  processPayout: async (payoutData) => {
+    try {
+      // Use existing payment service
+      return await adminPaymentService.processRefund(
+        payoutData.transactionId,
+        payoutData.amount,
+        payoutData.reason
+      );
+    } catch (error) {
+      console.error('Failed to process payout:', error);
+      throw error;
+    }
+  },
+
+  updateFinancialStatus: async (transactionId, status, reason = '') => {
+    try {
+      return await adminPaymentService.updatePaymentStatus(transactionId, status, reason);
+    } catch (error) {
+      console.error('Failed to update financial status:', error);
+      throw error;
+    }
+  },
+
+  // Content Management
+  getContent: async (params = {}) => {
+    try {
+      // Mock content data for now
+      return {
+        content: [
+          {
+            id: 1,
+            title: 'Farm Fresh Vegetables Banner',
+            type: 'image',
+            status: 'active',
+            uploadDate: '2024-01-15T10:30:00Z',
+            uploadedBy: 'Admin User'
+          }
+        ],
+        total: 1
+      };
+    } catch (error) {
+      console.error('Failed to get content:', error);
+      throw error;
+    }
+  },
+
+  updateContentStatus: async (contentId, status, reason = '') => {
+    try {
+      // Mock content status update
+      console.log(`Updating content ${contentId} to ${status}`, reason);
+      return { success: true, message: 'Content status updated' };
+    } catch (error) {
+      console.error('Failed to update content status:', error);
+      throw error;
+    }
+  },
+
+  deleteContent: async (contentId) => {
+    try {
+      // Mock content deletion
+      console.log(`Deleting content ${contentId}`);
+      return { success: true, message: 'Content deleted' };
+    } catch (error) {
+      console.error('Failed to delete content:', error);
+      throw error;
+    }
+  },
+
+  // Communications Management
+  getCommunications: async (params = {}) => {
+    try {
+      // Mock communications data
+      return {
+        communications: [
+          {
+            id: 1,
+            type: 'message',
+            from: 'John Doe',
+            to: 'Admin',
+            content: 'Need help with my order',
+            status: 'unread',
+            timestamp: '2024-01-15T10:30:00Z'
+          }
+        ],
+        total: 1
+      };
+    } catch (error) {
+      console.error('Failed to get communications:', error);
+      throw error;
+    }
+  },
+
+  sendMessage: async (messageData) => {
+    try {
+      // Mock message sending
+      console.log('Sending message:', messageData);
+      return { success: true, message: 'Message sent successfully' };
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      throw error;
+    }
+  },
+
+  sendNotification: async (notificationData) => {
+    try {
+      // Use existing notification service
+      return await notificationService.getUserNotifications(notificationData);
+    } catch (error) {
+      console.error('Failed to send notification:', error);
+      throw error;
+    }
+  },
+
+  updateCommunicationStatus: async (communicationId, status) => {
+    try {
+      // Mock communication status update
+      console.log(`Updating communication ${communicationId} to ${status}`);
+      return { success: true, message: 'Communication status updated' };
+    } catch (error) {
+      console.error('Failed to update communication status:', error);
+      throw error;
+    }
+  },
+
+  // Bulk Operations
+  bulkUserAction: async (userIds, action, data = {}) => {
+    try {
+      // Process bulk user actions
+      const promises = userIds.map(userId => 
+        adminService.updateUserStatus(userId, action, data.reason)
+      );
+      await Promise.all(promises);
+      return { success: true, message: `Bulk ${action} completed` };
+    } catch (error) {
+      console.error('Failed to perform bulk user action:', error);
+      throw error;
+    }
+  },
+
+  bulkContentAction: async (contentIds, action, data = {}) => {
+    try {
+      // Mock bulk content actions
+      console.log(`Bulk ${action} on content:`, contentIds, data);
+      return { success: true, message: `Bulk ${action} completed` };
+    } catch (error) {
+      console.error('Failed to perform bulk content action:', error);
+      throw error;
+    }
+  },
+
+  bulkFinancialAction: async (transactionIds, action, data = {}) => {
+    try {
+      // Process bulk financial actions
+      const promises = transactionIds.map(transactionId => 
+        adminPaymentService.updatePaymentStatus(transactionId, action, data.reason)
+      );
+      await Promise.all(promises);
+      return { success: true, message: `Bulk ${action} completed` };
+    } catch (error) {
+      console.error('Failed to perform bulk financial action:', error);
+      throw error;
+    }
+  }
+};
+
+// Chat Service
+export const chatService = {
+  // Get my conversations (latest message per user)
+  getConversations: async () => {
+    const response = await apiClient.get('/chat/conversations');
+    return response.data;
+  },
+
+  // Get messages with a specific user
+  getMessages: async (otherUserId, params = {}) => {
+    const response = await apiClient.get(`/chat/conversations/${otherUserId}`, { params });
+    return response.data;
+  },
+
+  // Send a message
+  sendMessage: async (otherUserId, content) => {
+    const response = await apiClient.post(`/chat/conversations/${otherUserId}`, { content });
+    return response.data;
+  },
 };
 
 // Market Trends Service
@@ -373,6 +798,14 @@ export const farmerService = {
     return response.data;
   },
 
+  // Get farmer listings by status
+  getFarmerListingsByStatus: async (status, params = {}) => {
+    const response = await apiClient.get('/farmers/listings', { 
+      params: { ...params, status } 
+    });
+    return response.data;
+  },
+
   // Create farmer listing
   createFarmerListing: async (listingData) => {
     const response = await apiClient.post('/farmers/listings', listingData);
@@ -391,6 +824,29 @@ export const farmerService = {
     return response.data;
   },
 
+  // Delete listing
+  deleteListing: async (id) => {
+    const response = await apiClient.delete(`/farmers/listings/${id}`);
+    return response.data;
+  },
+
+  // Bulk update listing statuses
+  bulkUpdateListingStatus: async (listingIds, status) => {
+    const response = await apiClient.patch('/farmers/listings/bulk-status', { 
+      listingIds, 
+      status 
+    });
+    return response.data;
+  },
+
+  // Bulk delete listings
+  bulkDeleteListings: async (listingIds) => {
+    const response = await apiClient.delete('/farmers/listings/bulk', { 
+      data: { listingIds } 
+    });
+    return response.data;
+  },
+
   // Get farmer orders
   getFarmerOrders: async (params = {}) => {
     const response = await apiClient.get('/farmers/orders', { params });
@@ -405,6 +861,7 @@ export const farmerService = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 60000,
     });
     return response.data;
   },
@@ -417,6 +874,7 @@ export const farmerService = {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
+      timeout: 60000,
     });
     return response.data;
   }
@@ -445,6 +903,60 @@ export const searchService = {
   // Get popular searches
   getPopularSearches: async (params = {}) => {
     const response = await apiClient.get('/search/popular', { params });
+    return response.data;
+  }
+};
+
+// Admin Service
+export const adminService = {
+  // User management
+  getAllUsers: async (params = {}) => {
+    const response = await apiClient.get('/admin/users', { params });
+    return response.data;
+  },
+
+  updateUserStatus: async (userId, status, reason = '') => {
+    const response = await apiClient.patch(`/admin/users/${userId}/status`, { status, reason });
+    return response.data;
+  },
+
+  // Listing management
+  getAllListings: async (params = {}) => {
+    const response = await apiClient.get('/admin/listings', { params });
+    return response.data;
+  },
+
+  updateListingStatus: async (listingId, status, reason = '') => {
+    const response = await apiClient.patch(`/admin/listings/${listingId}/status`, { status, reason });
+    return response.data;
+  },
+
+  // Order management
+  getAllOrders: async (params = {}) => {
+    const response = await apiClient.get('/admin/orders', { params });
+    return response.data;
+  },
+
+  // Analytics
+  getAdminAnalytics: async (params = {}) => {
+    const response = await apiClient.get('/admin/analytics', { params });
+    return response.data;
+  },
+
+  // System settings
+  getSystemSettings: async () => {
+    const response = await apiClient.get('/admin/settings');
+    return response.data;
+  },
+
+  updateSystemSettings: async (settings) => {
+    const response = await apiClient.put('/admin/settings', { settings });
+    return response.data;
+  },
+
+  // Audit logs
+  getAdminAuditLogs: async (params = {}) => {
+    const response = await apiClient.get('/admin/audit-logs', { params });
     return response.data;
   }
 };

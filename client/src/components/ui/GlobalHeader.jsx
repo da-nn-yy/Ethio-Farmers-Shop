@@ -1,99 +1,32 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { signOut } from "firebase/auth";
-import { auth } from "../../firebase"; // Your Firebase config
-import axios from "axios";
+import { useAuth } from "../../hooks/useAuth.jsx";
 import Button from "./Button";
 import Icon from "../AppIcon";
-import NotificationBell from "../NotificationBell";
+import NotificationBell from "../NotificationBell.jsx";
+import { useLanguage } from "../../hooks/useLanguage.jsx";
 
-const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLanguage = "en" }) => {
+const GlobalHeader = ({ onLanguageChange, currentLanguage = "en", publicOnly = false }) => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+  const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-
-  // Fetch user data from Firebase and backend
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          setUser(null);
-          return;
-        }
-
-        const idToken = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-        const API_URL = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
-
-        const res = await axios.get(`${API_URL}/users/me`, {
-          headers: { Authorization: `Bearer ${idToken}` },
-        });
-
-        setUser(res.data); // Expect API returns { name, avatar, role }
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-        setUser(null);
-      }
-    };
-
-    if (isAuthenticated) {
-      fetchUser();
-    } else {
-      setUser(null);
-    }
-  }, [isAuthenticated]);
-
-  // Cart badge updater
-  useEffect(() => {
-    const readCartCount = () => {
-      try {
-        const saved = localStorage.getItem('buyer_cart');
-        const items = saved ? JSON.parse(saved) : [];
-        if (Array.isArray(items)) {
-          const count = items.reduce((sum, it) => sum + (Number(it?.quantity) || 0), 0);
-          setCartCount(count);
-        } else {
-          setCartCount(0);
-        }
-      } catch {
-        setCartCount(0);
-      }
-    };
-
-    readCartCount();
-    const onStorage = (e) => {
-      if (e.key === 'buyer_cart') readCartCount();
-    };
-    const onFocus = () => readCartCount();
-    const onCustom = () => readCartCount();
-    window.addEventListener('storage', onStorage);
-    window.addEventListener('focus', onFocus);
-    window.addEventListener('buyer_cart_updated', onCustom);
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('focus', onFocus);
-      window.removeEventListener('buyer_cart_updated', onCustom);
-    };
-  }, []);
+  const showUserSection = !!user && !publicOnly;
+  const { language, toggle } = useLanguage();
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-    } catch (_) {}
-    localStorage.removeItem("isAuthenticated");
-    localStorage.removeItem("userRole");
+    await logout();
     setIsMobileMenuOpen(false);
     setIsUserMenuOpen(false);
-    setUser(null);
     navigate("/authentication-login-register");
   };
 
   const handleLanguageToggle = () => {
-    const newLang = currentLanguage === "en" ? "am" : "en";
-    if (onLanguageChange) onLanguageChange(newLang);
+    if (onLanguageChange) {
+      const newLang = currentLanguage === "en" ? "am" : "en";
+      onLanguageChange(newLang);
+    }
+    toggle();
   };
 
   const languages = {
@@ -115,8 +48,8 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
           </div>
         </div>
 
-        {/* Desktop */}
-        <div className="items-center hidden space-x-6 lg:flex">
+        {/* Actions (now visible on all breakpoints) */}
+        <div className="items-center flex space-x-4">
           <Button
             variant="ghost"
             size="sm"
@@ -124,32 +57,11 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
             className="flex items-center space-x-2 text-text-secondary hover:text-primary"
           >
             <Icon name="Globe" size={16} />
-            <span className="font-medium">{languages?.[currentLanguage]?.label}</span>
+            <span className="font-medium">{languages?.[language]?.label}</span>
           </Button>
 
-          {user ? (
+          {showUserSection ? (
             <div className="relative flex items-center space-x-4">
-              {/* Cart Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative text-text-secondary hover:text-primary"
-                onClick={() => {
-                  try {
-                    navigate('/browse-listings-buyer-home#cart');
-                    window.dispatchEvent(new Event('open_buyer_cart'));
-                  } catch {
-                    navigate('/browse-listings-buyer-home#cart');
-                  }
-                }}
-              >
-                <Icon name="ShoppingCart" size={20} />
-                {cartCount > 0 && (
-                  <span className="absolute flex items-center justify-center w-5 h-5 text-xs font-medium rounded-full -top-1 -right-1 bg-primary text-white">
-                    {cartCount}
-                  </span>
-                )}
-              </Button>
               <NotificationBell />
 
               {/* User Menu */}
@@ -170,6 +82,9 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
                 <div className="absolute right-0 w-56 p-2 border rounded-lg top-12 bg-surface border-border shadow-warm">
                   <Button variant="ghost" className="justify-start w-full px-3 py-2" onClick={() => { setIsUserMenuOpen(false); navigate("/user-profile-management"); }}>
                     <Icon name="User" size={16} className="mr-2" /> Profile
+                  </Button>
+                  <Button variant="ghost" className="justify-start w-full px-3 py-2" onClick={() => { setIsUserMenuOpen(false); navigate("/notifications"); }}>
+                    <Icon name="Bell" size={16} className="mr-2" /> Notifications
                   </Button>
                   <Button variant="ghost" className="justify-start w-full px-3 py-2" onClick={() => { setIsUserMenuOpen(false); navigate("/settings"); }}>
                     <Icon name="Settings" size={16} className="mr-2" /> Settings
@@ -194,6 +109,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
 
         {/* Mobile Menu */}
         <div className="flex items-center space-x-3 lg:hidden">
+          {showUserSection && <NotificationBell />}
           <Button variant="ghost" size="icon" onClick={handleLanguageToggle}>
             <span className="text-sm font-medium">{languages?.[currentLanguage]?.label}</span>
           </Button>
@@ -207,7 +123,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-40 border-t lg:hidden top-16 bg-surface border-border">
           <div className="flex flex-col p-4 space-y-4">
-            {user ? (
+            {showUserSection ? (
               <>
                 <div className="flex items-center p-4 space-x-3 rounded-lg bg-muted">
                   <div className="w-12 h-12 overflow-hidden rounded-full bg-primary/10">
@@ -219,11 +135,7 @@ const GlobalHeader = ({ isAuthenticated = false, onLanguageChange, currentLangua
                   </div>
                 </div>
 
-                <Button variant="ghost" className="justify-start h-auto p-4" onClick={() => { setIsMobileMenuOpen(false); navigate('/browse-listings-buyer-home#cart'); }}>
-                  <Icon name="ShoppingCart" size={20} className="mr-3" /> Cart {cartCount > 0 ? `(${cartCount})` : ''}
-                </Button>
-
-                <Button variant="ghost" className="justify-start h-auto p-4" onClick={() => { setIsMobileMenuOpen(false); navigate('/notifications'); }}>
+                <Button variant="ghost" className="justify-start h-auto p-4" onClick={() => setIsMobileMenuOpen(false)}>
                   <Icon name="Bell" size={20} className="mr-3" /> Notifications
                 </Button>
 

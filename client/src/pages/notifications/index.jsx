@@ -4,6 +4,7 @@ import { notificationService } from '../../services/apiService.js';
 import { useAuth } from '../../hooks/useAuth.jsx';
 import Button from '../../components/ui/Button.jsx';
 import Icon from '../../components/AppIcon.jsx';
+import Card from '../../components/ui/Card.jsx';
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
@@ -84,53 +85,63 @@ const NotificationsPage = () => {
   };
 
   const getNotificationIcon = (type) => {
-    switch (type) {
-      case 'order_placed':
-        return '🛒';
-      case 'order_confirmed':
-        return '✅';
-      case 'order_shipped':
-        return '🚚';
-      case 'order_delivered':
-        return '📦';
-      case 'order_cancelled':
-        return '❌';
-      case 'new_listing':
-        return '🆕';
-      case 'price_change':
-        return '💰';
-      case 'review_received':
-        return '⭐';
-      case 'message':
-        return '💬';
-      default:
-        return '🔔';
-    }
+    const iconMap = {
+      'order_placed': 'ShoppingCart',
+      'order_confirmed': 'CheckCircle',
+      'order_shipped': 'Truck',
+      'order_delivered': 'Package',
+      'order_cancelled': 'XCircle',
+      'order_update': 'ShoppingCart',
+      'new_listing': 'PlusCircle',
+      'price_change': 'TrendingUp',
+      'review_received': 'Star',
+      'message': 'MessageCircle',
+      'system': 'Settings',
+      'payment': 'CreditCard',
+      'verification': 'Shield',
+      'promotion': 'Gift'
+    };
+    return iconMap[type] || 'Bell';
+  };
+
+  const getNotificationColor = (type) => {
+    const colorMap = {
+      'order_placed': 'text-blue-600 bg-blue-100',
+      'order_confirmed': 'text-green-600 bg-green-100',
+      'order_shipped': 'text-purple-600 bg-purple-100',
+      'order_delivered': 'text-emerald-600 bg-emerald-100',
+      'order_cancelled': 'text-red-600 bg-red-100',
+      'order_update': 'text-blue-600 bg-blue-100',
+      'new_listing': 'text-indigo-600 bg-indigo-100',
+      'price_change': 'text-orange-600 bg-orange-100',
+      'review_received': 'text-yellow-600 bg-yellow-100',
+      'message': 'text-cyan-600 bg-cyan-100',
+      'system': 'text-gray-600 bg-gray-100',
+      'payment': 'text-green-600 bg-green-100',
+      'verification': 'text-blue-600 bg-blue-100',
+      'promotion': 'text-pink-600 bg-pink-100'
+    };
+    return colorMap[type] || 'text-gray-600 bg-gray-100';
   };
 
   const getNotificationTitle = (type) => {
-    switch (type) {
-      case 'order_placed':
-        return 'New Order';
-      case 'order_confirmed':
-        return 'Order Confirmed';
-      case 'order_shipped':
-        return 'Order Shipped';
-      case 'order_delivered':
-        return 'Order Delivered';
-      case 'order_cancelled':
-        return 'Order Cancelled';
-      case 'new_listing':
-        return 'New Listing';
-      case 'price_change':
-        return 'Price Change';
-      case 'review_received':
-        return 'New Review';
-      case 'message':
-        return 'New Message';
-      default:
-        return 'Notification';
-    }
+    const titleMap = {
+      'order_placed': 'New Order',
+      'order_confirmed': 'Order Confirmed',
+      'order_shipped': 'Order Shipped',
+      'order_delivered': 'Order Delivered',
+      'order_cancelled': 'Order Cancelled',
+      'order_update': 'Order Update',
+      'new_listing': 'New Listing',
+      'price_change': 'Price Change',
+      'review_received': 'New Review',
+      'message': 'New Message',
+      'system': 'System Notification',
+      'payment': 'Payment Update',
+      'verification': 'Verification Update',
+      'promotion': 'Special Offer'
+    };
+    return titleMap[type] || 'Notification';
   };
 
   const formatDate = (dateString) => {
@@ -195,16 +206,22 @@ const NotificationsPage = () => {
               <Icon name="ArrowLeft" size={16} />
               <span>Back</span>
             </Button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">Notifications</h1>
-              <p className="text-gray-600">
-                {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
-              </p>
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/20 flex items-center justify-center">
+                <Icon name="Bell" size={20} className="text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-800 dark:text-white">Notifications</h1>
+                <p className="text-gray-600 dark:text-gray-400">
+                  {unreadCount > 0 ? `${unreadCount} unread notifications` : 'All caught up!'}
+                </p>
+              </div>
             </div>
           </div>
 
           {unreadCount > 0 && (
             <Button onClick={markAllAsRead} variant="outline">
+              <Icon name="CheckCircle" size={16} className="mr-2" />
               Mark All Read
             </Button>
           )}
@@ -260,60 +277,82 @@ const NotificationsPage = () => {
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="text-center py-12">
-              <div className="text-6xl mb-4">🔔</div>
-              <h3 className="text-lg font-medium text-gray-800 mb-2">
+              <Icon name="Bell" size={64} className="mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium text-gray-800 dark:text-white mb-2">
                 {filter === 'unread' ? 'No unread notifications' :
                  filter === 'read' ? 'No read notifications' :
                  'No notifications yet'}
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 {filter === 'unread' ? 'You\'re all caught up!' :
                  'Notifications will appear here when you have activity.'}
               </p>
             </div>
           ) : (
             filteredNotifications.map((notification) => (
-              <div
+              <Card
                 key={notification.id}
-                className={`bg-white rounded-lg shadow-sm p-4 transition-colors ${
-                  !notification.is_read ? 'border-l-4 border-blue-500' : ''
+                className={`transition-all duration-200 hover:shadow-md ${
+                  !notification.is_read ? 'border-l-4 border-blue-500 bg-blue-50/50 dark:bg-blue-900/10' : ''
                 }`}
               >
-                <div className="flex items-start space-x-3">
-                  <div className="text-2xl">
-                    {getNotificationIcon(notification.type)}
+                <div className="flex items-start space-x-4">
+                  <div className={`flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center ${getNotificationColor(notification.type)}`}>
+                    <Icon 
+                      name={getNotificationIcon(notification.type)} 
+                      size={20} 
+                      className="text-current"
+                    />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-1">
-                      <h3 className="text-sm font-medium text-gray-800">
-                        {getNotificationTitle(notification.type)}
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
+                        {notification.payload?.title || getNotificationTitle(notification.type)}
                       </h3>
                       <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           {formatDate(notification.created_at)}
                         </span>
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="icon"
                           onClick={() => deleteNotification(notification.id)}
-                          className="text-gray-400 hover:text-red-500 transition-colors"
+                          className="text-gray-400 hover:text-red-500 dark:hover:text-red-400"
                         >
                           <Icon name="Trash2" size={14} />
-                        </button>
+                        </Button>
                       </div>
                     </div>
-                    <p className="text-sm text-gray-600 mb-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
                       {notification.payload?.message || 'You have a new notification'}
                     </p>
-                    {!notification.is_read && (
-                      <button
-                        onClick={() => markAsRead(notification.id)}
-                        className="text-xs text-blue-600 hover:text-blue-700 underline"
-                      >
-                        Mark as read
-                      </button>
+                    {notification.payload?.title && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-2">
+                        {notification.payload.title}
+                      </p>
                     )}
+                    <div className="flex items-center justify-between">
+                      {!notification.is_read && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markAsRead(notification.id)}
+                          className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                        >
+                          <Icon name="Check" size={12} className="mr-1" />
+                          Mark as read
+                        </Button>
+                      )}
+                      {notification.is_read && (
+                        <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                          <Icon name="CheckCircle" size={12} className="mr-1" />
+                          Read
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              </Card>
             ))
           )}
 
@@ -336,5 +375,4 @@ const NotificationsPage = () => {
 };
 
 export default NotificationsPage;
-
 

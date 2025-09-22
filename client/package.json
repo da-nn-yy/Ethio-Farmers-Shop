@@ -1,5 +1,5 @@
 {
-  "name": "farmconnect-ethiopia",
+  "name": "ke_geberew-ethiopia",
   "version": "0.1.0",
   "private": true,
   "rocketCritical": {
@@ -40,7 +40,7 @@
     "d3": "^7.9.0",
     "date-fns": "^4.1.0",
     "dotenv": "^16.0.1",
-    "firebase": "^12.1.0",
+    "firebase": "^12.2.1",
     "framer-motion": "^10.16.4",
     "lucide-react": "^0.484.0",
     "react": "^18.2.0",

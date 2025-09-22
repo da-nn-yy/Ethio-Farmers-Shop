@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
+import ImageGallery from '../../../components/ui/ImageGallery';
 import Button from '../../../components/ui/Button';
 import FavoriteButton from '../../../components/FavoriteButton';
 
@@ -16,8 +17,6 @@ const ProduceCard = ({
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
-  const [isPressed, setIsPressed] = useState(false);
-  const [justAdded, setJustAdded] = useState(false);
 
   const translations = {
     en: {
@@ -48,8 +47,6 @@ const ProduceCard = ({
     setIsAdding(true);
     await onAddToCart(listing?.id, quantity);
     setIsAdding(false);
-    setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 1500);
   };
 
   const handleQuantityChange = (change) => {
@@ -91,10 +88,11 @@ const ProduceCard = ({
     <div className="bg-card rounded-lg border border-border shadow-warm hover:shadow-warm-md transition-smooth overflow-hidden">
       {/* Image Section */}
       <div className="relative aspect-[4/3] overflow-hidden">
-        <Image
-          src={listing?.image}
-          alt={currentLanguage === 'am' && listing?.nameAm ? listing?.nameAm : listing?.name}
-          className="w-full h-full object-cover"
+        <ImageGallery
+          images={listing?.images || (listing?.image ? [listing.image] : [])}
+          alt={currentLanguage === 'am' && listing?.nameAm ? listing?.nameAm : listing?.name || 'Product Image'}
+          className="w-full h-full"
+          showThumbnails={false}
         />
 
         {/* Favorite Button */}
@@ -241,17 +239,12 @@ const ProduceCard = ({
             size="sm"
             onClick={handleAddToCart}
             loading={isAdding}
-            className={`flex-1 transition-transform ${isPressed ? 'scale-95 ring-2 ring-primary' : ''}`}
-            onMouseDown={() => setIsPressed(true)}
-            onMouseUp={() => setIsPressed(false)}
-            onMouseLeave={() => setIsPressed(false)}
-            onTouchStart={() => setIsPressed(true)}
-            onTouchEnd={() => setIsPressed(false)}
+            className="flex-1"
             iconName="ShoppingCart"
             iconPosition="left"
             iconSize={16}
           >
-            {justAdded ? (currentLanguage === 'am' ? 'ታክሏል' : 'Added') : t?.addToCart}
+            {t?.addToCart}
           </Button>
           <Button
             variant="outline"
@@ -263,11 +256,6 @@ const ProduceCard = ({
             {t?.contact}
           </Button>
         </div>
-        {justAdded && (
-          <div className="mt-3 p-2 rounded-md bg-green-50 border border-green-200 text-green-700 text-sm">
-            {currentLanguage === 'am' ? 'ንጥል ወደ ጋሪ ታክሏል!' : 'Item added to cart!'}
-          </div>
-        )}
       </div>
     </div>
   );

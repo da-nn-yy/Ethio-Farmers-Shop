@@ -1,4 +1,4 @@
-import { pool } from "../config/db.js";
+import { pool } from '../config/database.js';
 
 // Create a new notification
 export const createNotification = async (req, res) => {
@@ -473,5 +473,4 @@ export const createListingNotification = async (listingId, type, userId) => {
     console.error('Error creating listing notification:', error);
   }
 };
-
 

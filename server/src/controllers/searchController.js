@@ -1,4 +1,4 @@
-import { pool } from "../config/db.js";
+import { pool } from '../config/database.js';
 
 // Advanced search for listings
 export const searchListings = async (req, res) => {
@@ -500,5 +500,4 @@ export const getSearchAnalytics = async (req, res) => {
     res.status(500).json({ error: "Failed to get search analytics" });
   }
 };
-
 

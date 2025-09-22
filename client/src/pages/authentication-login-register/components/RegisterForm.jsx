@@ -89,14 +89,36 @@ const RegisterForm = ({ currentLanguage, onAuthSuccess }) => {
       });
 
       if (result.success) {
+        // Store comprehensive user data for profile management
+        const userData = {
+          full_name: formData.fullName,
+          email: formData.email,
+          phone: formData.phoneNumber,
+          role: formData.role,
+          region: formData.region,
+          woreda: formData.woreda,
+          language: currentLanguage,
+          // Add role-specific defaults
+          ...(formData.role === 'farmer' ? {
+            farmSize: '5.2',
+            farmSizeUnit: 'hectares',
+            primaryCrops: ['teff', 'maize', 'wheat'],
+            farmingMethods: ['organic', 'traditional'],
+            seasonalAvailability: 'year-round',
+            businessHours: { start: '06:00', end: '18:00' }
+          } : {
+            businessType: 'restaurant',
+            preferredSuppliers: 'local-farmers',
+            purchaseVolume: 'medium',
+            deliveryPreference: 'pickup',
+            businessHours: { start: '08:00', end: '22:00' }
+          })
+        };
+        
+        localStorage.setItem('userData', JSON.stringify(userData));
         localStorage.setItem('currentLanguage', currentLanguage);
         onAuthSuccess(formData.role);
-        // Redirect like sign-in: send users to their role-based home
-        if (formData.role === 'farmer') {
-          navigate('/dashboard-farmer-home');
-        } else {
-          navigate('/dashboard-buyer-home');
-        }
+        navigate(formData.role === 'farmer' ? '/dashboard-farmer-home' : '/browse-listings-buyer-home');
       } else {
         setErrors({
           general: result.error || (currentLanguage === 'am' ? 'ምዝገባ አልተሳካም' : 'Registration failed')

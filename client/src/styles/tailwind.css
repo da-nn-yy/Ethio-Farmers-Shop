@@ -9,51 +9,48 @@
 
 @layer base {
   :root {
-    /* Core Colors */
-    --color-background: #FAFAF9; /* warm off-white */
-    --color-foreground: #1A1A1A; /* near-black */
-    --color-border: #E5E7EB; /* neutral gray */
-    --color-input: #FFFFFF; /* pure white */
-    --color-ring: #2D5A27; /* deep forest green */
-    --color-card: #FFFFFF; /* pure white */
-    --color-card-foreground: #1A1A1A; /* near-black */
-    --color-popover: #FFFFFF; /* pure white */
-    --color-popover-foreground: #1A1A1A; /* near-black */
-    --color-muted: #F9FAFB; /* light gray */
-    --color-muted-foreground: #6B7280; /* medium gray */
+    /* Core Colors - Fresh Modern Theme */
+    --color-background: #F5F7FB; /* soft cool gray */
+    --color-foreground: #0F172A; /* slate-900 */
+    --color-border: #E2E8F0; /* slate-200 */
+    --color-input: #FFFFFF; /* white */
+    --color-ring: #16A34A; /* emerald-600 */
+    --color-card: #FFFFFF; /* white */
+    --color-card-foreground: #0F172A; /* slate-900 */
+    --color-popover: #FFFFFF;
+    --color-popover-foreground: #0F172A;
+    --color-muted: #F1F5F9; /* slate-100 */
+    --color-muted-foreground: #64748B; /* slate-500 */
 
     /* Primary Colors */
-    --color-primary: #2D5A27; /* deep forest green */
-    --color-primary-foreground: #FFFFFF; /* white */
+    --color-primary: #16A34A; /* emerald-600 */
+    --color-primary-foreground: #FFFFFF;
 
     /* Secondary Colors */
-    --color-secondary: #8B4513; /* rich earth brown */
-    --color-secondary-foreground: #FFFFFF; /* white */
+    --color-secondary: #0EA5E9; /* sky-500 */
+    --color-secondary-foreground: #FFFFFF;
 
     /* Accent Colors */
-    --color-accent: #DAA520; /* golden yellow */
-    --color-accent-foreground: #1A1A1A; /* near-black */
+    --color-accent: #F59E0B; /* amber-500 */
+    --color-accent-foreground: #0F172A;
 
     /* State Colors */
-    --color-success: #059669; /* vibrant green */
-    --color-success-foreground: #FFFFFF; /* white */
-
-    --color-warning: #D97706; /* warm orange */
-    --color-warning-foreground: #FFFFFF; /* white */
-
-    --color-error: #DC2626; /* clear red */
-    --color-error-foreground: #FFFFFF; /* white */
-
-    --color-destructive: #DC2626; /* clear red */
-    --color-destructive-foreground: #FFFFFF; /* white */
+    --color-success: #10B981; /* emerald-500 */
+    --color-success-foreground: #FFFFFF;
+    --color-warning: #D97706; /* orange-600 */
+    --color-warning-foreground: #FFFFFF;
+    --color-error: #EF4444; /* red-500 */
+    --color-error-foreground: #FFFFFF;
+    --color-destructive: #EF4444;
+    --color-destructive-foreground: #FFFFFF;
 
     /* Surface Colors */
-    --color-surface: #FFFFFF; /* pure white */
-    --color-text-primary: #1A1A1A; /* near-black */
-    --color-text-secondary: #6B7280; /* medium gray */
+    --color-surface: #FFFFFF;
+    --color-text-primary: #0F172A; /* slate-900 */
+    --color-text-secondary: #475569; /* slate-600 */
 
     /* Border Radius */
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   * {
@@ -90,15 +87,15 @@
 
   /* Custom Shadow Styles */
   .shadow-warm {
-    box-shadow: 0 1px 3px rgba(45, 90, 39, 0.1);
+    box-shadow: 0 1px 3px rgba(2, 6, 23, 0.06);
   }
 
   .shadow-warm-md {
-    box-shadow: 0 4px 6px rgba(45, 90, 39, 0.1);
+    box-shadow: 0 4px 12px rgba(2, 6, 23, 0.08);
   }
 
   .shadow-warm-lg {
-    box-shadow: 0 10px 15px rgba(45, 90, 39, 0.1);
+    box-shadow: 0 20px 40px rgba(2, 6, 23, 0.12);
   }
 
   /* Animation Utilities */

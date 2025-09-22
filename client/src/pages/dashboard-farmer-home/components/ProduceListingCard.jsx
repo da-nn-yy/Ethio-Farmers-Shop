@@ -1,15 +1,15 @@
 import React from 'react';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
+import ImageGallery from '../../../components/ui/ImageGallery';
 import Button from '../../../components/ui/Button';
 
-const ProduceListingCard = ({
-  listing,
-  onEdit,
-  onDuplicate,
-  onToggleStatus,
-  onDelete,
-  currentLanguage = 'en'
+const ProduceListingCard = ({ 
+  listing, 
+  onEdit, 
+  onDuplicate, 
+  onToggleStatus, 
+  currentLanguage = 'en' 
 }) => {
   const getStatusColor = (status) => {
     switch (status) {
@@ -58,10 +58,11 @@ const ProduceListingCard = ({
     <div className="bg-card border border-border rounded-lg overflow-hidden shadow-warm hover:shadow-warm-md transition-smooth">
       {/* Image Section */}
       <div className="relative h-48 lg:h-56 overflow-hidden">
-        <Image
-          src={listing?.image}
-          alt={listing?.name}
-          className="w-full h-full object-cover"
+        <ImageGallery
+          images={listing?.images || (listing?.image ? [listing.image] : [])}
+          alt={listing?.name || 'Product Image'}
+          className="w-full h-full"
+          showThumbnails={false}
         />
         <div className="absolute top-3 right-3">
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(listing?.status)}`}>
@@ -131,20 +132,10 @@ const ProduceListingCard = ({
             iconPosition="left"
             className="flex-1"
           >
-            {listing?.status === 'sold_out'
+            {listing?.status === 'sold_out' 
               ? (currentLanguage === 'am' ? 'እንደገና ንቁ አድርግ' : 'Reactivate')
               : (currentLanguage === 'am' ? 'ተሽጧል ምልክት አድርግ' : 'Mark Sold')
             }
-          </Button>
-          <Button
-            variant="destructive"
-            size="sm"
-            onClick={() => onDelete && onDelete(listing?.id)}
-            iconName="Trash2"
-            iconPosition="left"
-            className="flex-1"
-          >
-            {currentLanguage === 'am' ? 'ሰርዝ' : 'Delete'}
           </Button>
         </div>
       </div>

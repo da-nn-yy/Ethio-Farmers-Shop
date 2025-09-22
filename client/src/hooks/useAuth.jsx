@@ -1,7 +1,5 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { authService, userService } from '../services/apiService.js';
-import { auth } from '../firebase.js';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
 // Create Auth Context
 const AuthContext = createContext();
@@ -9,126 +7,101 @@ const AuthContext = createContext();
 // Auth Provider Component
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('authToken'));
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Initialize auth state from localStorage
   useEffect(() => {
     initializeAuth();
-    // Keep Firebase auth state in sync across refreshes
-    const unsubscribe = auth.onIdTokenChanged(async (firebaseUser) => {
-      if (firebaseUser) {
-        const idToken = await firebaseUser.getIdToken();
-        localStorage.setItem('authToken', idToken);
-        localStorage.setItem('isAuthenticated', 'true');
-        try {
-          const me = await userService.getMe();
-          if (me && me.id) {
-            setUser({
-              id: me.id,
-              firebase_uid: me.firebaseUid,
-              email: me.email,
-              fullName: me.fullName,
-              role: me.role,
-              region: me.region,
-              woreda: me.woreda,
-              avatarUrl: me.avatarUrl || null,
-              created_at: me.createdAt
-            });
-            setIsAuthenticated(true);
-            localStorage.setItem('userRole', me.role);
-          }
-        } catch {}
-      } else {
-        setUser(null);
-        setIsAuthenticated(false);
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('userRole');
-      }
-    });
-    return () => unsubscribe();
   }, []);
 
   const initializeAuth = async () => {
     try {
+      setLoading(true);
+      setError(null);
+
       const storedToken = localStorage.getItem('authToken');
       const storedAuth = localStorage.getItem('isAuthenticated');
-      const storedRole = localStorage.getItem('userRole');
+      const storedUser = localStorage.getItem('userData');
 
       if (storedToken && storedAuth === 'true') {
+        // Immediately hydrate session from storage to avoid flicker/redirects
         setToken(storedToken);
         setIsAuthenticated(true);
-
-        // Verify token and get user data from DB
-        try {
-          const me = await userService.getMe();
-          if (me && me.id) {
-            setUser({
-              id: me.id,
-              firebase_uid: me.firebaseUid,
-              email: me.email,
-              fullName: me.fullName,
-              role: me.role,
-              region: me.region,
-              woreda: me.woreda,
-              avatarUrl: me.avatarUrl || null,
-              created_at: me.createdAt
-            });
-          } else {
-            logout();
-          }
-        } catch (error) {
-          console.error('Token verification failed:', error);
-          // keep local session; will re-sync via onIdTokenChanged
+        if (storedUser) {
+          try { setUser(JSON.parse(storedUser)); } catch {}
         }
+
+        // Skip API call for now to avoid hanging when backend is not available
+        console.log('Using stored session data, skipping API call');
+      } else {
+        // No valid stored auth
+        clearAuth();
       }
     } catch (error) {
       console.error('Auth initialization failed:', error);
-      logout();
+      setError('Failed to initialize authentication');
+      // Do not force logout here to avoid redirect loops
     } finally {
       setLoading(false);
     }
   };
 
+  const clearAuth = () => {
+    setUser(null);
+    setToken(null);
+    setIsAuthenticated(false);
+    setError(null);
+    
+    // Clear localStorage
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('isAuthenticated');
+    localStorage.removeItem('userData');
+    localStorage.removeItem('userRole');
+  };
+
   const login = async (credentials) => {
+    // Check if this is a dev mode login
+    if (credentials.devMode) {
+      const devUserData = JSON.parse(localStorage.getItem('devUserData') || '{}');
+      console.log('Dev mode login - user data:', devUserData);
+      setUser(devUserData);
+      setToken(localStorage.getItem('authToken'));
+      setIsAuthenticated(true);
+      setError(null);
+      console.log('Dev mode login successful');
+      return { success: true, user: devUserData };
+    }
     try {
       setLoading(true);
-      const { email, password } = credentials;
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const idToken = await userCredential.user.getIdToken();
+      setError(null);
 
-      // Persist token for API calls
-      localStorage.setItem('authToken', idToken);
-      localStorage.setItem('isAuthenticated', 'true');
+      const response = await authService.devLogin(credentials);
 
-      // Ensure user exists in MySQL and fetch profile
-      await authService.syncUser();
-      const me = await userService.getMe();
-
-      if (me && me.id) {
-        setUser({
-          id: me.id,
-          firebase_uid: me.firebaseUid,
-          email: me.email,
-          fullName: me.fullName,
-          role: me.role,
-          region: me.region,
-          woreda: me.woreda,
-          avatarUrl: me.avatarUrl || null,
-          created_at: me.createdAt
-        });
-        setToken(idToken);
+      if (response.user && response.devToken) {
+        setUser(response.user);
+        setToken(response.devToken);
         setIsAuthenticated(true);
-        localStorage.setItem('userRole', me.role);
-        return { success: true, user: me };
+
+        // Store in localStorage
+        localStorage.setItem('authToken', response.devToken);
+        localStorage.setItem('isAuthenticated', 'true');
+        localStorage.setItem('userData', JSON.stringify(response.user));
+        localStorage.setItem('userRole', response.user.role);
+
+        return { success: true, user: response.user };
+      } else {
+        throw new Error('Invalid response from server');
       }
-      return { success: false, error: 'Login failed' };
     } catch (error) {
       console.error('Login error:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Login failed';
+      setError(errorMessage);
       return {
         success: false,
-        error: error.response?.data?.error || 'Login failed'
+        error: errorMessage
       };
     } finally {
       setLoading(false);
@@ -138,36 +111,95 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       setLoading(true);
+      setError(null);
+
       const response = await authService.register(userData);
+
+      // Try to authenticate the user immediately after successful registration
+      try {
+        const { email, password } = userData;
+        // Prefer real Firebase sign-in when available (server returns firebase_user in prod flow)
+        let signedIn = false;
+        try {
+          const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth');
+          const auth = getAuth();
+          await signInWithEmailAndPassword(auth, email, password);
+          signedIn = true;
+        } catch (_) {
+          // ignore, may be dev mode without Firebase
+        }
+
+        // If Firebase sign-in isn't available, fall back to dev login token
+        if (!signedIn) {
+          try {
+            await authService.devLogin({ email, password });
+            signedIn = true;
+          } catch (_) {}
+        }
+
+        // Best-effort: sync user and hydrate role/user locally
+        try {
+          await authService.syncUser();
+        } catch (_) {}
+        try {
+          const me = await userService.getMe();
+          if (me) {
+            setUser(me);
+            setIsAuthenticated(true);
+            localStorage.setItem('isAuthenticated', 'true');
+            if (me.role) localStorage.setItem('userRole', me.role);
+            localStorage.setItem('userData', JSON.stringify(me));
+          }
+        } catch (_) {}
+      } catch (_) {
+        // Non-fatal: even if auto login fails, registration still succeeded
+      }
+
       return { success: true, data: response };
     } catch (error) {
       console.error('Registration error:', error);
+      const errorMessage = error.response?.data?.error || error.message || 'Registration failed';
+      setError(errorMessage);
       return {
         success: false,
-        error: error.response?.data?.error || 'Registration failed'
+        error: errorMessage
       };
     } finally {
       setLoading(false);
     }
   };
 
-  const logout = async () => {
-    setUser(null);
-    setToken(null);
-    setIsAuthenticated(false);
-
-    // Clear localStorage
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userRole');
-
+  const logout = () => {
+    clearAuth();
     // Call logout service
     authService.logout();
-    try { await signOut(auth); } catch {}
   };
 
   const updateUser = (userData) => {
-    setUser(prevUser => ({ ...prevUser, ...userData }));
+    const updatedUser = { ...user, ...userData };
+    setUser(updatedUser);
+    localStorage.setItem('userData', JSON.stringify(updatedUser));
+  };
+
+  const refreshUser = async () => {
+    try {
+      if (!token) return false;
+      
+      const profileResponse = await authService.getUserProfile();
+      if (profileResponse.user) {
+        setUser(profileResponse.user);
+        localStorage.setItem('userData', JSON.stringify(profileResponse.user));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Failed to refresh user:', error);
+      return false;
+    }
+  };
+
+  const clearError = () => {
+    setError(null);
   };
 
   const value = {
@@ -175,10 +207,14 @@ export const AuthProvider = ({ children }) => {
     token,
     loading,
     isAuthenticated,
+    error,
     login,
     register,
     logout,
-    updateUser
+    updateUser,
+    refreshUser,
+    clearError,
+    clearAuth
   };
 
   return (

@@ -1,0 +1,51 @@
+{
+  "name": "ke-geberew",
+  "version": "1.0.0",
+  "description": "A comprehensive e-commerce platform connecting Ethiopian farmers directly with buyers",
+  "main": "server/src/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "server:dev": "cd server && npm run dev",
+    "client:dev": "cd client && npm run dev",
+    "server:start": "cd server && npm start",
+    "client:build": "cd client && npm run build",
+    "client:preview": "cd client && npm run preview",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "build": "npm run client:build",
+    "start": "npm run server:start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup": "npm run install:all && npm run db:setup",
+    "db:setup": "cd server && node setup-database.js"
+  },
+  "keywords": [
+    "agriculture",
+    "e-commerce",
+    "farmers",
+    "ethiopia",
+    "marketplace",
+    "react",
+    "nodejs",
+    "mysql"
+  ],
+  "author": "Ke geberew Team",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.2",
+    "mysql2": "^3.14.5"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/ke-geberew.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/ke-geberew/issues"
+  },
+  "homepage": "https://github.com/your-username/ke-geberew#readme"
+}

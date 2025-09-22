@@ -469,5 +469,3 @@ describe('API Services', () => {
 ```
 
 This integration guide provides everything you need to connect your frontend with the Ethio-Farmers-Shop API. The routes are now fully functional and ready for frontend integration!
-
-

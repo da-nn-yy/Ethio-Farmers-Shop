@@ -18,41 +18,114 @@ const PriceAlerts = ({ currentLanguage = 'en' }) => {
       id: 1,
       crop: "Teff",
       cropAm: "ጤፍ",
-      targetPrice: 90.00,
+      targetPrice: 100.00,
       condition: "above",
       conditionAm: "በላይ",
       region: "Addis Ababa",
       regionAm: "አዲስ አበባ",
       isActive: true,
-      currentPrice: 85.50,
-      created: "2025-08-20"
+      currentPrice: 98.50,
+      created: "2025-08-20",
+      priority: "high"
     },
     {
       id: 2,
       crop: "Coffee",
       cropAm: "ቡና",
-      targetPrice: 300.00,
+      targetPrice: 280.00,
       condition: "below",
       conditionAm: "በታች",
       region: "Oromia",
       regionAm: "ኦሮሚያ",
       isActive: true,
-      currentPrice: 320.75,
-      created: "2025-08-18"
+      currentPrice: 285.80,
+      created: "2025-08-18",
+      priority: "medium"
     },
     {
       id: 3,
       crop: "Maize",
       cropAm: "በቆሎ",
-      targetPrice: 35.00,
+      targetPrice: 45.00,
       condition: "above",
       conditionAm: "በላይ",
       region: "Amhara",
       regionAm: "አማራ",
       isActive: false,
-      currentPrice: 28.90,
+      currentPrice: 39.80,
       created: "2025-08-15",
-      triggered: "2025-08-22"
+      triggered: "2025-08-22",
+      priority: "low"
+    },
+    {
+      id: 4,
+      crop: "Wheat",
+      cropAm: "ስንዴ",
+      targetPrice: 60.00,
+      condition: "above",
+      conditionAm: "በላይ",
+      region: "Tigray",
+      regionAm: "ትግራይ",
+      isActive: true,
+      currentPrice: 49.60,
+      created: "2025-08-25",
+      priority: "medium"
+    },
+    {
+      id: 5,
+      crop: "Barley",
+      cropAm: "ገብስ",
+      targetPrice: 50.00,
+      condition: "above",
+      conditionAm: "በላይ",
+      region: "Tigray",
+      regionAm: "ትግራይ",
+      isActive: true,
+      currentPrice: 46.60,
+      created: "2025-08-23",
+      priority: "low"
+    },
+    {
+      id: 6,
+      crop: "Sorghum",
+      cropAm: "ማሽላ",
+      targetPrice: 40.00,
+      condition: "above",
+      conditionAm: "በላይ",
+      region: "SNNPR",
+      regionAm: "ደቡብ ብሔሮች",
+      isActive: true,
+      currentPrice: 36.60,
+      created: "2025-08-21",
+      priority: "low"
+    },
+    {
+      id: 7,
+      crop: "Chickpea",
+      cropAm: "ሻምበል",
+      targetPrice: 80.00,
+      condition: "above",
+      conditionAm: "በላይ",
+      region: "Harari",
+      regionAm: "ሀረሪ",
+      isActive: false,
+      currentPrice: 73.60,
+      created: "2025-08-19",
+      priority: "medium"
+    },
+    {
+      id: 8,
+      crop: "Lentil",
+      cropAm: "ምስር",
+      targetPrice: 70.00,
+      condition: "above",
+      conditionAm: "በላይ",
+      region: "Dire Dawa",
+      regionAm: "ድሬ ዳዋ",
+      isActive: true,
+      currentPrice: 66.60,
+      created: "2025-08-24",
+      priority: "low"
     }
   ];
 
@@ -60,7 +133,11 @@ const PriceAlerts = ({ currentLanguage = 'en' }) => {
     { value: 'teff', label: 'Teff', labelAm: 'ጤፍ' },
     { value: 'coffee', label: 'Coffee', labelAm: 'ቡና' },
     { value: 'maize', label: 'Maize', labelAm: 'በቆሎ' },
-    { value: 'wheat', label: 'Wheat', labelAm: 'ስንዴ' }
+    { value: 'wheat', label: 'Wheat', labelAm: 'ስንዴ' },
+    { value: 'barley', label: 'Barley', labelAm: 'ገብስ' },
+    { value: 'sorghum', label: 'Sorghum', labelAm: 'ማሽላ' },
+    { value: 'chickpea', label: 'Chickpea', labelAm: 'ሻምበል' },
+    { value: 'lentil', label: 'Lentil', labelAm: 'ምስር' }
   ];
 
   const conditionOptions = [
@@ -72,7 +149,13 @@ const PriceAlerts = ({ currentLanguage = 'en' }) => {
     { value: 'addis-ababa', label: 'Addis Ababa', labelAm: 'አዲስ አበባ' },
     { value: 'oromia', label: 'Oromia', labelAm: 'ኦሮሚያ' },
     { value: 'amhara', label: 'Amhara', labelAm: 'አማራ' },
-    { value: 'snnpr', label: 'SNNPR', labelAm: 'ደቡብ ብሔሮች' }
+    { value: 'tigray', label: 'Tigray', labelAm: 'ትግራይ' },
+    { value: 'snnpr', label: 'SNNPR', labelAm: 'ደቡብ ብሔሮች' },
+    { value: 'sidama', label: 'Sidama', labelAm: 'ሲዳማ' },
+    { value: 'harari', label: 'Harari', labelAm: 'ሀረሪ' },
+    { value: 'dire-dawa', label: 'Dire Dawa', labelAm: 'ድሬ ዳዋ' },
+    { value: 'gambela', label: 'Gambela', labelAm: 'ጋምቤላ' },
+    { value: 'afar', label: 'Afar', labelAm: 'አፋር' }
   ];
 
   const formatPrice = (price) => {

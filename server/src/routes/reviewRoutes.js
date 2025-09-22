@@ -4,6 +4,7 @@ import {
   createReview,
   getListingReviews,
   getFarmerReviews,
+  createFarmerReview,
   updateReview,
   deleteReview,
   getUserReviews,
@@ -21,6 +22,7 @@ router.use(authGuard);
 
 // Review management
 router.post('/', createReview);
+router.post('/farmer/:farmerId', createFarmerReview);
 router.put('/:id', updateReview);
 router.delete('/:id', deleteReview);
 
@@ -31,5 +33,4 @@ router.get('/my-reviews', getUserReviews);
 router.get('/stats', getReviewStats);
 
 export default router;
-
 

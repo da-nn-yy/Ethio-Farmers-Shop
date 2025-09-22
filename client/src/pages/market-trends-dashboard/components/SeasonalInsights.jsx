@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
@@ -9,7 +9,12 @@ const SeasonalInsights = ({ currentLanguage = 'en' }) => {
   const crops = [
     { value: 'teff', label: 'Teff', labelAm: 'ጤፍ' },
     { value: 'coffee', label: 'Coffee', labelAm: 'ቡና' },
-    { value: 'maize', label: 'Maize', labelAm: 'በቆሎ' }
+    { value: 'maize', label: 'Maize', labelAm: 'በቆሎ' },
+    { value: 'wheat', label: 'Wheat', labelAm: 'ስንዴ' },
+    { value: 'barley', label: 'Barley', labelAm: 'ገብስ' },
+    { value: 'sorghum', label: 'Sorghum', labelAm: 'ማሽላ' },
+    { value: 'chickpea', label: 'Chickpea', labelAm: 'ሻምበል' },
+    { value: 'lentil', label: 'Lentil', labelAm: 'ምስር' }
   ];
 
   const seasonalData = {
@@ -40,6 +45,90 @@ const SeasonalInsights = ({ currentLanguage = 'en' }) => {
       { month: 'Oct', monthAm: 'ኦክቶ', avgPrice: 340.20, season: 'harvest', seasonAm: 'መከር' },
       { month: 'Nov', monthAm: 'ኖቬም', avgPrice: 325.40, season: 'harvest', seasonAm: 'መከር' },
       { month: 'Dec', monthAm: 'ዲሴም', avgPrice: 318.90, season: 'harvest', seasonAm: 'መከር' }
+    ],
+    maize: [
+      { month: 'Jan', monthAm: 'ጃንዩ', avgPrice: 28.50, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Feb', monthAm: 'ፌብሩ', avgPrice: 29.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Mar', monthAm: 'ማርች', avgPrice: 31.10, season: 'post-harvest', seasonAm: 'ከመከር በኋላ' },
+      { month: 'Apr', monthAm: 'ኤፕሪ', avgPrice: 33.30, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'May', monthAm: 'ሜይ', avgPrice: 35.80, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'Jun', monthAm: 'ጁን', avgPrice: 38.20, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Jul', monthAm: 'ጁላይ', avgPrice: 40.10, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Aug', monthAm: 'ኦገስ', avgPrice: 39.80, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Sep', monthAm: 'ሴፕቴ', avgPrice: 37.50, season: 'pre-harvest', seasonAm: 'ከመከር በፊት' },
+      { month: 'Oct', monthAm: 'ኦክቶ', avgPrice: 35.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Nov', monthAm: 'ኖቬም', avgPrice: 32.40, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Dec', monthAm: 'ዲሴም', avgPrice: 30.90, season: 'harvest', seasonAm: 'መከር' }
+    ],
+    wheat: [
+      { month: 'Jan', monthAm: 'ጃንዩ', avgPrice: 42.50, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Feb', monthAm: 'ፌብሩ', avgPrice: 43.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Mar', monthAm: 'ማርች', avgPrice: 45.10, season: 'post-harvest', seasonAm: 'ከመከር በኋላ' },
+      { month: 'Apr', monthAm: 'ኤፕሪ', avgPrice: 47.30, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'May', monthAm: 'ሜይ', avgPrice: 49.80, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'Jun', monthAm: 'ጁን', avgPrice: 52.20, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Jul', monthAm: 'ጁላይ', avgPrice: 54.10, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Aug', monthAm: 'ኦገስ', avgPrice: 53.80, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Sep', monthAm: 'ሴፕቴ', avgPrice: 51.50, season: 'pre-harvest', seasonAm: 'ከመከር በፊት' },
+      { month: 'Oct', monthAm: 'ኦክቶ', avgPrice: 49.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Nov', monthAm: 'ኖቬም', avgPrice: 46.40, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Dec', monthAm: 'ዲሴም', avgPrice: 44.90, season: 'harvest', seasonAm: 'መከር' }
+    ],
+    barley: [
+      { month: 'Jan', monthAm: 'ጃንዩ', avgPrice: 35.50, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Feb', monthAm: 'ፌብሩ', avgPrice: 36.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Mar', monthAm: 'ማርች', avgPrice: 38.10, season: 'post-harvest', seasonAm: 'ከመከር በኋላ' },
+      { month: 'Apr', monthAm: 'ኤፕሪ', avgPrice: 40.30, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'May', monthAm: 'ሜይ', avgPrice: 42.80, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'Jun', monthAm: 'ጁን', avgPrice: 45.20, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Jul', monthAm: 'ጁላይ', avgPrice: 47.10, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Aug', monthAm: 'ኦገስ', avgPrice: 46.80, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Sep', monthAm: 'ሴፕቴ', avgPrice: 44.50, season: 'pre-harvest', seasonAm: 'ከመከር በፊት' },
+      { month: 'Oct', monthAm: 'ኦክቶ', avgPrice: 42.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Nov', monthAm: 'ኖቬም', avgPrice: 39.40, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Dec', monthAm: 'ዲሴም', avgPrice: 37.90, season: 'harvest', seasonAm: 'መከር' }
+    ],
+    sorghum: [
+      { month: 'Jan', monthAm: 'ጃንዩ', avgPrice: 25.50, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Feb', monthAm: 'ፌብሩ', avgPrice: 26.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Mar', monthAm: 'ማርች', avgPrice: 28.10, season: 'post-harvest', seasonAm: 'ከመከር በኋላ' },
+      { month: 'Apr', monthAm: 'ኤፕሪ', avgPrice: 30.30, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'May', monthAm: 'ሜይ', avgPrice: 32.80, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'Jun', monthAm: 'ጁን', avgPrice: 35.20, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Jul', monthAm: 'ጁላይ', avgPrice: 37.10, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Aug', monthAm: 'ኦገስ', avgPrice: 36.80, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Sep', monthAm: 'ሴፕቴ', avgPrice: 34.50, season: 'pre-harvest', seasonAm: 'ከመከር በፊት' },
+      { month: 'Oct', monthAm: 'ኦክቶ', avgPrice: 32.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Nov', monthAm: 'ኖቬም', avgPrice: 29.40, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Dec', monthAm: 'ዲሴም', avgPrice: 27.90, season: 'harvest', seasonAm: 'መከር' }
+    ],
+    chickpea: [
+      { month: 'Jan', monthAm: 'ጃንዩ', avgPrice: 62.50, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Feb', monthAm: 'ፌብሩ', avgPrice: 63.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Mar', monthAm: 'ማርች', avgPrice: 65.10, season: 'post-harvest', seasonAm: 'ከመከር በኋላ' },
+      { month: 'Apr', monthAm: 'ኤፕሪ', avgPrice: 67.30, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'May', monthAm: 'ሜይ', avgPrice: 69.80, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'Jun', monthAm: 'ጁን', avgPrice: 72.20, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Jul', monthAm: 'ጁላይ', avgPrice: 74.10, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Aug', monthAm: 'ኦገስ', avgPrice: 73.80, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Sep', monthAm: 'ሴፕቴ', avgPrice: 71.50, season: 'pre-harvest', seasonAm: 'ከመከር በፊት' },
+      { month: 'Oct', monthAm: 'ኦክቶ', avgPrice: 69.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Nov', monthAm: 'ኖቬም', avgPrice: 66.40, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Dec', monthAm: 'ዲሴም', avgPrice: 64.90, season: 'harvest', seasonAm: 'መከር' }
+    ],
+    lentil: [
+      { month: 'Jan', monthAm: 'ጃንዩ', avgPrice: 55.50, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Feb', monthAm: 'ፌብሩ', avgPrice: 56.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Mar', monthAm: 'ማርች', avgPrice: 58.10, season: 'post-harvest', seasonAm: 'ከመከር በኋላ' },
+      { month: 'Apr', monthAm: 'ኤፕሪ', avgPrice: 60.30, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'May', monthAm: 'ሜይ', avgPrice: 62.80, season: 'planting', seasonAm: 'መዝራት' },
+      { month: 'Jun', monthAm: 'ጁን', avgPrice: 65.20, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Jul', monthAm: 'ጁላይ', avgPrice: 67.10, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Aug', monthAm: 'ኦገስ', avgPrice: 66.80, season: 'growing', seasonAm: 'እድገት' },
+      { month: 'Sep', monthAm: 'ሴፕቴ', avgPrice: 64.50, season: 'pre-harvest', seasonAm: 'ከመከር በፊት' },
+      { month: 'Oct', monthAm: 'ኦክቶ', avgPrice: 62.20, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Nov', monthAm: 'ኖቬም', avgPrice: 59.40, season: 'harvest', seasonAm: 'መከር' },
+      { month: 'Dec', monthAm: 'ዲሴም', avgPrice: 57.90, season: 'harvest', seasonAm: 'መከር' }
     ]
   };
 
@@ -59,6 +148,54 @@ const SeasonalInsights = ({ currentLanguage = 'en' }) => {
       peakAm: 'ጁላይ',
       low: 'December',
       lowAm: 'ዲሴም'
+    },
+    maize: {
+      bestSelling: { months: ['Jul', 'Aug'], monthsAm: ['ጁላይ', 'ኦገስ'] },
+      bestBuying: { months: ['Jan', 'Feb'], monthsAm: ['ጃንዩ', 'ፌብሩ'] },
+      peak: 'July',
+      peakAm: 'ጁላይ',
+      low: 'January',
+      lowAm: 'ጃንዩ'
+    },
+    wheat: {
+      bestSelling: { months: ['Jul', 'Aug'], monthsAm: ['ጁላይ', 'ኦገስ'] },
+      bestBuying: { months: ['Jan', 'Feb'], monthsAm: ['ጃንዩ', 'ፌብሩ'] },
+      peak: 'July',
+      peakAm: 'ጁላይ',
+      low: 'January',
+      lowAm: 'ጃንዩ'
+    },
+    barley: {
+      bestSelling: { months: ['Jul', 'Aug'], monthsAm: ['ጁላይ', 'ኦገስ'] },
+      bestBuying: { months: ['Jan', 'Feb'], monthsAm: ['ጃንዩ', 'ፌብሩ'] },
+      peak: 'July',
+      peakAm: 'ጁላይ',
+      low: 'January',
+      lowAm: 'ጃንዩ'
+    },
+    sorghum: {
+      bestSelling: { months: ['Jul', 'Aug'], monthsAm: ['ጁላይ', 'ኦገስ'] },
+      bestBuying: { months: ['Jan', 'Feb'], monthsAm: ['ጃንዩ', 'ፌብሩ'] },
+      peak: 'July',
+      peakAm: 'ጁላይ',
+      low: 'January',
+      lowAm: 'ጃንዩ'
+    },
+    chickpea: {
+      bestSelling: { months: ['Jul', 'Aug'], monthsAm: ['ጁላይ', 'ኦገስ'] },
+      bestBuying: { months: ['Jan', 'Feb'], monthsAm: ['ጃንዩ', 'ፌብሩ'] },
+      peak: 'July',
+      peakAm: 'ጁላይ',
+      low: 'January',
+      lowAm: 'ጃንዩ'
+    },
+    lentil: {
+      bestSelling: { months: ['Jul', 'Aug'], monthsAm: ['ጁላይ', 'ኦገስ'] },
+      bestBuying: { months: ['Jan', 'Feb'], monthsAm: ['ጃንዩ', 'ፌብሩ'] },
+      peak: 'July',
+      peakAm: 'ጁላይ',
+      low: 'January',
+      lowAm: 'ጃንዩ'
     }
   };
 
@@ -77,20 +214,82 @@ const SeasonalInsights = ({ currentLanguage = 'en' }) => {
   const currentCrop = crops?.find(c => c?.value === selectedCrop);
   const currentInsights = insights?.[selectedCrop] || insights?.teff;
 
+  // Add peak and low indicators to data
+  const enhancedData = currentData?.map((item, index) => {
+    const prices = currentData?.map(d => d.avgPrice);
+    const maxPrice = Math.max(...prices);
+    const minPrice = Math.min(...prices);
+    
+    return {
+      ...item,
+      isPeak: item.avgPrice === maxPrice,
+      isLow: item.avgPrice === minPrice,
+      priceChange: index > 0 ? ((item.avgPrice - currentData[index - 1].avgPrice) / currentData[index - 1].avgPrice) * 100 : 0
+    };
+  });
+
+  // Color function for bars
+  const getBarColor = (entry) => {
+    if (entry.isPeak) return '#10B981'; // success color
+    if (entry.isLow) return '#F59E0B'; // warning color
+    return '#3B82F6'; // primary color
+  };
+
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload?.length) {
       const data = payload?.[0]?.payload;
+      const isPeak = data?.isPeak;
+      const isLow = data?.isLow;
+      
       return (
-        <div className="bg-surface p-3 rounded-lg border border-border shadow-warm-md">
-          <p className="text-sm font-medium text-text-primary mb-1">
-            {getLabel(data, 'month')}
-          </p>
-          <p className="text-sm text-primary">
-            {currentLanguage === 'am' ? 'አማካይ ዋጋ፡' : 'Avg Price:'} {formatPrice(payload?.[0]?.value)} ETB
-          </p>
-          <p className="text-xs text-text-secondary">
-            {currentLanguage === 'am' ? 'ወቅት፡' : 'Season:'} {getLabel(data, 'season')}
-          </p>
+        <div className="bg-surface p-4 rounded-xl border border-border shadow-warm-lg backdrop-blur-sm">
+          <div className="flex items-center space-x-2 mb-3">
+            <div className={`w-3 h-3 rounded-full ${isPeak ? 'bg-success' : isLow ? 'bg-warning' : 'bg-primary'}`}></div>
+            <p className="text-sm font-semibold text-text-primary">
+              {getLabel(data, 'month')}
+            </p>
+            {isPeak && (
+              <span className="px-2 py-1 bg-success/10 text-success text-xs rounded-full font-medium">
+                {currentLanguage === 'am' ? 'ከፍተኛ' : 'Peak'}
+              </span>
+            )}
+            {isLow && (
+              <span className="px-2 py-1 bg-warning/10 text-warning text-xs rounded-full font-medium">
+                {currentLanguage === 'am' ? 'ዝቅተኛ' : 'Low'}
+              </span>
+            )}
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary">
+                {currentLanguage === 'am' ? 'አማካይ ዋጋ፡' : 'Avg Price:'}
+              </span>
+              <span className="text-lg font-bold text-primary">
+                {formatPrice(payload?.[0]?.value)} ETB
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-text-secondary">
+                {currentLanguage === 'am' ? 'ወቅት፡' : 'Season:'}
+              </span>
+              <span className="text-sm font-medium text-text-primary">
+                {getLabel(data, 'season')}
+              </span>
+            </div>
+            <div className="pt-2 border-t border-border">
+              <div className="text-xs text-text-secondary">
+                {currentLanguage === 'am' ? 'የገበያ ምክር፡' : 'Market Tip:'}
+              </div>
+              <div className="text-xs text-text-primary mt-1">
+                {isPeak ? 
+                  (currentLanguage === 'am' ? 'ለሽያጭ ጥሩ ጊዜ' : 'Best time to sell') :
+                  isLow ? 
+                  (currentLanguage === 'am' ? 'ለግዢ ጥሩ ጊዜ' : 'Best time to buy') :
+                  (currentLanguage === 'am' ? 'መካከለኛ ዋጋ' : 'Moderate pricing')
+                }
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
@@ -129,28 +328,106 @@ const SeasonalInsights = ({ currentLanguage = 'en' }) => {
           {currentLanguage === 'am' ? 'ባለፉት 3 አመታት አማካይ' : 'Average over the last 3 years'}
         </p>
       </div>
-      <div className="h-80 w-full mb-6">
+      <div className="h-96 w-full mb-6 relative chart-container">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={currentData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+          <BarChart data={enhancedData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+            <defs>
+              <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0.4}/>
+              </linearGradient>
+              <linearGradient id="peakGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#10B981" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="#10B981" stopOpacity={0.4}/>
+              </linearGradient>
+              <linearGradient id="lowGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#F59E0B" stopOpacity={0.8}/>
+                <stop offset="100%" stopColor="#F59E0B" stopOpacity={0.4}/>
+              </linearGradient>
+            </defs>
+            <CartesianGrid 
+              strokeDasharray="3 3" 
+              stroke="var(--color-border)" 
+              opacity={0.3}
+              horizontal={false}
+            />
             <XAxis 
               dataKey={currentLanguage === 'am' ? 'monthAm' : 'month'}
               stroke="var(--color-text-secondary)"
               fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={10}
             />
             <YAxis 
               tickFormatter={(value) => `${formatPrice(value)}`}
               stroke="var(--color-text-secondary)"
               fontSize={12}
+              tickLine={false}
+              axisLine={false}
+              tickMargin={10}
             />
             <Tooltip content={<CustomTooltip />} />
             <Bar 
               dataKey="avgPrice" 
-              fill="var(--color-primary)"
-              radius={[4, 4, 0, 0]}
+              radius={[6, 6, 0, 0]}
+              strokeWidth={0}
+            >
+              {enhancedData?.map((entry, index) => (
+                <Cell 
+                  key={`cell-${index}`} 
+                  fill={
+                    entry.isPeak ? 'url(#peakGradient)' : 
+                    entry.isLow ? 'url(#lowGradient)' : 
+                    'url(#barGradient)'
+                  }
+                />
+              ))}
+            </Bar>
+            <ReferenceLine 
+              y={enhancedData?.reduce((sum, item) => sum + item.avgPrice, 0) / enhancedData?.length} 
+              stroke="var(--color-text-secondary)" 
+              strokeDasharray="2 2" 
+              opacity={0.5}
+              label={{ 
+                value: currentLanguage === 'am' ? 'አማካይ' : 'Average', 
+                position: 'topRight',
+                style: { fontSize: '12px', fill: 'var(--color-text-secondary)' }
+              }}
             />
           </BarChart>
         </ResponsiveContainer>
+        
+        {/* Chart overlay with peak/low indicators */}
+        <div className="absolute top-4 right-4 bg-surface/90 backdrop-blur-sm rounded-lg p-3 border border-border shadow-warm chart-overlay">
+          <div className="text-xs text-text-secondary mb-2">
+            {currentLanguage === 'am' ? 'የወቅት ማጠቃለያ' : 'Seasonal Summary'}
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-success"></div>
+              <span className="text-xs text-text-primary">
+                {currentLanguage === 'am' ? 'ከፍተኛ፡' : 'Peak:'} {formatPrice(Math.max(...enhancedData?.map(d => d.avgPrice) || [0]))} ETB
+              </span>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 rounded-full bg-warning"></div>
+              <span className="text-xs text-text-primary">
+                {currentLanguage === 'am' ? 'ዝቅተኛ፡' : 'Low:'} {formatPrice(Math.min(...enhancedData?.map(d => d.avgPrice) || [0]))} ETB
+              </span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Price range indicator */}
+        <div className="absolute bottom-4 left-4 bg-surface/90 backdrop-blur-sm rounded-lg p-3 border border-border shadow-warm chart-overlay">
+          <div className="text-xs text-text-secondary mb-1">
+            {currentLanguage === 'am' ? 'የዋጋ ክልል' : 'Price Range'}
+          </div>
+          <div className="text-sm font-bold text-primary">
+            {formatPrice(Math.min(...enhancedData?.map(d => d.avgPrice) || [0]))} - {formatPrice(Math.max(...enhancedData?.map(d => d.avgPrice) || [0]))} ETB
+          </div>
+        </div>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div className="p-4 bg-success/5 rounded-lg border border-success/20">

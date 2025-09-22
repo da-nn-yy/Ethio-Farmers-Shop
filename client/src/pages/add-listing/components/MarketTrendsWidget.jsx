@@ -1,52 +1,99 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Button from '../../../components/ui/Button';
 
 
 const MarketTrendsWidget = ({ currentLanguage = 'en' }) => {
+  const navigate = useNavigate();
+
+  const handleFullReportClick = () => {
+    navigate('/market-trends-dashboard');
+  };
+
   const marketData = [
-    { date: '2025-08-20', teff: 85, wheat: 45, barley: 38, maize: 32 },
-    { date: '2025-08-21', teff: 87, wheat: 46, barley: 39, maize: 33 },
-    { date: '2025-08-22', teff: 89, wheat: 47, barley: 40, maize: 34 },
-    { date: '2025-08-23', teff: 86, wheat: 45, barley: 38, maize: 32 },
-    { date: '2025-08-24', teff: 88, wheat: 48, barley: 41, maize: 35 },
-    { date: '2025-08-25', teff: 90, wheat: 49, barley: 42, maize: 36 },
-    { date: '2025-08-26', teff: 92, wheat: 50, barley: 43, maize: 37 }
+    { date: '2025-08-20', teff: 85, wheat: 45, barley: 38, maize: 32, coffee: 320, sorghum: 28, chickpea: 65, lentil: 58 },
+    { date: '2025-08-21', teff: 87, wheat: 46, barley: 39, maize: 33, coffee: 318, sorghum: 29, chickpea: 66, lentil: 59 },
+    { date: '2025-08-22', teff: 89, wheat: 47, barley: 40, maize: 34, coffee: 315, sorghum: 30, chickpea: 67, lentil: 60 },
+    { date: '2025-08-23', teff: 86, wheat: 45, barley: 38, maize: 32, coffee: 312, sorghum: 28, chickpea: 65, lentil: 58 },
+    { date: '2025-08-24', teff: 88, wheat: 48, barley: 41, maize: 35, coffee: 310, sorghum: 31, chickpea: 68, lentil: 61 },
+    { date: '2025-08-25', teff: 90, wheat: 49, barley: 42, maize: 36, coffee: 308, sorghum: 32, chickpea: 69, lentil: 62 },
+    { date: '2025-08-26', teff: 92, wheat: 50, barley: 43, maize: 37, coffee: 305, sorghum: 33, chickpea: 70, lentil: 63 },
+    { date: '2025-08-27', teff: 94, wheat: 52, barley: 44, maize: 38, coffee: 302, sorghum: 34, chickpea: 71, lentil: 64 },
+    { date: '2025-08-28', teff: 91, wheat: 49, barley: 42, maize: 36, coffee: 300, sorghum: 32, chickpea: 69, lentil: 62 },
+    { date: '2025-08-29', teff: 93, wheat: 51, barley: 43, maize: 37, coffee: 298, sorghum: 33, chickpea: 70, lentil: 63 },
+    { date: '2025-08-30', teff: 95, wheat: 53, barley: 45, maize: 39, coffee: 295, sorghum: 35, chickpea: 72, lentil: 65 },
+    { date: '2025-08-31', teff: 97, wheat: 54, barley: 46, maize: 40, coffee: 292, sorghum: 36, chickpea: 73, lentil: 66 },
+    { date: '2025-09-01', teff: 99, wheat: 55, barley: 47, maize: 41, coffee: 290, sorghum: 37, chickpea: 74, lentil: 67 },
+    { date: '2025-09-02', teff: 96, wheat: 53, barley: 45, maize: 39, coffee: 288, sorghum: 35, chickpea: 72, lentil: 65 },
+    { date: '2025-09-03', teff: 98, wheat: 54, barley: 46, maize: 40, coffee: 285, sorghum: 36, chickpea: 73, lentil: 66 }
   ];
 
   const cropPrices = [
     {
       name: 'Teff',
       nameAm: 'ጤፍ',
-      currentPrice: 92,
-      change: '+2.2',
+      currentPrice: 98,
+      change: '+3.2',
       trend: 'up',
       color: '#2D5A27'
     },
     {
       name: 'Wheat',
       nameAm: 'ስንዴ',
-      currentPrice: 50,
-      change: '+4.2',
+      currentPrice: 54,
+      change: '+4.8',
       trend: 'up',
       color: '#DAA520'
     },
     {
       name: 'Barley',
       nameAm: 'ገብስ',
-      currentPrice: 43,
-      change: '+2.4',
+      currentPrice: 46,
+      change: '+2.1',
       trend: 'up',
       color: '#8B4513'
     },
     {
       name: 'Maize',
       nameAm: 'በቆሎ',
-      currentPrice: 37,
-      change: '+5.7',
+      currentPrice: 40,
+      change: '+6.2',
       trend: 'up',
       color: '#059669'
+    },
+    {
+      name: 'Coffee',
+      nameAm: 'ቡና',
+      currentPrice: 285,
+      change: '-4.5',
+      trend: 'down',
+      color: '#8B4513'
+    },
+    {
+      name: 'Sorghum',
+      nameAm: 'ማሽላ',
+      currentPrice: 36,
+      change: '+2.8',
+      trend: 'up',
+      color: '#A0522D'
+    },
+    {
+      name: 'Chickpea',
+      nameAm: 'ሻምበል',
+      currentPrice: 73,
+      change: '+1.9',
+      trend: 'up',
+      color: '#D2691E'
+    },
+    {
+      name: 'Lentil',
+      nameAm: 'ምስር',
+      currentPrice: 66,
+      change: '+3.4',
+      trend: 'up',
+      color: '#CD853F'
     }
   ];
 
@@ -104,7 +151,12 @@ const MarketTrendsWidget = ({ currentLanguage = 'en' }) => {
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" iconName="ExternalLink">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          iconName="ExternalLink"
+          onClick={handleFullReportClick}
+        >
           {currentLanguage === 'am' ? 'ሙሉ ዘገባ' : 'Full Report'}
         </Button>
       </div>

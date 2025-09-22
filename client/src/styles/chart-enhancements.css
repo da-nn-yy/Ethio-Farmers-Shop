@@ -1,0 +1,286 @@
+/* Chart Enhancement Styles */
+
+/* Smooth transitions for chart interactions */
+.recharts-wrapper {
+  transition: all 0.3s ease-in-out;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  transition: opacity 0.3s ease;
+}
+
+/* Enhanced hover effects for chart elements */
+.recharts-bar:hover {
+  filter: brightness(1.1);
+  transition: filter 0.2s ease;
+}
+
+.recharts-line:hover {
+  filter: brightness(1.1);
+  transition: filter 0.2s ease;
+}
+
+/* Custom tooltip animations */
+.chart-tooltip {
+  animation: tooltipFadeIn 0.2s ease-out;
+  transform-origin: center;
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Chart overlay animations */
+.chart-overlay {
+  animation: overlaySlideIn 0.3s ease-out;
+}
+
+@keyframes overlaySlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Enhanced gradient animations */
+.chart-gradient {
+  animation: gradientShift 3s ease-in-out infinite;
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* Bar chart individual bar animations */
+.recharts-bar-rectangle {
+  animation: barGrow 0.6s ease-out;
+  transform-origin: bottom;
+}
+
+@keyframes barGrow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Area chart fill animation */
+.recharts-area {
+  animation: areaFill 1s ease-out;
+}
+
+@keyframes areaFill {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Enhanced dot animations */
+.recharts-dot {
+  transition: all 0.2s ease;
+}
+
+.recharts-dot:hover {
+  transform: scale(1.2);
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+}
+
+/* Active dot special effects */
+.recharts-active-dot {
+  animation: activeDotPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes activeDotPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* Chart container hover effects */
+.chart-container:hover .recharts-wrapper {
+  transform: scale(1.02);
+  transition: transform 0.3s ease;
+}
+
+/* Reference line animations */
+.recharts-reference-line {
+  animation: referenceLineDraw 1s ease-out;
+}
+
+@keyframes referenceLineDraw {
+  from {
+    stroke-dasharray: 0 100;
+  }
+  to {
+    stroke-dasharray: 2 2;
+  }
+}
+
+/* Legend hover effects */
+.recharts-legend-item {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.recharts-legend-item:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+/* Custom scrollbar for chart containers */
+.chart-scroll-container::-webkit-scrollbar {
+  height: 6px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-track {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 3px;
+}
+
+.chart-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Responsive chart adjustments */
+@media (max-width: 768px) {
+  .recharts-wrapper {
+    font-size: 10px;
+  }
+  
+  .chart-overlay {
+    position: relative !important;
+    margin-top: 1rem;
+  }
+}
+
+/* Dark mode chart adjustments */
+@media (prefers-color-scheme: dark) {
+  .recharts-cartesian-grid-horizontal line,
+  .recharts-cartesian-grid-vertical line {
+    stroke: rgba(255, 255, 255, 0.1);
+  }
+  
+  .recharts-text {
+    fill: rgba(255, 255, 255, 0.8);
+  }
+}
+
+/* Loading animation for charts */
+.chart-loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-loading::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent
+  );
+  animation: chartLoading 1.5s infinite;
+}
+
+@keyframes chartLoading {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+/* Enhanced focus states for accessibility */
+.recharts-wrapper:focus-within {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Smooth data updates */
+.recharts-bar,
+.recharts-line,
+.recharts-area {
+  transition: all 0.5s ease-in-out;
+}
+
+/* Custom chart shadows */
+.chart-shadow {
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+/* Interactive legend styling */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--color-muted);
+  border-radius: 0.5rem;
+  border: 1px solid var(--color-border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.legend-item:hover {
+  background: var(--color-primary/10);
+  transform: translateY(-1px);
+}
+
+.legend-item.disabled {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}

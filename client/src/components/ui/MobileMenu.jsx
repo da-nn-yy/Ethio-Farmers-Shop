@@ -141,7 +141,7 @@ const MobileMenu = ({
               <Icon name="Sprout" size={18} color="white" />
             </div>
             <span className="font-heading font-bold text-lg text-primary">
-              FarmConnect
+              Ke geberew
             </span>
           </div>
           <Button

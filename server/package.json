@@ -1,24 +1,50 @@
 {
-  "name": "farmconnect-api",
+  "name": "ethio-farmers-shop-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "Backend API for Ethio Farmers Shop - connecting farmers with buyers",
   "main": "src/index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --watch src/index.js",
-    "start": "node src/index.js"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "setup-db": "node scripts/setup-database.js",
+    "lint": "echo \"No linter configured\"",
+    "lint:fix": "echo \"No linter configured\""
+  },
+  "keywords": [
+    "api",
+    "backend",
+    "nodejs",
+    "express",
+    "mysql",
+    "firebase",
+    "agriculture"
+  ],
+  "author": "Ethio Farmers Shop Team",
+  "license": "MIT",
   "dependencies": {
+    "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^7.1.5",
     "firebase-admin": "^12.7.0",
+    "helmet": "^7.1.0",
+    "joi": "^17.11.0",
+    "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "mysql2": "^3.11.3",
-    "node-fetch": "^3.3.2"
+    "node-fetch": "^3.3.2",
+    "nodemailer": "^7.0.6"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.2",
+    "supertest": "^6.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
   }
 }

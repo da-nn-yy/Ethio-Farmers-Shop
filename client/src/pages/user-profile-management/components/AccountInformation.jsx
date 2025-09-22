@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { getAuth } from 'firebase/auth';
+import { userService } from '../../../services/apiService';
 
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import Select from '../../../components/ui/Select';
+import { useAuth } from '../../../hooks/useAuth.jsx';
 
-const AccountInformation = ({ userRole, currentLanguage }) => {
+const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
@@ -16,33 +16,58 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
     woreda: '',
     language: currentLanguage
   });
+  const { updateUser } = useAuth();
 
   useEffect(() => {
     const loadProfile = async () => {
       try {
-        const auth = getAuth();
-        const user = auth.currentUser;
-        if (!user) return;
-        const token = await user.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-        const API_URL = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
-        const { data } = await axios.get(`${API_URL}/users/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const data = await userService.getMe();
+        
+        // Auto-populate from registration data
+        const registrationData = {
+          fullName: data.full_name || data.fullName || '',
+          email: data.email || '',
+          phone: data.phone || data.phoneNumber || '',
+          region: data.region || '',
+          woreda: data.woreda || '',
+          language: data.language || currentLanguage
+        };
+        
         setFormData(prev => ({
           ...prev,
-          fullName: data.fullName || '',
-          email: data.email || '',
-          phone: data.phoneNumber || '',
-          region: data.region || '',
-          woreda: data.woreda || ''
+          ...registrationData
         }));
+        
+        // If this is a new user with incomplete profile, auto-enable editing
+        const hasIncompleteProfile = !data.full_name || !data.phone || !data.region || !data.woreda;
+        if (hasIncompleteProfile) {
+          setIsEditing(true);
+        }
       } catch (e) {
-        // ignore load failure here
+        console.error('Failed to load profile:', e);
+        // Fallback to localStorage data if API fails
+        const storedUser = localStorage.getItem('userData');
+        if (storedUser) {
+          try {
+            const userData = JSON.parse(storedUser);
+            setFormData(prev => ({
+              ...prev,
+              fullName: userData.full_name || userData.fullName || '',
+              email: userData.email || '',
+              phone: userData.phone || userData.phoneNumber || '',
+              region: userData.region || '',
+              woreda: userData.woreda || '',
+              language: userData.language || currentLanguage
+            }));
+            setIsEditing(true); // Enable editing for new users
+          } catch (parseError) {
+            console.error('Failed to parse stored user data:', parseError);
+          }
+        }
       }
     };
     loadProfile();
-  }, []);
+  }, [currentLanguage]);
 
   const regions = [
     { value: 'addis-ababa', label: 'Addis Ababa', labelAm: 'አዲስ አበባ' },
@@ -92,24 +117,60 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
 
   const handleSave = async () => {
     try {
-      const auth = getAuth();
-      const user = auth.currentUser;
-      if (!user) return;
-      const token = await user.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-      await axios.put(`${API_BASE}/users/me`, {
-        fullName: formData.fullName,
-        phoneNumber: formData.phone,
+      const payload = {
+        full_name: formData.fullName,
+        phone: formData.phone,
         email: formData.email,
         region: formData.region,
-        woreda: formData.woreda
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+        woreda: formData.woreda,
+        language: formData.language
+      };
+      
+      // Update via API
+      await userService.updateMe(payload);
+      
+      // Update local auth context
+      try { 
+        updateUser && updateUser({
+          full_name: formData.fullName,
+          phone: formData.phone,
+          email: formData.email,
+          region: formData.region,
+          woreda: formData.woreda,
+          language: formData.language
+        }); 
+      } catch {}
+      
+      // Update parent component
+      try { 
+        onProfileUpdated && onProfileUpdated({
+          full_name: formData.fullName,
+          phone: formData.phone,
+          email: formData.email,
+          region: formData.region,
+          woreda: formData.woreda,
+          language: formData.language
+        }); 
+      } catch {}
+      
+      // Update localStorage
+      const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
+      localStorage.setItem('userData', JSON.stringify({
+        ...currentUser,
+        ...payload
+      }));
+      
+      // Update language preference
+      if (formData.language !== currentLanguage) {
+        localStorage.setItem('language', formData.language);
+        localStorage.setItem('currentLanguage', formData.language);
+      }
+      
       setIsEditing(false);
-      alert(currentLanguage === 'en' ? 'Profile updated.' : 'መገለጫ ተዘምኗል።');
+      alert(currentLanguage === 'en' ? 'Profile updated successfully!' : 'መገለጫ በተሳካ ሁኔታ ተዘምኗል!');
     } catch (e) {
-      alert(currentLanguage === 'en' ? 'Failed to update profile.' : 'መገለጫ ማዘመን አልተሳካም።');
+      console.error('Profile update error:', e);
+      alert(currentLanguage === 'en' ? 'Failed to update profile. Please try again.' : 'መገለጫ ማዘመን አልተሳካም። እባክዎ እንደገና ይሞክሩ።');
     }
   };
 
@@ -128,6 +189,30 @@ const AccountInformation = ({ userRole, currentLanguage }) => {
 
   return (
     <div className="bg-surface border border-border rounded-xl p-6 shadow-warm">
+      {/* Welcome message for new users */}
+      {isEditing && (!formData.fullName || !formData.phone || !formData.region || !formData.woreda) && (
+        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-bold">!</span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h3 className="text-sm font-medium text-blue-800">
+                {getLabel('Complete Your Profile', 'መገለጫዎን ያጠናቅቁ')}
+              </h3>
+              <p className="mt-1 text-sm text-blue-700">
+                {getLabel(
+                  'Please complete your profile information to get the most out of Ke geberew. This helps other users find and connect with you.',
+                  'ከ Ke geberew የተሻለ ጥቅም ለማግኘት የመገለጫ መረጃዎን ያጠናቅቁ። ይህ ሌሎች ተጠቃሚዎች እንዲያገኙዎት እና እንዲገናኙዎት ይረዳል።'
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-text-primary">
           {getLabel('Account Information', 'የመለያ መረጃ')}

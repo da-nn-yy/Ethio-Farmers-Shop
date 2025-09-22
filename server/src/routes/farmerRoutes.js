@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { authGuard } from "../middleware/auth.js";
-import upload, { handleUploadError } from "../middleware/upload.js";
+import upload, { handleUploadError, conditionalSingleUpload } from "../middleware/upload.js";
 import {
   getFarmerMetrics,
   getFarmerListings,
@@ -9,8 +9,11 @@ import {
   createFarmerListing,
   updateFarmerListing,
   updateListingStatus,
+  bulkUpdateListingStatus,
+  bulkDeleteListings,
   uploadImage,
-  addListingImage
+  addListingImage,
+  deleteFarmerListing
 } from "../controllers/farmerController.js";
 
 const router = Router();
@@ -18,31 +21,48 @@ const router = Router();
 // All routes require authentication
 router.use(authGuard);
 
-// Get farmer dashboard metrics (active listings, pending orders, earnings, reviews)
+// Farmer dashboard and metrics
 router.get('/metrics', getFarmerMetrics);
-
-// Get farmer's active produce listings
-router.get('/listings', getFarmerListings);
-
-// Get farmer's orders (pending, confirmed, completed)
-router.get('/orders', getFarmerOrders);
-
-// Get recent activity feed for farmer
 router.get('/activity', getFarmerRecentActivity);
 
-// Create new produce listing
+// Farmer listings management
+router.get('/listings', getFarmerListings);
 router.post('/listings', createFarmerListing);
-
-// Update existing produce listing
 router.put('/listings/:id', updateFarmerListing);
-
-// Update listing status
+router.delete('/listings/:id', deleteFarmerListing);
 router.patch('/listings/:id/status', updateListingStatus);
+router.patch('/listings/bulk-status', bulkUpdateListingStatus);
+router.delete('/listings/bulk', bulkDeleteListings);
 
-// Upload image
+// Farmer orders
+router.get('/orders', getFarmerOrders);
+
+// Image upload
 router.post('/upload-image', upload.single('image'), handleUploadError, uploadImage);
+// Accept either multipart (file) or JSON { url } for adding images
+router.post('/listings/:id/images', conditionalSingleUpload('image'), handleUploadError, addListingImage);
 
-// Attach image to a specific listing (file or JSON url)
-router.post('/listings/:id/images', upload.single('image'), handleUploadError, addListingImage);
+// Debug endpoint to check images
+router.get('/debug/images/:listingId', async (req, res) => {
+  try {
+    const { listingId } = req.params;
+    const { pool } = await import('../config/database.js');
+    
+    const [images] = await pool.query(`
+      SELECT id, listing_id, url, sort_order, created_at
+      FROM listing_images 
+      WHERE listing_id = ?
+      ORDER BY sort_order
+    `, [listingId]);
+    
+    res.json({
+      listingId,
+      imageCount: images.length,
+      images: images
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default router;

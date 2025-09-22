@@ -1,4 +1,4 @@
-import { pool } from "../config/db.js";
+import { pool } from '../config/database.js';
 
 // Get price trends for specific crops and regions
 export const getPriceTrends = async (req, res) => {
@@ -471,5 +471,4 @@ export const addPriceData = async (req, res) => {
     res.status(500).json({ error: "Failed to add price data" });
   }
 };
-
 

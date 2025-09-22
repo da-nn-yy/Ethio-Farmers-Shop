@@ -13,8 +13,8 @@ const EmptyOrderState = ({
         return {
           icon: 'Clock',
           title: currentLanguage === 'am' ? 'በመጠባበቅ ላይ ያሉ ትዕዛዞች የሉም' : 'No Pending Orders',
-          description: currentLanguage === 'am' ?'አዲስ ትዕዛዞች ሲመጡ እዚህ ይታያሉ። የእርስዎን ምርቶች ለመሸጥ ዝርዝር ይፍጠሩ።' :'New orders will appear here when buyers place them. Create listings to start selling your produce.',
-          actionText: currentLanguage === 'am' ? 'ዝርዝር ይፍጠሩ' : 'Create Listing'
+          description: currentLanguage === 'am' ? 'አዲስ ትዕዛዞች ሲመጡ እዚህ ይታያሉ። ለግዛት አሁን ዝርዝሮችን ይመልከቱ።' : 'New orders will show up here. Browse listings to start buying now.',
+          actionText: currentLanguage === 'am' ? 'ዝርዝሮችን ይመልከቱ' : 'Browse Listings'
         };
       case 'confirmed':
         return {
@@ -27,8 +27,8 @@ const EmptyOrderState = ({
         return {
           icon: 'CheckCircle2',
           title: currentLanguage === 'am' ? 'የተጠናቀቁ ትዕዛዞች የሉም' : 'No Completed Orders',
-          description: currentLanguage === 'am' ?'የተጠናቀቁ ትዕዛዞች እዚህ ይታያሉ። የመጀመሪያ ትዕዛዝዎን ለማጠናቀቅ ዝርዝር ይፍጠሩ።' :'Completed orders will appear here. Create listings to complete your first order.',
-          actionText: currentLanguage === 'am' ? 'ዝርዝር ይፍጠሩ' : 'Create Listing'
+          description: currentLanguage === 'am' ? 'የተጠናቀቁ ትዕዛዞች እዚህ ይታያሉ። አዲስ ግዛት ለመጀምር ዝርዝሮችን ይመልከቱ።' : 'Completed orders will appear here. Browse listings to place your first order.',
+          actionText: currentLanguage === 'am' ? 'ዝርዝሮችን ይመልከቱ' : 'Browse Listings'
         };
       case 'cancelled':
         return {
@@ -41,8 +41,8 @@ const EmptyOrderState = ({
         return {
           icon: 'ShoppingBag',
           title: currentLanguage === 'am' ? 'ትዕዛዞች የሉም' : 'No Orders Yet',
-          description: currentLanguage === 'am' ?'ገዢዎች ትዕዛዝ ሲያደርጉ እዚህ ይታያሉ። የእርስዎን ምርቶች ለመሸጥ ዝርዝር ይፍጠሩ።' :'Orders from buyers will appear here. Create listings to start selling your produce.',
-          actionText: currentLanguage === 'am' ? 'ዝርዝር ይፍጠሩ' : 'Create Listing'
+          description: currentLanguage === 'am' ? 'እርስዎ ገና ትዕዛዝ አልሰጡም። ለመጀመር ዝርዝሮችን ይመልከቱ።' : "You haven't placed any orders yet. Browse listings to get started.",
+          actionText: currentLanguage === 'am' ? 'ዝርዝሮችን ይመልከቱ' : 'Browse Listings'
         };
     }
   };
@@ -78,35 +78,7 @@ const EmptyOrderState = ({
           {content?.actionText}
         </Button>
       )}
-      {/* Additional Tips */}
-      <div className="mt-12 max-w-lg">
-        <h4 className="text-sm font-medium text-text-primary mb-3 text-center">
-          {currentLanguage === 'am' ? 'ምክሮች' : 'Tips for Success'}
-        </h4>
-        <div className="space-y-2">
-          <div className="flex items-start space-x-3">
-            <Icon name="CheckCircle" size={16} className="text-success mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-text-secondary">
-              {currentLanguage === 'am' ?'ጥራት ያላቸውን ምስሎች ይጠቀሙ' :'Use high-quality photos of your produce'
-              }
-            </p>
-          </div>
-          <div className="flex items-start space-x-3">
-            <Icon name="CheckCircle" size={16} className="text-success mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-text-secondary">
-              {currentLanguage === 'am' ?'ተወዳዳሪ ዋጋዎችን ያስቀምጡ' :'Set competitive prices based on market trends'
-              }
-            </p>
-          </div>
-          <div className="flex items-start space-x-3">
-            <Icon name="CheckCircle" size={16} className="text-success mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-text-secondary">
-              {currentLanguage === 'am' ?'ትዕዛዞችን በፍጥነት ይመልሱ' :'Respond to orders quickly to build trust'
-              }
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Tips removed on buyer side per request */}
     </div>
   );
 };

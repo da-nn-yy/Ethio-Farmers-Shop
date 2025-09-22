@@ -54,16 +54,16 @@ const VerificationSection = ({ userRole, currentLanguage }) => {
         id: 'business-license',
         name: 'Business License',
         nameAm: 'የንግድ ፈቃድ',
-        status: 'verified',
-        uploadDate: '2024-02-11',
-        required: true
+        status: 'not-uploaded',
+        uploadDate: null,
+        required: false
       },
       {
         id: 'tax-certificate',
         name: 'Tax Registration Certificate',
         nameAm: 'የግብር ምዝገባ ሰርተፊኬት',
-        status: 'pending',
-        uploadDate: '2024-02-15',
+        status: 'not-uploaded',
+        uploadDate: null,
         required: false
       }
     ]
@@ -149,21 +149,21 @@ const VerificationSection = ({ userRole, currentLanguage }) => {
             {getLabel('Verification Progress', 'የማረጋገጫ ሂደት')}
           </span>
           <span className="text-sm font-bold text-primary">
-            {Math.round((documents?.filter(doc => doc?.status === 'verified')?.length / documents?.filter(doc => doc?.required)?.length) * 100)}%
+            {Math.round((documents?.filter(doc => doc?.status === 'verified' && doc?.required)?.length / documents?.filter(doc => doc?.required)?.length) * 100)}%
           </span>
         </div>
         <div className="w-full bg-muted rounded-full h-2">
           <div 
             className="bg-primary h-2 rounded-full transition-all duration-300"
             style={{ 
-              width: `${(documents?.filter(doc => doc?.status === 'verified')?.length / documents?.filter(doc => doc?.required)?.length) * 100}%` 
+              width: `${(documents?.filter(doc => doc?.status === 'verified' && doc?.required)?.length / documents?.filter(doc => doc?.required)?.length) * 100}%` 
             }}
           ></div>
         </div>
         <p className="text-xs text-text-secondary mt-2">
           {getLabel(
-            `${documents?.filter(doc => doc?.status === 'verified')?.length} of ${documents?.filter(doc => doc?.required)?.length} required documents verified`,
-            `${documents?.filter(doc => doc?.status === 'verified')?.length} ከ ${documents?.filter(doc => doc?.required)?.length} የሚያስፈልጉ ሰነዶች ተረጋግጠዋል`
+            `${documents?.filter(doc => doc?.status === 'verified' && doc?.required)?.length} of ${documents?.filter(doc => doc?.required)?.length} required documents verified`,
+            `${documents?.filter(doc => doc?.status === 'verified' && doc?.required)?.length} ከ ${documents?.filter(doc => doc?.required)?.length} የሚያስፈልጉ ሰነዶች ተረጋግጠዋል`
           )}
         </p>
       </div>

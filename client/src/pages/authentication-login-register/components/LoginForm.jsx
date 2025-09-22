@@ -5,7 +5,7 @@ import Button from '../../../components/ui/Button';
 import { Checkbox } from '../../../components/ui/Checkbox';
 import { useAuth } from '../../../hooks/useAuth.jsx';
 
-const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
+const LoginForm = ({ currentLanguage, onAuthSuccess, onForgotPassword }) => {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [formData, setFormData] = useState({
@@ -70,6 +70,7 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
     }
   };
 
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {errors?.general && (
@@ -106,6 +107,7 @@ const LoginForm = ({ currentLanguage, onAuthSuccess }) => {
         />
         <button
           type="button"
+          onClick={onForgotPassword}
           className="text-sm text-primary hover:text-primary/80 transition-smooth"
         >
           {currentLanguage === 'am' ? 'የይለፍ ቃል ረሳኽ?' : 'Forgot password?'}

@@ -205,10 +205,10 @@ const FilterPanel = ({
         fixed lg:static inset-y-0 right-0 lg:right-auto
         w-80 max-w-[85vw] lg:w-full lg:max-w-none
         bg-surface border-l lg:border-l-0 lg:border border-border
-        shadow-warm-lg lg:shadow-none rounded-l-lg lg:rounded-lg
+        shadow-warm-lg lg:shadow-md rounded-l-lg lg:rounded-2xl lg:bg-white/90 lg:backdrop-blur lg:ring-1 lg:ring-emerald-50
         z-50 lg:z-auto overflow-y-auto
         ${isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
-        transition-transform lg:transition-none
+        transition-transform lg:transition-none lg:sticky lg:top-14
       `}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border lg:hidden">
@@ -225,55 +225,61 @@ const FilterPanel = ({
           </Button>
         </div>
 
-        <div className="p-4 space-y-6">
-          {/* Desktop Header */}
-          <div className="hidden lg:flex items-center justify-between">
+        <div className="p-4 lg:p-3 space-y-6 lg:space-y-0 lg:flex lg:flex-wrap lg:items-center lg:gap-3">
+          {/* Desktop Header (hidden in compact bar) */}
+          <div className="hidden">
             <h2 className="font-heading font-semibold text-lg text-text-primary">
               {t?.filters}
             </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClearAll}
-              className="text-text-secondary hover:text-primary"
-            >
-              {t?.clearAll}
-            </Button>
           </div>
 
           {/* Category (single-select) */}
-          <div className="space-y-3">
-            <h3 className="font-medium text-text-primary">{t?.produceType}</h3>
+          <div className="space-y-3 lg:space-y-1 lg:w-64">
+            <label className="hidden lg:flex items-center text-xs font-medium text-text-secondary gap-1">
+              <Icon name="Tag" size={14} /> {t?.produceType}
+            </label>
+            <div className="relative">
             <select
               value={localCategory}
               onChange={(e) => handleCategoryChange(e?.target?.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full h-10 pl-9 pr-4 border border-border rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               {builtCategoryOptions?.map(opt => (
                 <option key={opt.id} value={opt.id}>{opt.label}</option>
               ))}
             </select>
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+              <Icon name="Tag" size={16} className="text-text-secondary" />
+            </div>
+            </div>
           </div>
 
           {/* Region (single-select) */}
-          <div className="space-y-3">
-            <h3 className="font-medium text-text-primary">{t?.location}</h3>
+          <div className="space-y-3 lg:space-y-1 lg:w-64">
+            <label className="hidden lg:flex items-center text-xs font-medium text-text-secondary gap-1">
+              <Icon name="MapPin" size={14} /> {t?.location}
+            </label>
+            <div className="relative">
             <select
               value={localRegion}
               onChange={(e) => handleRegionChange(e?.target?.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full h-10 pl-9 pr-4 border border-border rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               {builtRegionOptions?.map(opt => (
                 <option key={opt.id} value={opt.id}>{opt.label}</option>
               ))}
             </select>
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center">
+              <Icon name="MapPin" size={16} className="text-text-secondary" />
+            </div>
+            </div>
           </div>
 
           {/* Price Range */}
-          <div className="space-y-3">
-            <h3 className="font-medium text-text-primary">
-              {t?.priceRange}
-            </h3>
+          <div className="space-y-3 lg:space-y-1 lg:w-72">
+            <label className="hidden lg:flex items-center text-xs font-medium text-text-secondary gap-1">
+              <Icon name="DollarSign" size={14} /> {t?.priceRange}
+            </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-sm text-text-secondary mb-1">
@@ -284,7 +290,7 @@ const FilterPanel = ({
                   placeholder="0"
                   value={localFilters?.priceRange?.min}
                   onChange={(e) => handlePriceChange('min', e?.target?.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full h-10 px-4 border border-border rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
               <div>
@@ -296,19 +302,21 @@ const FilterPanel = ({
                   placeholder="1000"
                   value={localFilters?.priceRange?.max}
                   onChange={(e) => handlePriceChange('max', e?.target?.value)}
-                  className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                  className="w-full h-10 px-4 border border-border rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                 />
               </div>
             </div>
           </div>
 
           {/* Sort */}
-          <div className="space-y-3">
-            <h3 className="font-medium text-text-primary">Sort</h3>
+          <div className="space-y-3 lg:space-y-1 lg:w-56">
+            <label className="hidden lg:flex items-center text-xs font-medium text-text-secondary gap-1">
+              <Icon name="ArrowUpDown" size={14} /> Sort
+            </label>
             <select
               value={localSort}
               onChange={(e) => setLocalSort(e?.target?.value)}
-              className="w-full px-3 py-2 border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+              className="w-full h-10 px-4 border border-border rounded-full text-sm bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
             >
               {sortOptions?.map(opt => (
                 <option key={opt.id} value={opt.id}>{opt.label}</option>
@@ -317,16 +325,32 @@ const FilterPanel = ({
           </div>
 
           {/* Verification */}
-          <div className="space-y-3">
-            <h3 className="font-medium text-text-primary">
-              {t?.verification}
-            </h3>
-            <Checkbox
-              label={t?.verified}
-              checked={localFilters?.verifiedOnly}
-              onChange={(e) => handleVerificationChange(e?.target?.checked)}
+          <div className="space-y-3 lg:space-y-1 lg:w-auto lg:flex lg:items-center lg:h-[58px] lg:pl-2">
+            <label className="hidden lg:flex items-center text-xs font-medium text-text-secondary gap-1 mr-2">
+              <Icon name="ShieldCheck" size={14} /> {t?.verification}
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-text-secondary">{t?.verified}</span>
+              <button
+                onClick={() => handleVerificationChange(!localFilters?.verifiedOnly)}
+                className={`w-10 h-6 rounded-full transition-colors ${localFilters?.verifiedOnly ? 'bg-emerald-500' : 'bg-gray-300'}`}
+                aria-label="Toggle verified"
+              >
+                <span className={`block w-5 h-5 bg-white rounded-full transform transition-transform ${localFilters?.verifiedOnly ? 'translate-x-5' : 'translate-x-1'}`} />
+              </button>
+            </div>
+          </div>
+
+          {/* Clear All (compact) */}
+          <div className="hidden lg:block lg:ml-auto">
+            <Button
+              variant="ghost"
               size="sm"
-            />
+              onClick={handleClearAll}
+              className="text-text-secondary hover:text-primary"
+            >
+              {t?.clearAll}
+            </Button>
           </div>
         </div>
 

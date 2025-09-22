@@ -1,10 +1,12 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
 
 
-const RecentActivityFeed = ({ currentLanguage = 'en' }) => {
-  const activities = [
+const RecentActivityFeed = ({ currentLanguage = 'en', recentActivity = [] }) => {
+  const navigate = useNavigate();
+  const sampleActivities = [
     {
       id: 1,
       type: 'order',
@@ -101,6 +103,19 @@ const RecentActivityFeed = ({ currentLanguage = 'en' }) => {
     return currentLanguage === 'am' && activity?.descriptionAm ? activity?.descriptionAm : activity?.description;
   };
 
+  const list = Array.isArray(recentActivity) && recentActivity.length > 0 ? recentActivity.map((a, i) => ({
+    id: a.id || a.reference_id || i,
+    type: a.type || 'order',
+    title: a.message || a.title || 'Activity',
+    titleAm: a.message_am || a.titleAm,
+    description: a.description,
+    descriptionAm: a.descriptionAm,
+    timestamp: a.timestamp || a.created_at || new Date().toISOString(),
+    icon: 'Activity',
+    iconColor: 'text-primary',
+    iconBg: 'bg-primary/10'
+  })) : sampleActivities;
+
   return (
     <div className="bg-card border border-border rounded-lg p-4 lg:p-6 shadow-warm">
       {/* Header */}
@@ -118,13 +133,13 @@ const RecentActivityFeed = ({ currentLanguage = 'en' }) => {
             </p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" iconName="MoreHorizontal">
+        <Button variant="ghost" size="sm" iconName="MoreHorizontal" onClick={() => navigate('/farmer-activity')}>
           {currentLanguage === 'am' ? 'ሁሉም' : 'View All'}
         </Button>
       </div>
       {/* Activity List */}
       <div className="space-y-4">
-        {activities?.map((activity) => (
+        {list?.map((activity) => (
           <div key={activity?.id} className="flex items-start space-x-4 p-3 rounded-lg hover:bg-muted/50 transition-smooth">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center ${activity?.iconBg}`}>
               <Icon name={activity?.icon} size={18} className={activity?.iconColor} />
@@ -149,7 +164,7 @@ const RecentActivityFeed = ({ currentLanguage = 'en' }) => {
       </div>
       {/* View All Button */}
       <div className="mt-6 pt-4 border-t border-border">
-        <Button variant="outline" className="w-full" iconName="ArrowRight" iconPosition="right">
+        <Button variant="outline" className="w-full" iconName="ArrowRight" iconPosition="right" onClick={() => navigate('/farmer-activity')}>
           {currentLanguage === 'am' ? 'ሁሉንም እንቅስቃሴዎች ይመልከቱ' : 'View All Activities'}
         </Button>
       </div>

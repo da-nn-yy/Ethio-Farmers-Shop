@@ -8,7 +8,10 @@ const OrderCard = ({
   onAccept, 
   onDecline, 
   onViewDetails, 
+  onWriteReview,
   onContactBuyer,
+  onShip,
+  onComplete,
   currentLanguage = 'en' 
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -29,6 +32,13 @@ const OrderCard = ({
       borderColor: 'border-primary/20',
       label: currentLanguage === 'am' ? 'ተረጋግጧል' : 'Confirmed',
       icon: 'CheckCircle'
+    },
+    shipped: {
+      color: 'text-info',
+      bgColor: 'bg-info/10',
+      borderColor: 'border-info/20',
+      label: currentLanguage === 'am' ? 'ተላክ' : 'Shipped',
+      icon: 'Truck'
     },
     completed: {
       color: 'text-success',
@@ -341,19 +351,64 @@ const OrderCard = ({
             >
               {currentLanguage === 'am' ? 'ዝርዝር' : 'Details'}
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => onShip(order?.id)}
+              className="flex-1"
+              iconName="Truck"
+              iconPosition="left"
+            >
+              {currentLanguage === 'am' ? 'ላክ' : 'Mark Shipped'}
+            </Button>
+          </div>
+        )}
+
+        {order?.status === 'shipped' && (
+          <div className="flex space-x-3">
+            <Button
+              variant="default"
+              onClick={() => onComplete(order?.id)}
+              className="flex-1"
+              iconName="CheckCircle2"
+              iconPosition="left"
+            >
+              {currentLanguage === 'am' ? 'ያበቃ' : 'Mark Completed'}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => onViewDetails(order?.id)}
+              className="flex-1"
+              iconName="Eye"
+              iconPosition="left"
+            >
+              {currentLanguage === 'am' ? 'ዝርዝር' : 'Details'}
+            </Button>
           </div>
         )}
 
         {(order?.status === 'completed' || order?.status === 'cancelled') && (
-          <Button
-            variant="ghost"
-            onClick={() => onViewDetails(order?.id)}
-            className="w-full"
-            iconName="Eye"
-            iconPosition="left"
-          >
-            {currentLanguage === 'am' ? 'ዝርዝር ይመልከቱ' : 'View Details'}
-          </Button>
+          <div className="flex space-x-3">
+            <Button
+              variant="ghost"
+              onClick={() => onViewDetails(order?.id)}
+              className="flex-1"
+              iconName="Eye"
+              iconPosition="left"
+            >
+              {currentLanguage === 'am' ? 'ዝርዝር ይመልከቱ' : 'View Details'}
+            </Button>
+            {order?.status === 'completed' && (
+              <Button
+                variant="default"
+                onClick={() => onWriteReview && onWriteReview(order)}
+                className="flex-1"
+                iconName="Star"
+                iconPosition="left"
+              >
+                {currentLanguage === 'am' ? 'ግምገማ ጻፍ' : 'Write Review'}
+              </Button>
+            )}
+          </div>
         )}
       </div>
     </div>

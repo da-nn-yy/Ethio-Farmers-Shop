@@ -53,13 +53,18 @@ const ImageUpload = ({
       // Get Firebase auth token
       const { auth } = await import('../../firebase');
       const currentUser = auth.currentUser;
+      let idToken;
       if (!currentUser) {
-        throw new Error('User not authenticated');
+        const devToken = localStorage.getItem('authToken');
+        if (!devToken) {
+          throw new Error('User not authenticated');
+        }
+        idToken = devToken;
+      } else {
+        idToken = await currentUser.getIdToken();
       }
-      const idToken = await currentUser.getIdToken();
 
-      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
       const response = await fetch(`${API_BASE}/farmers/upload-image`, {
         method: 'POST',
         headers: {

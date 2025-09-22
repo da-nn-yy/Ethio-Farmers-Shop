@@ -1,8 +1,23 @@
-import { pool } from "../config/db.js";
+import { pool } from '../config/database.js';
+import { createListingNotification } from './notificationController.js';
+
+async function ensureFavoritesTable() {
+  // Create favorites table if missing (idempotent)
+  await pool.query(`CREATE TABLE IF NOT EXISTS favorites (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    buyer_user_id BIGINT NOT NULL,
+    listing_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_fav_buyer_listing (buyer_user_id, listing_id),
+    INDEX idx_fav_buyer (buyer_user_id),
+    INDEX idx_fav_listing (listing_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+}
 
 // Add a listing to favorites
 export const addToFavorites = async (req, res) => {
   try {
+    await ensureFavoritesTable();
     const uid = req.user.uid;
     const { listingId, listing_id } = req.body;
 
@@ -28,10 +43,17 @@ export const addToFavorites = async (req, res) => {
       );
 
       if (userRows.length === 0) {
-        return res.status(404).json({ error: "User not found" });
+        // Auto-create buyer profile if missing to avoid 404 on first action
+        const [insert] = await pool.query(
+          "INSERT INTO users (firebase_uid, role) VALUES (?, 'buyer')",
+          [uid]
+        );
+        userId = insert.insertId;
+        userRole = 'buyer';
+      } else {
+        userId = userRows[0].id;
+        userRole = userRows[0].role;
       }
-      userId = userRows[0].id;
-      userRole = userRows[0].role;
     }
 
     if (userRole !== 'buyer') {
@@ -68,6 +90,17 @@ export const addToFavorites = async (req, res) => {
       [userId, finalListingId]
     );
 
+    // Notify the listing's farmer their listing was favorited (best-effort)
+    try {
+      const [farmerRows] = await pool.query(
+        'SELECT farmer_user_id FROM produce_listings WHERE id = ? LIMIT 1',
+        [finalListingId]
+      );
+      if (farmerRows.length > 0 && farmerRows[0].farmer_user_id) {
+        await createListingNotification(finalListingId, 'listing_favorited', farmerRows[0].farmer_user_id);
+      }
+    } catch (_) {}
+
     res.status(201).json({ message: "Added to favorites successfully" });
   } catch (error) {
     console.error('Error adding to favorites:', error);
@@ -78,6 +111,7 @@ export const addToFavorites = async (req, res) => {
 // Remove a listing from favorites
 export const removeFromFavorites = async (req, res) => {
   try {
+    await ensureFavoritesTable();
     const uid = req.user.uid;
     const { listingId } = req.params;
 
@@ -120,6 +154,7 @@ export const removeFromFavorites = async (req, res) => {
 // Get user's favorite listings
 export const getFavoriteListings = async (req, res) => {
   try {
+    await ensureFavoritesTable();
     const uid = req.user.uid;
     const { page = 1, limit = 20 } = req.query;
 
@@ -198,6 +233,7 @@ export const getFavoriteListings = async (req, res) => {
 // Check if a listing is favorited by user
 export const checkFavoriteStatus = async (req, res) => {
   try {
+    await ensureFavoritesTable();
     const uid = req.user.uid;
     const { listingId } = req.params;
 
@@ -239,6 +275,7 @@ export const checkFavoriteStatus = async (req, res) => {
 // Get favorite farmers (users who have listings favorited by the buyer)
 export const getFavoriteFarmers = async (req, res) => {
   try {
+    await ensureFavoritesTable();
     const uid = req.user.uid;
     const { page = 1, limit = 20 } = req.query;
 
@@ -459,5 +496,4 @@ export const bulkUpdateFavorites = async (req, res) => {
     res.status(500).json({ error: "Failed to bulk update favorites" });
   }
 };
-
 

@@ -22,4 +22,3 @@ router.get('/analytics', getAnalyticsData);
 
 export default router;
 
-

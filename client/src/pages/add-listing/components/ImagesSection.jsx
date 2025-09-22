@@ -28,14 +28,19 @@ const ImagesSection = ({ formData, formErrors, onUpdate, currentLanguage }) => {
     setUploading(true);
 
     try {
-      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
       const currentUser = auth.currentUser;
+      let idToken;
       if (!currentUser) {
-        alert(currentLanguage === 'en' ? 'Please log in again.' : 'እባክዎን እንደገና ይግቡ።');
-        return;
+        const devToken = localStorage.getItem('authToken');
+        if (!devToken) {
+          alert(currentLanguage === 'en' ? 'Please log in again.' : 'እባክዎን እንደገና ይግቡ።');
+          return;
+        }
+        idToken = devToken;
+      } else {
+        idToken = await currentUser.getIdToken();
       }
-      const idToken = await currentUser.getIdToken();
 
       const form = new FormData();
       form.append('image', file);

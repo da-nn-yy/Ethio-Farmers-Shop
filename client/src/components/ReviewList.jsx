@@ -184,4 +184,3 @@ const ReviewList = ({ listingId, farmerId, showFarmerReviews = false }) => {
 
 export default ReviewList;
 
-

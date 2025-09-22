@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import GlobalHeader from '../../components/ui/GlobalHeader';
-import TabNavigation from '../../components/ui/TabNavigation';
+import AuthenticatedLayout from '../../components/ui/AuthenticatedLayout.jsx';
 import LocationSelector from './components/LocationSelector';
 import PriceOverviewCard from './components/PriceOverviewCard';
 import PriceChart from './components/PriceChart';
@@ -11,8 +10,10 @@ import PopularProduce from './components/PopularProduce';
 import PriceAlerts from './components/PriceAlerts';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { useLanguage } from '../../hooks/useLanguage.jsx';
 
 const MarketTrendsDashboard = () => {
+  const { language } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [selectedLocation, setSelectedLocation] = useState({
     region: 'addis-ababa',
@@ -26,6 +27,8 @@ const MarketTrendsDashboard = () => {
     const savedLanguage = localStorage.getItem('farmconnect_language') || 'en';
     setCurrentLanguage(savedLanguage);
   }, []);
+
+  useEffect(() => { if (language !== currentLanguage) setCurrentLanguage(language); }, [language]);
 
   // Handle language change
   const handleLanguageChange = (newLanguage) => {
@@ -70,32 +73,18 @@ const MarketTrendsDashboard = () => {
   const pageDescription = currentLanguage === 'am' ?'የኢትዮጵያ የግብርና ምርቶች የገበያ ዋጋዎች፣ አዝማሚያዎች እና ትንተናዎች' :'Ethiopian agricultural market prices, trends and insights for informed farming decisions';
 
   return (
-    <div className="min-h-screen bg-background">
+    <AuthenticatedLayout>
       <Helmet>
-        <title>{pageTitle} - FarmConnect Ethiopia</title>
+        <title>{pageTitle} - Ke geberew Ethiopia</title>
         <meta name="description" content={pageDescription} />
         <meta name="keywords" content="Ethiopia, agriculture, market prices, farming, trends, teff, coffee, maize" />
-        <meta property="og:title" content={`${pageTitle} - FarmConnect Ethiopia`} />
+        <meta property="og:title" content={`${pageTitle} - Ke geberew Ethiopia`} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:type" content="website" />
       </Helmet>
 
-      {/* Global Header */}
-      <GlobalHeader
-        userRole="farmer"
-        isAuthenticated={true}
-        onLanguageChange={handleLanguageChange}
-        currentLanguage={currentLanguage}
-      />
-
-      {/* Tab Navigation */}
-      <TabNavigation
-        userRole="farmer"
-        notificationCounts={{ orders: 3, total: 5 }}
-      />
-
       {/* Main Content */}
-      <main className="pt-32 lg:pt-36 pb-8">
+      <main className="pb-8">
         <div className="max-w-7xl mx-auto px-4 lg:px-6">
           {/* Page Header */}
           <div className="mb-8">
@@ -142,8 +131,8 @@ const MarketTrendsDashboard = () => {
             <PriceOverviewCard currentLanguage={currentLanguage} />
           </div>
 
-          {/* Charts and Analysis Grid */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+          {/* Charts and Analysis - stacked */}
+          <div className="grid grid-cols-1 gap-8 mb-8">
             <PriceChart currentLanguage={currentLanguage} />
             <MarketComparison currentLanguage={currentLanguage} />
           </div>
@@ -198,7 +187,7 @@ const MarketTrendsDashboard = () => {
           </div>
         </div>
       </main>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

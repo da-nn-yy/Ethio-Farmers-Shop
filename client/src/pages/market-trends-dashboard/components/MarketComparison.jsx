@@ -9,7 +9,11 @@ const MarketComparison = ({ currentLanguage = 'en' }) => {
     { value: 'teff', label: 'Teff', labelAm: 'ጤፍ' },
     { value: 'coffee', label: 'Coffee', labelAm: 'ቡና' },
     { value: 'maize', label: 'Maize', labelAm: 'በቆሎ' },
-    { value: 'wheat', label: 'Wheat', labelAm: 'ስንዴ' }
+    { value: 'wheat', label: 'Wheat', labelAm: 'ስንዴ' },
+    { value: 'barley', label: 'Barley', labelAm: 'ገብስ' },
+    { value: 'sorghum', label: 'Sorghum', labelAm: 'ማሽላ' },
+    { value: 'chickpea', label: 'Chickpea', labelAm: 'ሻምበል' },
+    { value: 'lentil', label: 'Lentil', labelAm: 'ምስር' }
   ];
 
   const marketData = {
@@ -17,17 +21,17 @@ const MarketComparison = ({ currentLanguage = 'en' }) => {
       {
         region: 'Addis Ababa',
         regionAm: 'አዲስ አበባ',
-        price: 85.50,
+        price: 98.50,
         change: 3.2,
         trend: 'up',
-        volume: '2,450 tons',
-        volumeAm: '2,450 ቶን',
+        volume: '2,650 tons',
+        volumeAm: '2,650 ቶን',
         isHighest: true
       },
       {
         region: 'Oromia',
         regionAm: 'ኦሮሚያ',
-        price: 82.30,
+        price: 94.30,
         change: 2.8,
         trend: 'up',
         volume: '3,200 tons',
@@ -37,7 +41,7 @@ const MarketComparison = ({ currentLanguage = 'en' }) => {
       {
         region: 'Amhara',
         regionAm: 'አማራ',
-        price: 79.80,
+        price: 91.80,
         change: -1.5,
         trend: 'down',
         volume: '2,800 tons',
@@ -47,11 +51,21 @@ const MarketComparison = ({ currentLanguage = 'en' }) => {
       {
         region: 'SNNPR',
         regionAm: 'ደቡብ ብሔሮች',
-        price: 81.20,
+        price: 93.20,
         change: 1.9,
         trend: 'up',
         volume: '1,950 tons',
         volumeAm: '1,950 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Tigray',
+        regionAm: 'ትግራይ',
+        price: 89.40,
+        change: 0.8,
+        trend: 'up',
+        volume: '1,200 tons',
+        volumeAm: '1,200 ቶን',
         isHighest: false
       }
     ],
@@ -59,7 +73,7 @@ const MarketComparison = ({ currentLanguage = 'en' }) => {
       {
         region: 'Oromia',
         regionAm: 'ኦሮሚያ',
-        price: 325.80,
+        price: 285.80,
         change: -2.1,
         trend: 'down',
         volume: '1,850 tons',
@@ -69,7 +83,7 @@ const MarketComparison = ({ currentLanguage = 'en' }) => {
       {
         region: 'SNNPR',
         regionAm: 'ደቡብ ብሔሮች',
-        price: 318.50,
+        price: 278.50,
         change: -3.2,
         trend: 'down',
         volume: '2,100 tons',
@@ -79,7 +93,7 @@ const MarketComparison = ({ currentLanguage = 'en' }) => {
       {
         region: 'Sidama',
         regionAm: 'ሲዳማ',
-        price: 312.40,
+        price: 272.40,
         change: -4.1,
         trend: 'down',
         volume: '1,650 tons',
@@ -89,12 +103,274 @@ const MarketComparison = ({ currentLanguage = 'en' }) => {
       {
         region: 'Addis Ababa',
         regionAm: 'አዲስ አበባ',
-        price: 320.75,
+        price: 280.75,
         change: -2.8,
         trend: 'down',
         volume: '980 tons',
         volumeAm: '980 ቶን',
         isHighest: false
+      }
+    ],
+    maize: [
+      {
+        region: 'Oromia',
+        regionAm: 'ኦሮሚያ',
+        price: 42.20,
+        change: 6.4,
+        trend: 'up',
+        volume: '3,200 tons',
+        volumeAm: '3,200 ቶን',
+        isHighest: true
+      },
+      {
+        region: 'Amhara',
+        regionAm: 'አማራ',
+        price: 39.80,
+        change: 5.2,
+        trend: 'up',
+        volume: '2,800 tons',
+        volumeAm: '2,800 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'SNNPR',
+        regionAm: 'ደቡብ ብሔሮች',
+        price: 38.50,
+        change: 4.8,
+        trend: 'up',
+        volume: '2,100 tons',
+        volumeAm: '2,100 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Addis Ababa',
+        regionAm: 'አዲስ አበባ',
+        price: 40.20,
+        change: 5.8,
+        trend: 'up',
+        volume: '1,950 tons',
+        volumeAm: '1,950 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Tigray',
+        regionAm: 'ትግራይ',
+        price: 37.60,
+        change: 3.9,
+        trend: 'up',
+        volume: '1,200 tons',
+        volumeAm: '1,200 ቶን',
+        isLowest: true
+      }
+    ],
+    wheat: [
+      {
+        region: 'Addis Ababa',
+        regionAm: 'አዲስ አበባ',
+        price: 56.20,
+        change: 4.8,
+        trend: 'up',
+        volume: '1,950 tons',
+        volumeAm: '1,950 ቶን',
+        isHighest: true
+      },
+      {
+        region: 'Amhara',
+        regionAm: 'አማራ',
+        price: 53.80,
+        change: 3.5,
+        trend: 'up',
+        volume: '2,800 tons',
+        volumeAm: '2,800 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Oromia',
+        regionAm: 'ኦሮሚያ',
+        price: 51.40,
+        change: 2.9,
+        trend: 'up',
+        volume: '2,200 tons',
+        volumeAm: '2,200 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Tigray',
+        regionAm: 'ትግራይ',
+        price: 49.60,
+        change: 1.8,
+        trend: 'up',
+        volume: '1,100 tons',
+        volumeAm: '1,100 ቶን',
+        isLowest: true
+      }
+    ],
+    barley: [
+      {
+        region: 'Tigray',
+        regionAm: 'ትግራይ',
+        price: 46.60,
+        change: 2.1,
+        trend: 'up',
+        volume: '1,200 tons',
+        volumeAm: '1,200 ቶን',
+        isHighest: true
+      },
+      {
+        region: 'Amhara',
+        regionAm: 'አማራ',
+        price: 44.20,
+        change: 1.8,
+        trend: 'up',
+        volume: '1,800 tons',
+        volumeAm: '1,800 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Oromia',
+        regionAm: 'ኦሮሚያ',
+        price: 42.80,
+        change: 1.5,
+        trend: 'up',
+        volume: '1,500 tons',
+        volumeAm: '1,500 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Addis Ababa',
+        regionAm: 'አዲስ አበባ',
+        price: 45.40,
+        change: 2.3,
+        trend: 'up',
+        volume: '800 tons',
+        volumeAm: '800 ቶን',
+        isHighest: false
+      }
+    ],
+    sorghum: [
+      {
+        region: 'SNNPR',
+        regionAm: 'ደቡብ ብሔሮች',
+        price: 36.60,
+        change: 2.8,
+        trend: 'up',
+        volume: '980 tons',
+        volumeAm: '980 ቶን',
+        isHighest: true
+      },
+      {
+        region: 'Oromia',
+        regionAm: 'ኦሮሚያ',
+        price: 34.20,
+        change: 2.1,
+        trend: 'up',
+        volume: '1,200 tons',
+        volumeAm: '1,200 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Amhara',
+        regionAm: 'አማራ',
+        price: 32.80,
+        change: 1.5,
+        trend: 'up',
+        volume: '1,100 tons',
+        volumeAm: '1,100 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Tigray',
+        regionAm: 'ትግራይ',
+        price: 31.40,
+        change: 0.9,
+        trend: 'up',
+        volume: '750 tons',
+        volumeAm: '750 ቶን',
+        isLowest: true
+      }
+    ],
+    chickpea: [
+      {
+        region: 'Harari',
+        regionAm: 'ሀረሪ',
+        price: 73.60,
+        change: 1.9,
+        trend: 'up',
+        volume: '750 tons',
+        volumeAm: '750 ቶን',
+        isHighest: true
+      },
+      {
+        region: 'Dire Dawa',
+        regionAm: 'ድሬ ዳዋ',
+        price: 71.20,
+        change: 1.5,
+        trend: 'up',
+        volume: '650 tons',
+        volumeAm: '650 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Oromia',
+        regionAm: 'ኦሮሚያ',
+        price: 69.80,
+        change: 1.2,
+        trend: 'up',
+        volume: '1,100 tons',
+        volumeAm: '1,100 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Amhara',
+        regionAm: 'አማራ',
+        price: 67.40,
+        change: 0.8,
+        trend: 'up',
+        volume: '900 tons',
+        volumeAm: '900 ቶን',
+        isLowest: true
+      }
+    ],
+    lentil: [
+      {
+        region: 'Dire Dawa',
+        regionAm: 'ድሬ ዳዋ',
+        price: 66.60,
+        change: 3.4,
+        trend: 'up',
+        volume: '650 tons',
+        volumeAm: '650 ቶን',
+        isHighest: true
+      },
+      {
+        region: 'Harari',
+        regionAm: 'ሀረሪ',
+        price: 64.20,
+        change: 2.8,
+        trend: 'up',
+        volume: '580 tons',
+        volumeAm: '580 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Oromia',
+        regionAm: 'ኦሮሚያ',
+        price: 62.80,
+        change: 2.1,
+        trend: 'up',
+        volume: '950 tons',
+        volumeAm: '950 ቶን',
+        isHighest: false
+      },
+      {
+        region: 'Amhara',
+        regionAm: 'አማራ',
+        price: 60.40,
+        change: 1.5,
+        trend: 'up',
+        volume: '800 tons',
+        volumeAm: '800 ቶን',
+        isLowest: true
       }
     ]
   };

@@ -1,4 +1,4 @@
-import { pool } from "../config/db.js";
+import { pool } from '../config/database.js';
 
 // Create a new review
 export const createReview = async (req, res) => {
@@ -82,6 +82,87 @@ export const createReview = async (req, res) => {
   } catch (error) {
     console.error('Error creating review:', error);
     res.status(500).json({ error: "Failed to create review" });
+  }
+};
+
+// Create a new review about a farmer (buyers rate farmers)
+export const createFarmerReview = async (req, res) => {
+  try {
+    const uid = req.user.uid;
+    const farmerId = Number(req.params.farmerId);
+    const { rating, comment } = req.body;
+
+    if (!farmerId || !rating || rating < 1 || rating > 5) {
+      return res.status(400).json({ error: "Farmer ID and valid rating (1-5) are required" });
+    }
+
+    // Resolve reviewer user id and role
+    let userId, userRole;
+    if (uid && uid.startsWith('dev-uid-')) {
+      userId = req.user.id;
+      userRole = req.user.role;
+    } else {
+      const [userRows] = await pool.query(
+        'SELECT id, role FROM users WHERE firebase_uid = ? LIMIT 1',
+        [uid]
+      );
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      userId = userRows[0].id;
+      userRole = userRows[0].role;
+    }
+
+    if (userRole !== 'buyer') {
+      return res.status(403).json({ error: 'Only buyers can create reviews' });
+    }
+
+    // Ensure the buyer has at least one completed order with this farmer and get a representative listing_id
+    const [orderItems] = await pool.query(
+      `SELECT oi.listing_id
+       FROM orders o
+       JOIN order_items oi ON oi.order_id = o.id
+       JOIN produce_listings pl ON pl.id = oi.listing_id
+       WHERE o.buyer_user_id = ? AND pl.farmer_user_id = ? AND o.status = 'completed'
+       ORDER BY o.created_at DESC
+       LIMIT 1`,
+      [userId, farmerId]
+    );
+
+    if (orderItems.length === 0) {
+      return res.status(400).json({ error: 'You can only review farmers you have purchased from and completed the order' });
+    }
+
+    const listingId = orderItems[0].listing_id;
+
+    // Prevent duplicate farmer review by same user for same farmer (based on listing's farmer)
+    const [existing] = await pool.query(
+      `SELECT r.id
+       FROM reviews r
+       JOIN produce_listings pl ON pl.id = r.listing_id
+       WHERE r.reviewer_user_id = ? AND pl.farmer_user_id = ?
+       LIMIT 1`,
+      [userId, farmerId]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ error: 'You have already reviewed this farmer' });
+    }
+
+    // Insert review tied to representative listing
+    const [result] = await pool.query(
+      `INSERT INTO reviews (reviewer_user_id, listing_id, rating, comment) VALUES (?, ?, ?, ?)`,
+      [userId, listingId, rating, comment || null]
+    );
+
+    res.status(201).json({
+      id: result.insertId,
+      message: 'Farmer review created successfully',
+      review: { id: result.insertId, farmerId, rating, comment }
+    });
+  } catch (error) {
+    console.error('Error creating farmer review:', error);
+    res.status(500).json({ error: 'Failed to create review' });
   }
 };
 
@@ -525,5 +606,4 @@ export const getReviewStats = async (req, res) => {
     res.status(500).json({ error: "Failed to get review statistics" });
   }
 };
-
 

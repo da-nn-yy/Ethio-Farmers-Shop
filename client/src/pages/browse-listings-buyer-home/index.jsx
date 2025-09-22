@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { listingService, orderService, favoriteService } from '../../services/apiService';
 import { useAuth } from '../../hooks/useAuth.jsx';
-import GlobalHeader from '../../components/ui/GlobalHeader';
-import TabNavigation from '../../components/ui/TabNavigation';
+import AuthenticatedLayout from '../../components/ui/AuthenticatedLayout.jsx';
 import SearchHeader from './components/SearchHeader';
 import FilterChips from './components/FilterChips';
 import FilterPanel from './components/FilterPanel';
@@ -11,36 +10,43 @@ import SortDropdown from './components/SortDropdown';
 import ProduceCard from './components/ProduceCard';
 import LoadingSkeleton from './components/LoadingSkeleton';
 import EmptyState from './components/EmptyState';
-import Button from '../../components/ui/Button';
+import { useLanguage } from '../../hooks/useLanguage.jsx';
+import { useCart } from '../../hooks/useCart.jsx';
 import Icon from '../../components/AppIcon';
+import Button from '../../components/ui/Button';
 
 const BrowseListingsBuyerHome = () => {
   const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
+  const { language } = useLanguage();
+  const { addItem, updateQuantity, removeItem, clear, items, totalItems, totalCost } = useCart();
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [searchQuery, setSearchQuery] = useState('');
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [currentSort, setCurrentSort] = useState('relevance');
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [listings, setListings] = useState([]);
   const [filteredListings, setFilteredListings] = useState([]);
-  const [recommendedListings, setRecommendedListings] = useState([]);
+  const [lastFetchTime, setLastFetchTime] = useState(null);
   const [bookmarkedFarmers, setBookmarkedFarmers] = useState(new Set());
+
+  // Function to get default image based on category
+  const getDefaultImage = (category) => {
+    const defaultImages = {
+      'vegetables': 'https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg',
+      'fruits': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg',
+      'grains': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg',
+      'legumes': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg',
+      'spices': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg',
+      'other': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg'
+    };
+    return defaultImages[category] || 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg';
+  };
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
-
-  // Compute proximity score based on buyer's woreda and region vs listing location
-  const getProximityScore = useCallback((listing) => {
-    const buyerRegion = (user?.region || '').toLowerCase();
-    const buyerWoreda = (user?.woreda || '').toLowerCase();
-    const location = ((listing?.location || listing?.farmer?.location || '')).toLowerCase();
-    let score = 0;
-    if (buyerRegion && location.includes(buyerRegion)) score += 1;
-    if (buyerWoreda && location.includes(buyerWoreda)) score += 2;
-    return score;
-  }, [user?.region, user?.woreda]);
 
   // Old-dashboard-style single-select filters
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -242,55 +248,88 @@ const BrowseListingsBuyerHome = () => {
     setCurrentLanguage(savedLanguage);
   }, []);
 
-  // Load initial data
+  useEffect(() => { if (language !== currentLanguage) setCurrentLanguage(language); }, [language]);
+
+  // Load initial data with caching and retry logic
   useEffect(() => {
-    const loadInitialData = async () => {
+    const loadInitialData = async (retryCount = 0) => {
+      // Check cache first
+      const cacheKey = 'listings_cache';
+      const cachedData = localStorage.getItem(cacheKey);
+      const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
+      const now = Date.now();
+      const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+      // Use cached data if it's fresh
+      if (cachedData && cacheTimestamp && (now - parseInt(cacheTimestamp)) < CACHE_DURATION) {
+        try {
+          const parsedData = JSON.parse(cachedData);
+          setListings(parsedData);
+          setFilteredListings(parsedData);
+          setIsLoading(false);
+          return;
+        } catch (e) {
+          console.warn('Failed to parse cached data, fetching fresh data');
+        }
+      }
+
       setIsLoading(true);
       try {
+        console.log(`Fetching listings (attempt ${retryCount + 1})`);
+        
         // Use the new API service to fetch listings
         const response = await listingService.getActiveListings();
 
-        if (response.listings) {
+        if (response && response.listings && Array.isArray(response.listings)) {
+          // Transform API data to match component expectations
           const transformedListings = response.listings.map(listing => ({
             id: listing.id,
-            name: listing.name,
-            nameAm: listing.nameAm,
-            pricePerKg: Number(listing.pricePerKg),
-            availableQuantity: Number(listing.availableQuantity),
-            image: listing.image || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
+            name: listing.title || listing.name,
+            nameAm: listing.crop, // Using crop as Amharic name for now
+            pricePerKg: parseFloat(listing.price_per_unit || listing.pricePerKg || 0),
+            availableQuantity: parseFloat(listing.quantity || listing.availableQuantity || 0),
+            image: listing.image || listing.images?.[0]?.url || getDefaultImage(listing.crop || listing.category),
             freshness: "Fresh from farm",
-            category: listing.category,
-            location: listing.location,
-            createdAt: listing.createdAt ? new Date(listing.createdAt) : null,
+            category: listing.crop || listing.category,
             farmer: {
-              id: listing.farmerUserId || null,
-              name: listing.farmerName,
-              avatar: listing.farmerAvatar || "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
-              location: listing.location,
+              id: listing.farmer_user_id || listing.farmerUserId,
+              name: listing.farmer_name || listing.farmerName,
+              avatar: listing.farmer_avatar || listing.farmerAvatar || "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
+              location: `${listing.region || listing.location}, ${listing.woreda || ''}`,
               rating: 4.5,
               reviewCount: 50,
-              phone: listing.farmerPhone || "+251900000000",
+              phone: listing.farmer_phone || "+251900000000",
               isVerified: true
             }
           }));
 
           setListings(transformedListings);
           setFilteredListings(transformedListings);
-          // Recommended: newest first (ignore region proximity)
-          const newestRecommended = [...transformedListings].sort((a, b) => {
-            if (a.createdAt && b.createdAt) return b.createdAt - a.createdAt;
-            return (b.id || 0) - (a.id || 0);
-          });
-          setRecommendedListings(newestRecommended.slice(0, 8));
+          setLastFetchTime(now);
+          
+          // Cache the data
+          localStorage.setItem(cacheKey, JSON.stringify(transformedListings));
+          localStorage.setItem(`${cacheKey}_timestamp`, now.toString());
+          
+          console.log(`Successfully loaded ${transformedListings.length} listings`);
         } else {
-          throw new Error('API did not return listings');
+          throw new Error('API did not return valid listings data');
         }
       } catch (error) {
         console.error('Failed to fetch listings:', error);
-        // Fallback to mock data if API fails
+        
+        // Retry logic - retry up to 3 times with exponential backoff
+        if (retryCount < 3) {
+          const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
+          console.log(`Retrying in ${delay}ms...`);
+          setTimeout(() => loadInitialData(retryCount + 1), delay);
+          return;
+        }
+        
+        // Only fallback to mock data after all retries failed
+        console.warn('All retry attempts failed, using mock data');
         setListings(mockListings);
         setFilteredListings(mockListings);
-        setRecommendedListings(mockListings.slice(0, 8));
       } finally {
         setIsLoading(false);
       }
@@ -298,6 +337,55 @@ const BrowseListingsBuyerHome = () => {
 
     loadInitialData();
   }, []);
+
+  // Manual refresh function
+  const handleRefresh = async () => {
+    // Clear cache and force refresh
+    localStorage.removeItem('listings_cache');
+    localStorage.removeItem('listings_cache_timestamp');
+    
+    setIsRefreshing(true);
+    try {
+      const response = await listingService.getActiveListings();
+      
+      if (response && response.listings && Array.isArray(response.listings)) {
+        const transformedListings = response.listings.map(listing => ({
+          id: listing.id,
+          name: listing.title || listing.name,
+          nameAm: listing.crop,
+          pricePerKg: parseFloat(listing.price_per_unit || listing.pricePerKg || 0),
+          availableQuantity: parseFloat(listing.quantity || listing.availableQuantity || 0),
+          image: listing.image || listing.images?.[0]?.url || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
+          freshness: "Fresh from farm",
+          category: listing.crop || listing.category,
+          farmer: {
+            id: listing.farmer_user_id || listing.farmerUserId,
+            name: listing.farmer_name || listing.farmerName,
+            avatar: listing.farmer_avatar || listing.farmerAvatar || "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
+            location: `${listing.region || listing.location}, ${listing.woreda || ''}`,
+            rating: 4.5,
+            reviewCount: 50,
+            phone: listing.farmer_phone || "+251900000000",
+            isVerified: true
+          }
+        }));
+
+        setListings(transformedListings);
+        setFilteredListings(transformedListings);
+        setLastFetchTime(Date.now());
+        
+        // Cache the fresh data
+        localStorage.setItem('listings_cache', JSON.stringify(transformedListings));
+        localStorage.setItem('listings_cache_timestamp', Date.now().toString());
+        
+        console.log(`Refreshed: ${transformedListings.length} listings loaded`);
+      }
+    } catch (error) {
+      console.error('Failed to refresh listings:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   // Handle language change
   const handleLanguageChange = (newLanguage) => {
@@ -363,15 +451,7 @@ const BrowseListingsBuyerHome = () => {
         filtered?.sort((a, b) => b?.id - a?.id);
         break;
       default:
-        // Relevance: prioritize proximity to buyer
-        filtered?.sort((a, b) => {
-          const psA = getProximityScore(a);
-          const psB = getProximityScore(b);
-          if (psB !== psA) return psB - psA;
-          // tie-breaker by newest
-          if (a.createdAt && b.createdAt) return b.createdAt - a.createdAt;
-          return (b.id || 0) - (a.id || 0);
-        });
+        // Keep original order for relevance
         break;
     }
 
@@ -470,26 +550,7 @@ const BrowseListingsBuyerHome = () => {
   const handleAddToCart = async (listingId, quantity) => {
     const listing = listings?.find(l => l?.id === listingId);
     if (!listing) return;
-
-    setCartItems(prev => {
-      const existingItem = prev?.find(item => item?.id === listingId);
-      if (existingItem) {
-        return prev?.map(item =>
-          item?.id === listingId
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      const normalized = {
-        id: listing.id,
-        name: listing.name,
-        nameAm: listing.nameAm,
-        image: listing.image,
-        pricePerKg: listing.pricePerKg,
-        quantity: quantity
-      };
-      return [...prev, normalized];
-    });
+    addItem({ id: listing.id, name: listing.name, nameAm: listing.nameAm, image: listing.image, pricePerKg: listing.pricePerKg }, quantity);
   };
 
   // Handle contact farmer
@@ -529,33 +590,14 @@ const BrowseListingsBuyerHome = () => {
   useEffect(() => {
     try {
       localStorage.setItem('buyer_cart', JSON.stringify(cartItems));
-      // Notify other components (e.g., header) in the same tab
-      window.dispatchEvent(new Event('buyer_cart_updated'));
     } catch {}
   }, [cartItems]);
 
-  // Auto-open cart when navigated with #cart and react to hash changes
-  useEffect(() => {
-    const openIfHashCart = () => {
-      if (window.location.hash === '#cart') setIsCartOpen(true);
-    };
-    openIfHashCart();
-    window.addEventListener('hashchange', openIfHashCart);
-    const openOnEvent = () => setIsCartOpen(true);
-    window.addEventListener('open_buyer_cart', openOnEvent);
-    return () => window.removeEventListener('hashchange', openIfHashCart);
-  }, []);
-
   // Cart helpers
-  const updateCartQuantity = (id, quantity) => {
-    setCartItems(prev => {
-      if (quantity <= 0) return prev.filter(i => i.id !== id);
-      return prev.map(i => i.id === id ? { ...i, quantity } : i);
-    });
-  };
-  const removeCartItem = (id) => setCartItems(prev => prev.filter(i => i.id !== id));
-  const clearCart = () => setCartItems([]);
-  const getCartTotal = () => cartItems.reduce((t, i) => t + (Number(i.pricePerKg) || 0) * (Number(i.quantity) || 0), 0);
+  const updateCartQuantity = (id, quantity) => updateQuantity(id, quantity);
+  const removeCartItem = (id) => removeItem(id);
+  const clearCart = () => clear();
+  const getCartTotal = () => totalCost;
 
   const placeOrder = async () => {
     if (!cartItems.length) return;
@@ -578,13 +620,8 @@ const BrowseListingsBuyerHome = () => {
 
       await orderService.createOrder(orderData);
       clearCart();
-      try {
-        localStorage.setItem('buyer_cart', JSON.stringify([]));
-        window.dispatchEvent(new Event('buyer_cart_updated'));
-      } catch {}
       setIsCartOpen(false);
       alert(currentLanguage === 'am' ? 'ትዕዛዝ ተልኳል!' : 'Order placed!');
-      navigate('/order-management');
     } catch (error) {
       console.error('placeOrder failed', error);
       alert(currentLanguage === 'am' ? 'ትዕዛዝ አልተሳካም።' : 'Failed to place order.');
@@ -592,19 +629,10 @@ const BrowseListingsBuyerHome = () => {
   };
 
   // Calculate total cart items
-  const totalCartItems = cartItems?.reduce((total, item) => total + (Number(item?.quantity) || 0), 0);
+  const totalCartItems = totalItems;
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Global Header */}
-      <GlobalHeader
-        userRole={user?.role || "buyer"}
-        isAuthenticated={isAuthenticated}
-        onLanguageChange={handleLanguageChange}
-        currentLanguage={currentLanguage}
-      />
-      {/* Tab Navigation - show Dashboard label for buyers */}
-      <TabNavigation userRole="buyer" />
+    <AuthenticatedLayout>
       {/* Search Header */}
       <SearchHeader
         searchQuery={searchQuery}
@@ -621,46 +649,64 @@ const BrowseListingsBuyerHome = () => {
         onClearAll={handleClearAllFilters}
         currentLanguage={currentLanguage}
       />
-      {/* Main Content */}
-      <div className="flex">
-        {/* Desktop Filter Sidebar from previous dashboard */}
-        <div className="hidden lg:block w-80 shrink-0">
-          <div className="sticky p-6 top-32">
-            <FilterPanel
-              isOpen={true}
-              onClose={() => {}}
-              filters={filters}
-              onApplyFilters={(f) => {
-                setFilters(f);
-                setSelectedCategory((f?.produceTypes && f.produceTypes[0]) || 'all');
-                setSelectedRegion((f?.regions && f.regions[0]) || 'all');
-                setCurrentSort(f?.sort || currentSort);
-              }}
-              currentLanguage={currentLanguage}
-              selectedCategory={selectedCategory}
-              selectedRegion={selectedRegion}
-              currentSort={currentSort}
-              categoryOptions={categories.map(c => ({ id: c.value, label: currentLanguage === 'am' ? c.labelAm : c.label }))}
-              regionOptions={regions.map(r => ({ id: r.label, label: currentLanguage === 'am' ? r.labelAm : r.label }))}
-            />
-          </div>
-        </div>
 
-        {/* Listings Content */}
-        <div className="flex-1 p-4 lg:p-6">
+      {/* Top filter bar (replaces sidebar) */}
+      <div className="p-4 lg:p-6">
+        <FilterPanel
+          isOpen={true}
+          onClose={() => {}}
+          filters={filters}
+          onApplyFilters={(f) => {
+            setFilters(f);
+            setSelectedCategory((f?.produceTypes && f.produceTypes[0]) || 'all');
+            setSelectedRegion((f?.regions && f.regions[0]) || 'all');
+            setCurrentSort(f?.sort || currentSort);
+          }}
+          currentLanguage={currentLanguage}
+          selectedCategory={selectedCategory}
+          selectedRegion={selectedRegion}
+          currentSort={currentSort}
+          categoryOptions={categories.map(c => ({ id: c.value, label: currentLanguage === 'am' ? c.labelAm : c.label }))}
+          regionOptions={regions.map(r => ({ id: r.label, label: currentLanguage === 'am' ? r.labelAm : r.label }))}
+        />
+      </div>
 
-
+      {/* Listings Content */}
+      <div className="flex-1 p-4 lg:p-6">
           {/* Sort and Results Header */}
           <div className="flex items-center justify-between mb-6">
-            <div className="text-sm text-text-secondary">
-              {isLoading ? (
-                <span>Loading...</span>
-              ) : (
-                <span>
-                  {filteredListings?.length} {currentLanguage === 'am' ? 'ውጤቶች' : 'results'}
-                  {searchQuery && (
-                    <span> for "{searchQuery}"</span>
-                  )}
+            <div className="flex items-center gap-4">
+              <div className="text-sm text-text-secondary">
+                {isLoading ? (
+                  <span>Loading...</span>
+                ) : (
+                  <span>
+                    {filteredListings?.length} {currentLanguage === 'am' ? 'ውጤቶች' : 'results'}
+                    {searchQuery && (
+                      <span> for "{searchQuery}"</span>
+                    )}
+                  </span>
+                )}
+              </div>
+              
+              {/* Refresh Button */}
+              <button
+                onClick={handleRefresh}
+                disabled={isLoading || isRefreshing}
+                className="p-2 text-text-secondary hover:text-primary transition-colors disabled:opacity-50"
+                title={currentLanguage === 'am' ? 'አዲስ አድርግ' : 'Refresh'}
+              >
+                <Icon 
+                  name="RefreshCw" 
+                  size={16} 
+                  className={isRefreshing ? 'animate-spin' : ''} 
+                />
+              </button>
+              
+              {/* Last Updated Time */}
+              {lastFetchTime && !isLoading && (
+                <span className="text-xs text-text-secondary">
+                  {currentLanguage === 'am' ? 'የመጨረሻ ዝመና' : 'Last updated'}: {new Date(lastFetchTime).toLocaleTimeString()}
                 </span>
               )}
             </div>
@@ -679,11 +725,11 @@ const BrowseListingsBuyerHome = () => {
             <EmptyState
               type={searchQuery || getActiveFilters()?.length > 0 ? 'no-results' : 'no-listings'}
               onClearFilters={handleClearAllFilters}
-              onRetry={() => window.location?.reload()}
+              onRetry={handleRefresh}
               currentLanguage={currentLanguage}
             />
           ) : (
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {filteredListings?.map((listing) => (
                 <ProduceCard
                   key={listing?.id}
@@ -697,9 +743,8 @@ const BrowseListingsBuyerHome = () => {
               ))}
             </div>
           )}
-        </div>
       </div>
-      {/* Mobile Filter Panel */}
+      {/* Mobile Filter Panel retained for small screens */}
       <FilterPanel
         isOpen={isFilterPanelOpen}
         onClose={() => setIsFilterPanelOpen(false)}
@@ -720,23 +765,23 @@ const BrowseListingsBuyerHome = () => {
 
       {/* Mini Cart Modal */}
       {isCartOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-lg max-w-md w-full max-h-[80vh] overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-border">
+            <div className="p-4 border-b border-border flex items-center justify-between">
               <h3 className="text-lg font-semibold text-text-primary">{currentLanguage === 'am' ? 'የግዛት ካርት' : 'Shopping Cart'}</h3>
-              <button onClick={() => { setIsCartOpen(false); try { if (window.location.hash === '#cart') window.location.hash = ''; } catch {} }} className="text-text-secondary">×</button>
+              <button onClick={() => setIsCartOpen(false)} className="text-text-secondary">×</button>
             </div>
             <div className="p-4 overflow-y-auto max-h-96">
-              {cartItems.length === 0 ? (
-                <div className="py-8 text-center">
-                  <Icon name="ShoppingCart" size={48} className="mx-auto mb-4 text-gray-400" />
+              {items.length === 0 ? (
+                <div className="text-center py-8">
+                  <Icon name="ShoppingCart" size={48} className="mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-500">{currentLanguage === 'am' ? 'ካርት ባዶ ነው' : 'Your cart is empty'}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {cartItems.map(item => (
-                    <div key={item.id} className="flex items-center p-3 space-x-3 border rounded-lg border-border">
-                      <img src={item.image} alt={item.name} className="object-cover w-16 h-16 rounded" />
+                  {items.map(item => (
+                    <div key={item.id} className="flex items-center space-x-3 p-3 border border-border rounded-lg">
+                      <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
                       <div className="flex-1">
                         <h4 className="font-medium text-text-primary">{currentLanguage === 'am' ? item.nameAm || item.name : item.name}</h4>
                         <p className="text-sm text-text-secondary">ETB {item.pricePerKg} × {item.quantity} kg</p>
@@ -752,7 +797,7 @@ const BrowseListingsBuyerHome = () => {
                 </div>
               )}
             </div>
-            {cartItems.length > 0 && (
+            {items.length > 0 && (
               <div className="p-4 border-t border-border">
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-semibold text-text-primary">{currentLanguage === 'am' ? 'ጠቅላላ' : 'Total'}</span>
@@ -767,7 +812,7 @@ const BrowseListingsBuyerHome = () => {
           </div>
         </div>
       )}
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

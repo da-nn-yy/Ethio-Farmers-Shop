@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { getAuth } from 'firebase/auth';
-import axios from 'axios';
+import { userService } from '../../services/apiService';
 import { useNavigate } from 'react-router-dom';
-import GlobalHeader from '../../components/ui/GlobalHeader';
-import TabNavigation from '../../components/ui/TabNavigation';
-import MobileMenu from '../../components/ui/MobileMenu';
+import AuthenticatedLayout from '../../components/ui/AuthenticatedLayout.jsx';
 import ProfileHeader from './components/ProfileHeader';
 import AccountInformation from './components/AccountInformation';
 import RoleSpecificSection from './components/RoleSpecificSection';
 import VerificationSection from './components/VerificationSection';
 import OrderHistorySection from './components/OrderHistorySection';
 import SecuritySection from './components/SecuritySection';
+import FarmerProfileStats from './components/FarmerProfileStats';
+import CertificationManagement from './components/CertificationManagement';
 import Icon from '../../components/AppIcon';
 import Button from '../../components/ui/Button';
+import { useLanguage } from '../../hooks/useLanguage.jsx';
 
 const UserProfileManagement = () => {
   const navigate = useNavigate();
+  const { language } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState('en');
-  const [userRole, setUserRole] = useState('farmer'); // farmer or buyer
+  const [userRole, setUserRole] = useState('buyer'); // will be set from API
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('account');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -30,23 +31,17 @@ const UserProfileManagement = () => {
     setCurrentLanguage(savedLanguage);
   }, []);
 
-  // Fetch user profile from backend
+  useEffect(() => { if (language !== currentLanguage) setCurrentLanguage(language); }, [language]);
+
+  // Fetch user profile from backend and enforce role-based tabs
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const authInstance = getAuth();
-        const currentUser = authInstance.currentUser;
-        if (!currentUser) return;
-        const token = await currentUser.getIdToken();
-        const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-        const API_URL = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
-        const { data } = await axios.get(`${API_URL}/users/me`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const data = await userService.getMe();
         setUser(data);
-        setUserRole(data.role || 'farmer');
+        setUserRole(data.role || 'buyer');
       } catch (e) {
-        // handle error silently for now
+        // ignore; layout will protect route elsewhere
       }
     };
     fetchUser();
@@ -61,30 +56,11 @@ const UserProfileManagement = () => {
   // Handle photo edit
   const handleEditPhoto = async (file) => {
     try {
-      const authInstance = getAuth();
-      const currentUser = authInstance.currentUser;
-      if (!currentUser || !file) return;
-      const token = await currentUser.getIdToken();
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5001';
-      const API_URL = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
-      const form = new FormData();
-      form.append('image', file);
-      // Optimistic preview
-      const optimisticUrl = URL.createObjectURL(file);
-      setUser(prev => ({ ...(prev || {}), avatarUrl: optimisticUrl }));
-
-      const { data } = await axios.post(`${API_URL}/users/me/avatar`, form, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`
-        }
-      });
-      const finalUrl = data?.avatarUrl ? `${data.avatarUrl}${data.avatarUrl.includes('?') ? '&' : '?'}cb=${Date.now()}` : optimisticUrl;
-      setUser(prev => ({ ...(prev || {}), avatarUrl: finalUrl }));
+      if (!file) return;
+      const data = await userService.uploadAvatar(file);
+      setUser(prev => ({ ...(prev || {}), avatarUrl: data.avatarUrl || data.url || data.imageUrl }));
     } catch (e) {
-      // Revert optimistic update on failure
-      await new Promise(r => setTimeout(r, 0));
-      setUser(prev => ({ ...(prev || {}), avatarUrl: prev?.avatarUrl }));
+      // ignore for now
     }
   };
 
@@ -96,12 +72,31 @@ const UserProfileManagement = () => {
       labelAm: 'የመለያ መረጃ',
       icon: 'User'
     },
-    {
+    ...(userRole === 'farmer' ? [{
       id: 'role-specific',
-      label: userRole === 'farmer' ? 'Farm Details' : 'Business Details',
-      labelAm: userRole === 'farmer' ? 'የእርሻ ዝርዝሮች' : 'የንግድ ዝርዝሮች',
-      icon: userRole === 'farmer' ? 'Sprout' : 'Building'
-    },
+      label: 'Farm Details',
+      labelAm: 'የእርሻ ዝርዝሮች',
+      icon: 'Sprout'
+    }] : [{
+      id: 'role-specific',
+      label: 'Business Details',
+      labelAm: 'የንግድ ዝርዝሮች',
+      icon: 'Building'
+    }]),
+    ...(userRole === 'farmer' ? [
+      {
+        id: 'stats',
+        label: 'Profile Stats',
+        labelAm: 'የመገለጫ ስታቲስቲክስ',
+        icon: 'BarChart'
+      },
+      {
+        id: 'certifications',
+        label: 'Certifications',
+        labelAm: 'ማረጋገጫዎች',
+        icon: 'Award'
+      }
+    ] : []),
     {
       id: 'verification',
       label: 'Verification',
@@ -137,6 +132,7 @@ const UserProfileManagement = () => {
           <AccountInformation
             userRole={userRole}
             currentLanguage={currentLanguage}
+            onProfileUpdated={(patch) => setUser(prev => ({ ...(prev || {}), ...patch }))}
           />
         );
       case 'role-specific':
@@ -146,6 +142,18 @@ const UserProfileManagement = () => {
             currentLanguage={currentLanguage}
           />
         );
+      case 'stats':
+        return userRole === 'farmer' ? (
+          <FarmerProfileStats
+            currentLanguage={currentLanguage}
+          />
+        ) : null;
+      case 'certifications':
+        return userRole === 'farmer' ? (
+          <CertificationManagement
+            currentLanguage={currentLanguage}
+          />
+        ) : null;
       case 'verification':
         return (
           <VerificationSection
@@ -172,37 +180,13 @@ const UserProfileManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Global Header */}
-      <GlobalHeader
-        userRole={userRole}
-        isAuthenticated={isAuthenticated}
-        onLanguageChange={handleLanguageChange}
-        currentLanguage={currentLanguage}
-        user={user}
-      />
-      {/* Tab Navigation */}
-      <TabNavigation
-        userRole={userRole}
-        notificationCounts={{ orders: 3, total: 5 }}
-      />
-      {/* Mobile Menu */}
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        userRole={userRole}
-        isAuthenticated={isAuthenticated}
-        notificationCounts={{ orders: 3, total: 5 }}
-        currentLanguage={currentLanguage}
-      />
-      {/* Main Content */}
-      <main className="pt-32 pb-8 lg:pt-36">
+    <AuthenticatedLayout>
         <div className="px-4 mx-auto max-w-7xl lg:px-6">
           {/* Page Header */}
           <div className="mb-8">
             <div className="flex items-center mb-2 space-x-2 text-sm text-text-secondary">
               <button
-                onClick={() => navigate('/dashboard-farmer-home')}
+                onClick={() => navigate(userRole === 'buyer' ? '/dashboard-buyer-home' : '/dashboard-farmer-home')}
                 className="hover:text-primary transition-smooth"
               >
                 {getLabel('Dashboard', 'ዳሽቦርድ')}
@@ -222,6 +206,30 @@ const UserProfileManagement = () => {
               )}
             </p>
           </div>
+
+          {/* Welcome message for new users */}
+          {user && (!user.full_name || !user.phone || !user.region || !user.woreda) && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                    <span className="text-white text-sm font-bold">✓</span>
+                  </div>
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-sm font-medium text-green-800">
+                      {getLabel('Welcome to Ke geberew!', 'እንኳን ወደ ከገበረው በደህና መጡ!')}
+                  </h3>
+                  <p className="mt-1 text-sm text-green-700">
+                    {getLabel(
+                      'Complete your profile to get the most out of Ke geberew. This helps other users find and connect with you.',
+                      'ከ ከገበረው የተሻለ ጥቅም ለማግኘት የመገለጫ መረጃዎን ያጠናቅቁ። ይህ ሌሎች ተጠቃሚዎች እንዲያገኙዎት እና እንዲገናኙዎት ይረዳል።'
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Profile Header */}
           <div className="mb-8">
@@ -305,8 +313,7 @@ const UserProfileManagement = () => {
             </div>
           </div>
         </div>
-      </main>
-    </div>
+    </AuthenticatedLayout>
   );
 };
 

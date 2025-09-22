@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { dashboardService, farmerService } from "../../services/apiService";
+import { useAuth } from "../../hooks/useAuth.jsx";
+import { auth } from "../../firebase";
+import { navigateToDuplicateListing, navigateToEditListing } from "../../utils/duplicateListing";
 import axios from "axios";
-import { auth } from "../../firebase"; // ✅ make sure you have firebase config
-import GlobalHeader from "../../components/ui/GlobalHeader";
+import AuthenticatedLayout from "../../components/ui/AuthenticatedLayout.jsx";
+import { useLanguage } from "../../hooks/useLanguage.jsx";
 import TabNavigation from "../../components/ui/TabNavigation";
 import MobileMenu from "../../components/ui/MobileMenu";
 import Icon from "../../components/AppIcon";
@@ -16,13 +20,11 @@ import RecentActivityFeed from "./components/RecentActivityFeed";
 
 const DashboardFarmerHome = () => {
   const navigate = useNavigate();
+  const { user, isAuthenticated } = useAuth();
+  const { language, toggle } = useLanguage();
   const [currentLanguage, setCurrentLanguage] = useState("en");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // ✅ Add missing user & auth state
-  const [user, setUser] = useState(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   // Dashboard data state
   const [farmerMetrics, setFarmerMetrics] = useState([]);
@@ -39,73 +41,36 @@ const DashboardFarmerHome = () => {
     const savedLanguage = localStorage.getItem("farmconnect_language") || "en";
     setCurrentLanguage(savedLanguage);
   }, []);
+  useEffect(() => { if (currentLanguage !== language) setCurrentLanguage(language); }, [language]);
 
   const handleLanguageChange = (newLanguage) => {
     setCurrentLanguage(newLanguage);
     localStorage.setItem("farmconnect_language", newLanguage);
   };
 
-  // ✅ Fetch user data safely
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = auth.currentUser;
-        if (!currentUser) return;
-
-        setIsAuthenticated(true);
-
-        const idToken = await currentUser.getIdToken();
-        const API_BASE =
-          import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-        const API_URL = API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`;
-
-        const res = await axios.get(`${API_URL}/users/me`, {
-          headers: { Authorization: `Bearer ${idToken}` },
-        });
-
-        setUser(res.data); // expect { fullName, avatar, role }
-      } catch (error) {
-        console.error("Failed to fetch user data:", error);
-        setIsAuthenticated(false);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
   // ✅ Fetch dashboard data
   useEffect(() => {
     const fetchDashboardData = async () => {
-      if (!isAuthenticated || !user) return;
+      if (!isAuthenticated) return;
 
       try {
         setIsLoading(true);
         setError(null);
 
-        const currentUser = auth.currentUser;
-        const idToken = await currentUser.getIdToken();
-        const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-        const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
-
-        // Fetch all dashboard data in parallel
+        // Fetch all dashboard data in parallel using new API service
         const [metricsRes, listingsRes, activityRes] = await Promise.all([
-          axios.get(`${API_BASE}/farmers/metrics`, {
-            headers: { Authorization: `Bearer ${idToken}` }
-          }),
-          axios.get(`${API_BASE}/farmers/listings?limit=6`, {
-            headers: { Authorization: `Bearer ${idToken}` }
-          }),
-          axios.get(`${API_BASE}/farmers/activity?limit=5`, {
-            headers: { Authorization: `Bearer ${idToken}` }
-          })
+          farmerService.getFarmerMetrics(),
+          farmerService.getFarmerListings({ limit: 6 }),
+          farmerService.getFarmerActivity({ limit: 5 })
         ]);
 
-        setFarmerMetrics(metricsRes.data);
-        setProduceListings(listingsRes.data);
-        setRecentActivity(activityRes.data);
+        setFarmerMetrics(metricsRes || []);
+        setProduceListings(listingsRes.listings || []);
+        setRecentActivity(activityRes || []);
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
-        setError("Failed to load dashboard data");
+        console.error("Error details:", error.response?.data || error.message);
+        setError(`Failed to load dashboard data: ${error.response?.data?.error || error.message}`);
       } finally {
         setIsLoading(false);
       }
@@ -131,7 +96,7 @@ const DashboardFarmerHome = () => {
 
   const quickActions = [
     { title: "Add New Listing", titleAm: "አዲስ ዝርዝር ጨምር", description: "List your fresh produce for buyers", descriptionAm: "ለገዢዎች ትኩስ ምርትዎን ዘርዝር", icon: "Plus", variant: "primary", onClick: handleAddNewListing },
-    { title: "View All Orders", titleAm: "ሁሉንም ትዕዛዞች ይመልከቱ", description: "Manage your incoming orders", descriptionAm: "የሚመጡ ትዕዛዞችዎን ያስተዳድሩ", icon: "ShoppingBag", variant: "secondary", onClick: () => navigate("/order-management") }
+    { title: "View All Orders", titleAm: "ሁሉንም ትዕዛዞች ይመልከቱ", description: "Manage your incoming orders", descriptionAm: "የሚመጡ ትዕዛዞችዎን ያስተዳድሩ", icon: "ShoppingBag", variant: "secondary", onClick: () => navigate("/orders-farmer") }
   ];
 
   // Calculate notification counts from real data
@@ -146,8 +111,7 @@ const DashboardFarmerHome = () => {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
       // Refresh all dashboard data
       const [metricsRes, listingsRes, activityRes] = await Promise.all([
@@ -162,23 +126,24 @@ const DashboardFarmerHome = () => {
         })
       ]);
 
-      setFarmerMetrics(metricsRes.data);
-      setProduceListings(listingsRes.data);
-      setRecentActivity(activityRes.data);
+      setFarmerMetrics(metricsRes.data || []);
+      setProduceListings(listingsRes.data.listings || []);
+      setRecentActivity(activityRes.data || []);
       setError(null);
     } catch (error) {
       console.error("Failed to refresh dashboard data:", error);
-      setError("Failed to refresh data");
+      console.error("Error details:", error.response?.data || error.message);
+      setError(`Failed to refresh data: ${error.response?.data?.error || error.message}`);
     } finally {
     setIsRefreshing(false);
     }
   };
 
-    // Edit Listing functionality
+    // Edit Listing functionality (legacy modal - keeping for backward compatibility)
   const [isEditListingModalOpen, setIsEditListingModalOpen] = useState(false);
   const [editingListing, setEditingListing] = useState(null);
 
-  const handleEditListing = (listingId) => {
+  const handleEditListingModal = (listingId) => {
     const listing = produceListings.find(l => l.id === listingId);
     if (listing) {
       setEditingListing({
@@ -205,8 +170,7 @@ const DashboardFarmerHome = () => {
       setIsSubmitting(true);
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
       const listingData = {
         ...editingListing,
@@ -247,8 +211,13 @@ const DashboardFarmerHome = () => {
   };
 
   // Duplicate Listing functionality
-  const handleDuplicateListing = () => {
-    navigate('/add-listing');
+  const handleDuplicateListing = (listingId) => {
+    navigateToDuplicateListing(navigate, listingId);
+  };
+
+  // Edit Listing functionality
+  const handleEditListing = (listingId) => {
+    navigateToEditListing(navigate, listingId);
   };
 
   // Toggle Listing Status functionality
@@ -258,8 +227,7 @@ const DashboardFarmerHome = () => {
     try {
       const currentUser = auth.currentUser;
       const idToken = await currentUser.getIdToken();
-      const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5001";
-      const API_BASE = RAW_API_BASE.endsWith('/api') ? RAW_API_BASE : `${RAW_API_BASE.replace(/\/+$/, '')}/api`;
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
       const listing = produceListings.find(l => l.id === listingId);
       const newStatus = listing.status === 'sold_out' ? 'active' : 'sold_out';
@@ -293,26 +261,7 @@ const DashboardFarmerHome = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <GlobalHeader
-        userRole="farmer"
-        isAuthenticated={isAuthenticated}
-        onLanguageChange={handleLanguageChange}
-        currentLanguage={currentLanguage}
-      />
-
-      <TabNavigation userRole="farmer" />
-
-      <MobileMenu
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
-        userRole="farmer"
-        isAuthenticated={isAuthenticated}
-        notificationCounts={notificationCounts}
-        currentLanguage={currentLanguage}
-      />
-
-      <main className="px-4 pt-32 pb-6 lg:pt-36 lg:px-6">
+    <AuthenticatedLayout>
         <div className="mx-auto max-w-7xl">
           {/* Welcome Section */}
           <div className="mb-8">
@@ -382,80 +331,81 @@ const DashboardFarmerHome = () => {
             </div>
           </div>
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
-            <div className="space-y-6 lg:col-span-2">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-semibold text-text-primary">
-                    {currentLanguage === "am" ? "የእርስዎ ንቁ ዝርዝሮች" : "Your Active Listings"}
-                  </h2>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    iconName="Plus"
-                    iconPosition="left"
-                    onClick={handleAddNewListing}
-                  >
-                    {currentLanguage === "am" ? "አዲስ ጨምር" : "Add New"}
-                  </Button>
-                </div>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:gap-6">
-                  {isLoading ? (
-                    // Loading skeleton for listings
-                    Array.from({ length: 4 }).map((_, index) => (
-                      <div key={index} className="h-48 bg-gray-200 rounded-lg animate-pulse" />
-                    ))
-                  ) : produceListings?.length > 0 ? (
-                    produceListings?.slice(0, 4)?.map((listing) => (
-                    <ProduceListingCard
-                      key={listing.id}
-                      listing={listing}
-                      onEdit={handleEditListing}
-                      onDuplicate={handleDuplicateListing}
-                      onToggleStatus={handleToggleListingStatus}
-                      currentLanguage={currentLanguage}
-                    />
-                    ))
-                  ) : (
-                    <div className="col-span-2 py-12 text-center">
-                      <Icon name="Package" size={48} className="mx-auto mb-4 text-gray-400" />
-                      <p className="mb-4 text-gray-500">
-                        {currentLanguage === "am"
-                          ? "ገና ምንም ዝርዝሮች የሉዎትም። የእርስዎን ምርት ያስጀምሩ!"
-                          : "You don't have any listings yet. Start listing your produce!"}
-                      </p>
-                      <Button
-                        variant="primary"
-                        iconName="Plus"
-                        iconPosition="left"
-                        onClick={handleAddNewListing}
-                      >
-                        {currentLanguage === "am" ? "ዝርዝር ጀምር" : "Create First Listing"}
-                      </Button>
-                    </div>
-                  )}
-                </div>
-                <div className="mt-6 text-center">
-                  <Button variant="outline" iconName="ArrowRight" iconPosition="right">
-                    {currentLanguage === "am" ? "ሁሉንም ዝርዝሮች ይመልከቱ" : "View All Listings"} ({produceListings?.length || 0})
-                  </Button>
-                </div>
+          {/* Main Content: Stack Active Listings, Market Trends, and Recent Activity vertically */}
+          <div className="space-y-8">
+            {/* Active Listings */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-text-primary">
+                  {currentLanguage === "am" ? "የእርስዎ ንቁ ዝርዝሮች" : "Your Active Listings"}
+                </h2>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  iconName="Plus"
+                  iconPosition="left"
+                  onClick={handleAddNewListing}
+                >
+                  {currentLanguage === "am" ? "አዲስ ጨምር" : "Add New"}
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+                {isLoading ? (
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <div key={index} className="h-48 bg-gray-200 rounded-lg animate-pulse" />
+                  ))
+                ) : produceListings?.length > 0 ? (
+                  produceListings?.slice(0, 6)?.map((listing) => (
+                  <ProduceListingCard
+                    key={listing.id}
+                    listing={listing}
+                    onEdit={handleEditListing}
+                    onDuplicate={handleDuplicateListing}
+                    onToggleStatus={handleToggleListingStatus}
+                    currentLanguage={currentLanguage}
+                  />
+                  ))
+                ) : (
+                  <div className="col-span-full py-12 text-center">
+                    <Icon name="Package" size={48} className="mx-auto mb-4 text-gray-400" />
+                    <p className="mb-4 text-gray-500">
+                      {currentLanguage === "am"
+                        ? "ገና ምንም ዝርዝሮች የሉዎትም። የእርስዎን ምርት ያስጀምሩ!"
+                        : "You don't have any listings yet. Start listing your produce!"}
+                    </p>
+                    <Button
+                      variant="primary"
+                      iconName="Plus"
+                      iconPosition="left"
+                      onClick={handleAddNewListing}
+                    >
+                      {currentLanguage === "am" ? "ዝርዝር ጀምር" : "Create First Listing"}
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="mt-6 text-center">
+                <Button variant="outline" iconName="ArrowRight" iconPosition="right" onClick={() => navigate('/farmer-my-listings')}>
+                  {currentLanguage === "am" ? "ሁሉንም ዝርዝሮች ይመልከቱ" : "View All Listings"} ({produceListings?.length || 0})
+                </Button>
               </div>
             </div>
 
-            {/* Right Column */}
-            <div className="space-y-6">
+            {/* Market Trends */}
+            <div>
               {isLoading ? (
-                <>
-                  <div className="h-64 bg-gray-200 rounded-lg animate-pulse" />
-                  <div className="h-48 bg-gray-200 rounded-lg animate-pulse" />
-                </>
+                <div className="h-64 bg-gray-200 rounded-lg animate-pulse" />
               ) : (
-                <>
-              <MarketTrendsWidget currentLanguage={currentLanguage} />
-                  <RecentActivityFeed currentLanguage={currentLanguage} recentActivity={recentActivity} />
-                </>
+                <MarketTrendsWidget currentLanguage={currentLanguage} />
+              )}
+            </div>
+
+            {/* Recent Activity */}
+            <div>
+              {isLoading ? (
+                <div className="h-48 bg-gray-200 rounded-lg animate-pulse" />
+              ) : (
+                <RecentActivityFeed currentLanguage={currentLanguage} recentActivity={recentActivity} />
               )}
             </div>
           </div>
@@ -472,7 +422,6 @@ const DashboardFarmerHome = () => {
             </div>
           )}
         </div>
-      </main>
 
       {/* Add New Listing now navigates to dedicated page; modal removed */}
 
@@ -671,8 +620,9 @@ const DashboardFarmerHome = () => {
            </div>
          </div>
        )}
-    </div>
+    </AuthenticatedLayout>
   );
 };
 
 export default DashboardFarmerHome;
+

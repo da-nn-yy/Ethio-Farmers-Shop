@@ -181,5 +181,3 @@ All endpoints return consistent error responses:
 - `404` - Not Found
 - `409` - Conflict
 - `500` - Internal Server Error
-
-
