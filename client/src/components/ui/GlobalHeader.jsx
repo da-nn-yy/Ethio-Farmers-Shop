@@ -6,7 +6,7 @@ import Icon from "../AppIcon";
 import NotificationBell from "../NotificationBell.jsx";
 import { useLanguage } from "../../hooks/useLanguage.jsx";
 
-const GlobalHeader = ({ onLanguageChange, currentLanguage = "en", publicOnly = false }) => {
+const GlobalHeader = ({ onLanguageChange, currentLanguage = "en", publicOnly = false, onToggleSidebar, isSidebarCollapsed = false, showSidebarToggle = true }) => {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -35,16 +35,19 @@ const GlobalHeader = ({ onLanguageChange, currentLanguage = "en", publicOnly = f
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 border-b bg-surface border-border shadow-warm">
+    <header className="fixed top-0 left-0 right-0 z-50 border-b shadow-warm supports-[backdrop-filter]:backdrop-blur-md bg-white/60 dark:bg-slate-900/40 border-white/20 dark:border-white/10">
       <div className="flex items-center justify-between h-16 px-4 lg:h-18 lg:px-6">
-        {/* Logo */}
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg lg:w-10 lg:h-10 bg-primary">
-            <Icon name="Sprout" size={20} color="white" className="lg:w-6 lg:h-6" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-lg font-bold font-heading lg:text-xl text-primary">KeGeberew</span>
-            <span className="-mt-1 text-xs font-caption text-text-secondary">Ethiopia</span>
+        {/* Left section: logo */}
+        <div className="flex items-center space-x-3 lg:space-x-4">
+          {/* Logo */}
+          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate("/")}>
+            <div className="flex items-center justify-center w-8 h-8 rounded-lg lg:w-10 lg:h-10 bg-primary">
+              <Icon name="Sprout" size={20} color="white" className="lg:w-6 lg:h-6" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold font-heading lg:text-xl text-primary">KeGeberew</span>
+              <span className="-mt-1 text-xs font-caption text-text-secondary">Ethiopia</span>
+            </div>
           </div>
         </div>
 
@@ -121,7 +124,7 @@ const GlobalHeader = ({ onLanguageChange, currentLanguage = "en", publicOnly = f
 
       {/* Mobile Menu Drawer */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 border-t lg:hidden top-16 bg-surface border-border">
+        <div className="fixed inset-0 z-40 border-t lg:hidden top-16 bg-surface/80 supports-[backdrop-filter]:backdrop-blur-md border-border">
           <div className="flex flex-col p-4 space-y-4">
             {showUserSection ? (
               <>

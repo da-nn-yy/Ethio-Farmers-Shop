@@ -1,9 +1,19 @@
 import { pool } from '../config/database.js';
 
+const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+
+function normalizeImageUrl(rawUrl) {
+  if (!rawUrl) return rawUrl;
+  const url = String(rawUrl).replace(/\\/g, '/');
+  if (/^https?:\/\//i.test(url)) return url;
+  const trimmed = url.replace(/^\/?/, '');
+  return `${PUBLIC_BASE_URL}/${trimmed}`;
+}
+
 // Detect if a column exists on a table in the current database
 async function columnExists(tableName, columnName) {
   const [rows] = await pool.query(
-    `SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS 
+    `SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS
      WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ? LIMIT 1`,
     [tableName, columnName]
   );
@@ -128,12 +138,12 @@ export const getFarmerListings = async (req, res) => {
     // Build WHERE clause with status filter
     let whereClause = "WHERE u.firebase_uid = ?";
     const params = [farmerId];
-    
+
     if (status) {
       whereClause += " AND pl.status = ?";
       params.push(status);
     }
-    
+
     params.push(limit);
 
     const query = hasNewFarmerCol && hasTitleCol && hasPricePerUnit
@@ -179,7 +189,7 @@ export const getFarmerListings = async (req, res) => {
     let imagesByListing = {};
     if (hasNewFarmerCol && hasTitleCol && hasPricePerUnit) {
       const listingIds = listings.map(l => l.id);
-      
+
       if (listingIds.length > 0) {
         const imagesQuery = `
           SELECT listing_id, url, sort_order
@@ -187,15 +197,15 @@ export const getFarmerListings = async (req, res) => {
           WHERE listing_id IN (${listingIds.map(() => '?').join(',')})
           ORDER BY listing_id, sort_order
         `;
-        
+
         const [imageRows] = await pool.query(imagesQuery, listingIds);
-        
-        // Group images by listing_id
+
+        // Group images by listing_id and normalize URL
         imageRows.forEach(img => {
           if (!imagesByListing[img.listing_id]) {
             imagesByListing[img.listing_id] = [];
           }
-          imagesByListing[img.listing_id].push(img.url);
+          imagesByListing[img.listing_id].push(normalizeImageUrl(img.url));
         });
       }
     }
@@ -223,7 +233,7 @@ export const getFarmerListings = async (req, res) => {
         id: listing.id,
         name: listing.name || listing.title,
         nameAm: listing.name_am || null,
-        image: listingImages[0] || listing.image || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
+        image: listingImages[0] || normalizeImageUrl(listing.image) || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
         images: listingImages, // All images
         pricePerKg: listing.pricePerUnit,
         availableQuantity: listing.quantity,
@@ -398,7 +408,7 @@ export const createFarmerListing = async (req, res) => {
     try {
       useNewSchema = await columnExists('produce_listings', 'farmer_user_id');
       console.log('Using schema:', useNewSchema ? 'new' : 'legacy');
-      
+
       if (useNewSchema) {
         console.log('Inserting with new schema...');
         const safeQuantity = status === 'draft' ? Math.max(1, Number(availableQuantity) || 1) : (Number(availableQuantity) || 0);
@@ -547,11 +557,11 @@ export const createFarmerListing = async (req, res) => {
     res.status(201).json(transformedListing);
   } catch (error) {
     console.error("Error creating farmer listing:", error);
-    
+
     // Provide more specific error messages
     let errorMessage = "Failed to create listing";
     let statusCode = 500;
-    
+
     if (error.message.includes('Database error')) {
       errorMessage = "Database connection error. Please try again.";
     } else if (error.message.includes('Failed to create listing')) {
@@ -563,8 +573,8 @@ export const createFarmerListing = async (req, res) => {
       errorMessage = "Invalid user reference";
       statusCode = 400;
     }
-    
-    res.status(statusCode).json({ 
+
+    res.status(statusCode).json({
       error: errorMessage,
       ...(process.env.NODE_ENV === 'development' && {
         details: error.message,
@@ -621,7 +631,7 @@ export const updateFarmerListing = async (req, res) => {
 
     // Check which schema to use
     const useNewSchema = await columnExists('produce_listings', 'farmer_user_id');
-    
+
     // Verify the listing belongs to this farmer
     const farmerColumn = useNewSchema ? 'farmer_user_id' : 'farmer_id';
     const [listingRows] = await pool.query(
@@ -645,7 +655,7 @@ export const updateFarmerListing = async (req, res) => {
         'description = ?',
         'updated_at = NOW()'
       ];
-      
+
       const safeQuantity = status === 'draft' ? Math.max(1, Number(availableQuantity) || 1) : (Number(availableQuantity) || 0);
       const safePrice = status === 'draft' ? Math.max(0.01, Number(pricePerKg) || 0.01) : (Number(pricePerKg) || 0);
       const updateValues = [
@@ -682,7 +692,7 @@ export const updateFarmerListing = async (req, res) => {
         'description = ?',
         'updated_at = NOW()'
       ];
-      
+
       const safeQuantity = status === 'draft' ? Math.max(1, Number(availableQuantity) || 1) : (Number(availableQuantity) || 0);
       const safePrice = status === 'draft' ? Math.max(0.01, Number(pricePerKg) || 0.01) : (Number(pricePerKg) || 0);
       const updateValues = [
@@ -743,7 +753,7 @@ export const updateFarmerListing = async (req, res) => {
       FROM produce_listings pl
       WHERE pl.id = ?`;
     }
-    
+
     const [updatedListingRows] = await pool.query(selectQuery, [id]);
 
     if (updatedListingRows.length === 0) {
@@ -886,7 +896,7 @@ export const bulkUpdateListingStatus = async (req, res) => {
       [status, ...listingIds]
     );
 
-    res.json({ 
+    res.json({
       message: `Successfully updated ${listingIds.length} listings to ${status}`,
       updatedCount: listingIds.length
     });
@@ -953,7 +963,7 @@ export const bulkDeleteListings = async (req, res) => {
       listingIds
     );
 
-    res.json({ 
+    res.json({
       message: `Successfully deleted ${listingIds.length} listings`,
       deletedCount: listingIds.length
     });
@@ -1084,9 +1094,9 @@ export const addListingImage = async (req, res) => {
       await pool.query("SELECT 1 FROM listing_images LIMIT 1");
     } catch (tableError) {
       console.error('listing_images table not accessible:', tableError.message);
-      return res.status(500).json({ 
-        error: "Database table not accessible", 
-        details: tableError.message 
+      return res.status(500).json({
+        error: "Database table not accessible",
+        details: tableError.message
       });
     }
 
@@ -1097,7 +1107,7 @@ export const addListingImage = async (req, res) => {
         "SELECT MAX(sort_order) as max_sort FROM listing_images WHERE listing_id = ?",
         [listingId]
       );
-      
+
       nextSortOrder = (existingImages[0]?.max_sort ?? -1) + 1;
     } catch (sortError) {
       console.warn('Could not get max sort order, using 0:', sortError.message);
@@ -1111,7 +1121,7 @@ export const addListingImage = async (req, res) => {
       userId,
       sortOrder: nextSortOrder
     });
-    
+
     try {
       await pool.query(
         "INSERT INTO listing_images (listing_id, url, sort_order) VALUES (?, ?, ?)",
