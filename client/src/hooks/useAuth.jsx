@@ -1,5 +1,6 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { authService, userService } from '../services/apiService.js';
+import sessionManager from '../utils/sessionManager.js';
 
 // Create Auth Context
 const AuthContext = createContext();
@@ -12,9 +13,22 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState(null);
 
-  // Initialize auth state from localStorage
+  // Initialize auth state from sessionStorage
   useEffect(() => {
     initializeAuth();
+
+    // Listen for session cleared events
+    const handleSessionCleared = (event) => {
+      console.log('Session cleared event received:', event.detail);
+      clearAuth();
+    };
+
+    window.addEventListener('sessionCleared', handleSessionCleared);
+
+    // Cleanup event listener
+    return () => {
+      window.removeEventListener('sessionCleared', handleSessionCleared);
+    };
   }, []);
 
   const initializeAuth = async () => {
@@ -22,9 +36,10 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      const storedToken = localStorage.getItem('authToken');
-      const storedAuth = localStorage.getItem('isAuthenticated');
-      const storedUser = localStorage.getItem('userData');
+      // Use session manager for session-based storage
+      const storedToken = sessionManager.getSessionData('authToken');
+      const storedAuth = sessionManager.getSessionData('isAuthenticated');
+      const storedUser = sessionManager.getSessionData('userData');
 
       if (storedToken && storedAuth === 'true') {
         // Immediately hydrate session from storage to avoid flicker/redirects
@@ -37,20 +52,26 @@ export const AuthProvider = ({ children }) => {
         // Skip API call for now to avoid hanging when backend is not available
         console.log('Using stored session data, skipping API call');
       } else {
-        // No valid stored auth - but don't clear everything immediately
-        // Just set as not authenticated without clearing localStorage
+        // No valid stored auth - clear everything
         setUser(null);
         setToken(null);
         setIsAuthenticated(false);
         setError(null);
+        clearSessionData(); // Clear any remaining session data
       }
     } catch (error) {
       console.error('Auth initialization failed:', error);
       setError('Failed to initialize authentication');
-      // Do not force logout here to avoid redirect loops
+      // Clear session data on error
+      clearSessionData();
     } finally {
       setLoading(false);
     }
+  };
+
+  const clearSessionData = () => {
+    // Use session manager to clear all session data
+    sessionManager.clearSession();
   };
 
   const clearAuth = () => {
@@ -59,11 +80,8 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     setError(null);
 
-    // Clear localStorage
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('userData');
-    localStorage.removeItem('userRole');
+    // Clear all session data
+    clearSessionData();
   };
 
   const login = async (credentials) => {
@@ -89,11 +107,11 @@ export const AuthProvider = ({ children }) => {
         setToken(response.devToken);
         setIsAuthenticated(true);
 
-        // Store in localStorage
-        localStorage.setItem('authToken', response.devToken);
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('userData', JSON.stringify(response.user));
-        localStorage.setItem('userRole', response.user.role);
+        // Store in session manager for session-based storage
+        sessionManager.setSessionData('authToken', response.devToken);
+        sessionManager.setSessionData('isAuthenticated', 'true');
+        sessionManager.setSessionData('userData', JSON.stringify(response.user));
+        sessionManager.setSessionData('userRole', response.user.role);
 
         return { success: true, user: response.user };
       } else {

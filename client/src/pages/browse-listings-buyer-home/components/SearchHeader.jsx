@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import Icon from '../../../components/AppIcon';
 import Button from '../../../components/ui/Button';
+import CartIcon from '../../../components/ui/CartIcon';
 
-const SearchHeader = ({ 
-  searchQuery, 
-  onSearchChange, 
-  cartItemCount = 0, 
+const SearchHeader = ({
+  searchQuery,
+  onSearchChange,
+  cartItemCount = 0,
   onCartClick,
   onFilterClick,
-  currentLanguage = 'en' 
+  currentLanguage = 'en'
 }) => {
   const [isSearchFocused, setIsSearchFocused] = useState(false);
 
@@ -37,10 +38,10 @@ const SearchHeader = ({
             ${isSearchFocused ? 'ring-2 ring-primary/20' : ''}
           `}>
             <div className="relative">
-              <Icon 
-                name="Search" 
-                size={18} 
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary" 
+              <Icon
+                name="Search"
+                size={18}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-text-secondary"
               />
               <input
                 type="text"
@@ -51,7 +52,7 @@ const SearchHeader = ({
                 onBlur={() => setIsSearchFocused(false)}
                 className="w-full pl-10 pr-4 py-3 bg-muted border border-border rounded-lg text-sm placeholder:text-text-secondary focus:outline-none focus:bg-surface focus:border-primary transition-smooth"
               />
-              
+
               {/* Clear Search */}
               {searchQuery && (
                 <button
@@ -64,7 +65,22 @@ const SearchHeader = ({
             </div>
           </div>
 
-          {/* Buttons removed from search bar per request */}
+          {/* Cart Icon */}
+          <CartIcon
+            currentLanguage={currentLanguage}
+            size="sm"
+          />
+
+          {/* Filter Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onFilterClick}
+            className="flex items-center gap-2"
+          >
+            <Icon name="Filter" size={16} />
+            <span className="hidden sm:inline">{t?.filters}</span>
+          </Button>
         </div>
       </div>
     </div>

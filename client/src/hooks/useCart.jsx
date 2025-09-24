@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { useAuth } from './useAuth.jsx';
+import sessionManager from '../utils/sessionManager.js';
 
 const CartContext = createContext();
 
@@ -11,10 +12,10 @@ export const CartProvider = ({ children }) => {
   const userId = user?.firebase_uid || user?.id || user?.email || 'guest';
   const storageKey = `cart_${userId}`;
 
-  // Load cart for current user (with legacy migration from global_cart once)
+  // Load cart for current user (using session manager for session-based storage)
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(storageKey);
+      const saved = sessionManager.getSessionData(storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
@@ -22,13 +23,13 @@ export const CartProvider = ({ children }) => {
           return;
         }
       }
-      // Legacy migration: move global_cart to per-user key only if present and current per-user is empty
-      const legacy = localStorage.getItem('global_cart');
+      // Legacy migration: move from localStorage to session manager
+      const legacy = localStorage.getItem(storageKey);
       if (legacy) {
         const parsedLegacy = JSON.parse(legacy);
         if (Array.isArray(parsedLegacy)) {
-          localStorage.setItem(storageKey, JSON.stringify(parsedLegacy));
-          localStorage.removeItem('global_cart');
+          sessionManager.setSessionData(storageKey, JSON.stringify(parsedLegacy));
+          localStorage.removeItem(storageKey);
           setItems(parsedLegacy);
         }
       } else {
@@ -39,7 +40,7 @@ export const CartProvider = ({ children }) => {
   }, [storageKey]);
 
   useEffect(() => {
-    try { localStorage.setItem(storageKey, JSON.stringify(items)); } catch {}
+    try { sessionManager.setSessionData(storageKey, JSON.stringify(items)); } catch {}
   }, [items, storageKey]);
 
   const addItem = (item, quantity = 1) => {
@@ -74,5 +75,3 @@ export const useCart = () => {
   if (!ctx) throw new Error('useCart must be used within CartProvider');
   return ctx;
 };
-
-
