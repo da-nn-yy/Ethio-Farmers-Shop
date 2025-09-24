@@ -47,11 +47,17 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('isAuthenticated');
-      localStorage.removeItem('userRole');
-      window.location.href = '/authentication-login-register';
+      // Only redirect to login if we're not already on a public page
+      const currentPath = window.location.pathname;
+      const publicPaths = ['/', '/landing', '/authentication-login-register', '/reset-password'];
+
+      if (!publicPaths.includes(currentPath)) {
+        // Unauthorized - clear token and redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('userRole');
+        window.location.href = '/authentication-login-register';
+      }
     }
     return Promise.reject(error);
   }
@@ -144,15 +150,13 @@ export const userService = {
 
 // Listings Service
 export const listingService = {
-  // Get all active listings
+  // Get all active listings (auth route)
   getActiveListings: async (params = {}) => {
     try {
-      const response = await apiClient.get('/listings/active', { 
+      const response = await apiClient.get('/listings/active', {
         params,
         timeout: 10000 // 10 second timeout
       });
-      
-      // Handle both old and new response formats
       if (response.data && response.data.listings) {
         return response.data;
       } else if (Array.isArray(response.data)) {
@@ -162,6 +166,28 @@ export const listingService = {
       }
     } catch (error) {
       console.error('API Error in getActiveListings:', error);
+      throw error;
+    }
+  },
+
+  // Get public listings (no auth)
+  getPublicListings: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL.replace(/\/api$/, '')}/public/listings`);
+      if (!response.ok) {
+        throw new Error(`Public listings failed with status ${response.status}`);
+      }
+      const data = await response.json();
+      if (data && Array.isArray(data.listings)) {
+        return data;
+      }
+      // Fallback if server returns array directly
+      if (Array.isArray(data)) {
+        return { listings: data, success: true };
+      }
+      throw new Error('Invalid public listings response format');
+    } catch (error) {
+      console.error('API Error in getPublicListings:', error);
       throw error;
     }
   },
@@ -417,7 +443,7 @@ export const adminPaymentService = {
 
   // Export payments data
   exportPayments: async (filters = {}) => {
-    const response = await apiClient.get('/admin/payments/export', { 
+    const response = await apiClient.get('/admin/payments/export', {
       params: filters,
       responseType: 'blob'
     });
@@ -660,7 +686,7 @@ export const unifiedAdminService = {
   bulkUserAction: async (userIds, action, data = {}) => {
     try {
       // Process bulk user actions
-      const promises = userIds.map(userId => 
+      const promises = userIds.map(userId =>
         adminService.updateUserStatus(userId, action, data.reason)
       );
       await Promise.all(promises);
@@ -685,7 +711,7 @@ export const unifiedAdminService = {
   bulkFinancialAction: async (transactionIds, action, data = {}) => {
     try {
       // Process bulk financial actions
-      const promises = transactionIds.map(transactionId => 
+      const promises = transactionIds.map(transactionId =>
         adminPaymentService.updatePaymentStatus(transactionId, action, data.reason)
       );
       await Promise.all(promises);
@@ -778,6 +804,56 @@ export const dashboardService = {
   }
 };
 
+// Image Upload Service
+export const imageService = {
+  // Upload single image
+  uploadImage: async (formData, onProgress = null) => {
+    const response = await apiClient.post('/farmers/upload-image', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      onUploadProgress: onProgress
+    });
+    return response.data;
+  },
+
+  // Upload multiple images
+  uploadMultipleImages: async (files, onProgress = null) => {
+    const uploadPromises = files.map(async (file, index) => {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      return imageService.uploadImage(formData, (progressEvent) => {
+        if (onProgress) {
+          onProgress(index, progressEvent);
+        }
+      });
+    });
+
+    return Promise.all(uploadPromises);
+  },
+
+  // Add image to listing
+  addImageToListing: async (listingId, imageUrl) => {
+    const response = await apiClient.post(`/farmers/listings/${listingId}/images`, {
+      url: imageUrl
+    });
+    return response.data;
+  },
+
+  // Remove image from listing
+  removeImageFromListing: async (listingId, imageId) => {
+    const response = await apiClient.delete(`/farmers/listings/${listingId}/images/${imageId}`);
+    return response.data;
+  },
+
+  // Get listing images
+  getListingImages: async (listingId) => {
+    const response = await apiClient.get(`/farmers/listings/${listingId}/images`);
+    return response.data;
+  }
+};
+
 // Farmer Service
 export const farmerService = {
   // Get farmer metrics
@@ -800,8 +876,8 @@ export const farmerService = {
 
   // Get farmer listings by status
   getFarmerListingsByStatus: async (status, params = {}) => {
-    const response = await apiClient.get('/farmers/listings', { 
-      params: { ...params, status } 
+    const response = await apiClient.get('/farmers/listings', {
+      params: { ...params, status }
     });
     return response.data;
   },
@@ -832,17 +908,17 @@ export const farmerService = {
 
   // Bulk update listing statuses
   bulkUpdateListingStatus: async (listingIds, status) => {
-    const response = await apiClient.patch('/farmers/listings/bulk-status', { 
-      listingIds, 
-      status 
+    const response = await apiClient.patch('/farmers/listings/bulk-status', {
+      listingIds,
+      status
     });
     return response.data;
   },
 
   // Bulk delete listings
   bulkDeleteListings: async (listingIds) => {
-    const response = await apiClient.delete('/farmers/listings/bulk', { 
-      data: { listingIds } 
+    const response = await apiClient.delete('/farmers/listings/bulk', {
+      data: { listingIds }
     });
     return response.data;
   },
@@ -867,15 +943,14 @@ export const farmerService = {
   },
 
   // Add image to listing
-  addListingImage: async (listingId, file) => {
-    const formData = new FormData();
-    formData.append('image', file);
-    const response = await apiClient.post(`/farmers/listings/${listingId}/images`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-      timeout: 60000,
-    });
+  addListingImage: async (listingId, fileOrUrl) => {
+    // Support either a File (upload first) or a direct URL
+    if (fileOrUrl instanceof File) {
+      const uploadRes = await farmerService.uploadImage(fileOrUrl);
+      const response = await apiClient.post(`/farmers/listings/${listingId}/images`, { url: uploadRes.imageUrl });
+      return response.data;
+    }
+    const response = await apiClient.post(`/farmers/listings/${listingId}/images`, { url: fileOrUrl });
     return response.data;
   }
 };

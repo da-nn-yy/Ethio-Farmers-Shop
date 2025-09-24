@@ -5,6 +5,7 @@ import Button from './Button';
 import Icon from '../AppIcon';
 import { useLanguage } from '../../hooks/useLanguage.jsx';
 import { useCart } from '../../hooks/useCart.jsx';
+import CartIcon from './CartIcon.jsx';
 import NotificationBell from '../NotificationBell.jsx';
 
 const AuthenticatedTopBar = () => {
@@ -19,6 +20,18 @@ const AuthenticatedTopBar = () => {
     setLanguage(saved);
   }, []);
 
+  // Listen for user data updates
+  useEffect(() => {
+    const handleUserDataUpdate = (event) => {
+      // Force re-render by updating a dummy state or re-fetching user data
+      // The useAuth hook should handle this, but we can add a listener as backup
+      console.log('User data updated:', event.detail);
+    };
+
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    return () => window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+  }, []);
+
   const toggleLanguage = () => toggle();
 
   const handleLogout = async () => {
@@ -27,11 +40,12 @@ const AuthenticatedTopBar = () => {
   };
 
   const role = user?.role || localStorage.getItem('userRole') || 'buyer';
+  const displayName = user?.fullName || user?.full_name || 'User';
   const displayRoleName = role === 'farmer'
     ? (language === 'am' ? 'ገበሬ' : 'Farmer')
     : (language === 'am' ? 'ገዢ' : 'Buyer');
   const avatarNode = user?.avatarUrl ? (
-    <img src={user?.avatarUrl} alt={user?.fullName || 'User'} className="object-cover w-full h-full" />
+    <img src={user?.avatarUrl} alt={displayName} className="object-cover w-full h-full" />
   ) : (
     <div className={`w-full h-full flex items-center justify-center ${role === 'farmer' ? 'bg-emerald-100' : 'bg-indigo-100'}`}>
       <Icon name={role === 'farmer' ? 'Sprout' : 'ShoppingCart'} size={16} className={`${role === 'farmer' ? 'text-emerald-700' : 'text-indigo-700'}`} />
@@ -51,12 +65,7 @@ const AuthenticatedTopBar = () => {
         <div className="flex items-center space-x-3">
           <NotificationBell />
           {role === 'buyer' && (
-            <Button variant="ghost" size="icon" onClick={() => navigate('/cart')} className="relative">
-              <Icon name="ShoppingCart" size={18} />
-              {totalItems > 0 && (
-                <span className="absolute -top-1 -right-1 text-[10px] bg-primary text-white rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center">{totalItems}</span>
-              )}
-            </Button>
+            <CartIcon currentLanguage={language} />
           )}
           <Button variant="ghost" size="sm" onClick={toggleLanguage} className="flex items-center space-x-2 text-text-secondary hover:text-primary">
             <Icon name="Globe" size={16} />
@@ -71,7 +80,7 @@ const AuthenticatedTopBar = () => {
               <div className="w-8 h-8 overflow-hidden rounded-full bg-muted">
                 {avatarNode}
               </div>
-              <span className="hidden sm:block text-sm text-text-primary">{displayRoleName}</span>
+              <span className="hidden sm:block text-sm text-text-primary">{displayName}</span>
               <Icon name={isUserMenuOpen ? 'ChevronUp' : 'ChevronDown'} size={16} className="text-text-secondary" />
             </button>
 
@@ -97,5 +106,3 @@ const AuthenticatedTopBar = () => {
 };
 
 export default AuthenticatedTopBar;
-
-

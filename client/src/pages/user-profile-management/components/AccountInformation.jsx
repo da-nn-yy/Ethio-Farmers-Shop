@@ -8,6 +8,7 @@ import { useAuth } from '../../../hooks/useAuth.jsx';
 
 const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -22,7 +23,7 @@ const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => 
     const loadProfile = async () => {
       try {
         const data = await userService.getMe();
-        
+
         // Auto-populate from registration data
         const registrationData = {
           fullName: data.full_name || data.fullName || '',
@@ -32,12 +33,12 @@ const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => 
           woreda: data.woreda || '',
           language: data.language || currentLanguage
         };
-        
+
         setFormData(prev => ({
           ...prev,
           ...registrationData
         }));
-        
+
         // If this is a new user with incomplete profile, auto-enable editing
         const hasIncompleteProfile = !data.full_name || !data.phone || !data.region || !data.woreda;
         if (hasIncompleteProfile) {
@@ -117,6 +118,7 @@ const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => 
 
   const handleSave = async () => {
     try {
+      setIsSaving(true);
       const payload = {
         full_name: formData.fullName,
         phone: formData.phone,
@@ -125,57 +127,88 @@ const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => 
         woreda: formData.woreda,
         language: formData.language
       };
-      
+
       // Update via API
-      await userService.updateMe(payload);
-      
-      // Update local auth context
-      try { 
+      const updatedUser = await userService.updateMe(payload);
+
+      // Update local auth context with the complete updated user data
+      try {
         updateUser && updateUser({
           full_name: formData.fullName,
+          fullName: formData.fullName, // Ensure both formats are available
           phone: formData.phone,
+          phoneNumber: formData.phone, // Ensure both formats are available
           email: formData.email,
           region: formData.region,
           woreda: formData.woreda,
           language: formData.language
-        }); 
+        });
       } catch {}
-      
+
       // Update parent component
-      try { 
+      try {
         onProfileUpdated && onProfileUpdated({
           full_name: formData.fullName,
+          fullName: formData.fullName, // Ensure both formats are available
           phone: formData.phone,
+          phoneNumber: formData.phone, // Ensure both formats are available
           email: formData.email,
           region: formData.region,
           woreda: formData.woreda,
           language: formData.language
-        }); 
+        });
       } catch {}
-      
-      // Update localStorage
+
+      // Update localStorage with complete user data
       const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
-      localStorage.setItem('userData', JSON.stringify({
+      const updatedUserData = {
         ...currentUser,
-        ...payload
-      }));
-      
+        ...payload,
+        fullName: formData.fullName, // Ensure both formats are available
+        phoneNumber: formData.phone, // Ensure both formats are available
+      };
+      localStorage.setItem('userData', JSON.stringify(updatedUserData));
+
       // Update language preference
       if (formData.language !== currentLanguage) {
         localStorage.setItem('language', formData.language);
         localStorage.setItem('currentLanguage', formData.language);
+        // Trigger a page refresh to update language across the app
+        window.location.reload();
       }
-      
+
       setIsEditing(false);
       alert(currentLanguage === 'en' ? 'Profile updated successfully!' : 'መገለጫ በተሳካ ሁኔታ ተዘምኗል!');
     } catch (e) {
       console.error('Profile update error:', e);
       alert(currentLanguage === 'en' ? 'Failed to update profile. Please try again.' : 'መገለጫ ማዘመን አልተሳካም። እባክዎ እንደገና ይሞክሩ።');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
-    // Reset form data
+    // Reset form data to original values
+    const loadProfile = async () => {
+      try {
+        const data = await userService.getMe();
+        const registrationData = {
+          fullName: data.full_name || data.fullName || '',
+          email: data.email || '',
+          phone: data.phone || data.phoneNumber || '',
+          region: data.region || '',
+          woreda: data.woreda || '',
+          language: data.language || currentLanguage
+        };
+        setFormData(prev => ({
+          ...prev,
+          ...registrationData
+        }));
+      } catch (e) {
+        console.error('Failed to reload profile:', e);
+      }
+    };
+    loadProfile();
     setIsEditing(false);
   };
 
@@ -240,10 +273,11 @@ const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => 
               variant="default"
               size="sm"
               onClick={handleSave}
-              iconName="Check"
+              iconName={isSaving ? "Loader2" : "Check"}
               iconPosition="left"
+              disabled={isSaving}
             >
-              {getLabel('Save', 'አስቀምጥ')}
+              {isSaving ? getLabel('Saving...', 'በመቀመጥ ላይ...') : getLabel('Save', 'አስቀምጥ')}
             </Button>
           </div>
         )}

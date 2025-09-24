@@ -2,6 +2,11 @@ import admin from "../config/firebase.js";
 
 export const authGuard = async (req, res, next) => {
   try {
+    // Allow CORS preflight requests to pass through
+    if (req.method === 'OPTIONS') {
+      return next();
+    }
+
     const header = req.headers.authorization || "";
     const token = header.startsWith("Bearer ") ? header.slice(7) : null;
 
@@ -9,7 +14,7 @@ export const authGuard = async (req, res, next) => {
     if (process.env.NODE_ENV !== 'production' && token && token.startsWith('dev-token-')) {
       const idPart = token.split('-')[2] || '1';
       const userId = Number(idPart) || 1;
-      
+
       // Get the actual firebase_uid from the database to ensure consistency
       try {
         const { pool } = await import('../config/database.js');
@@ -56,7 +61,7 @@ export const authGuard = async (req, res, next) => {
       if (token && token.startsWith('dev-token-')) {
         const idPart = token.split('-')[2] || '1';
         const userId = Number(idPart) || 1;
-        
+
         // Get the actual firebase_uid from the database to ensure consistency
         try {
           const { pool } = await import('../config/database.js');
