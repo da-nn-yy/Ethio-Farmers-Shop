@@ -109,7 +109,8 @@ export const getBuyerDashboard = async (req, res) => {
        WHERE buyer_user_id = ?
        AND created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
-       ORDER BY month DESC`
+       ORDER BY month DESC`,
+      [userId]
     );
 
     res.json({

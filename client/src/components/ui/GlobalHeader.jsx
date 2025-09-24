@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth.jsx";
 import Button from "./Button";
@@ -11,8 +11,20 @@ const GlobalHeader = ({ onLanguageChange, currentLanguage = "en", publicOnly = f
   const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [, forceUpdate] = useState({});
   const showUserSection = !!user && !publicOnly;
   const { language, toggle } = useLanguage();
+
+  // Listen for user data updates
+  useEffect(() => {
+    const handleUserDataUpdate = (event) => {
+      // Force re-render by updating state
+      forceUpdate({});
+    };
+
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    return () => window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -70,10 +82,10 @@ const GlobalHeader = ({ onLanguageChange, currentLanguage = "en", publicOnly = f
               {/* User Menu */}
               <div className="flex items-center pl-4 space-x-3 border-l cursor-pointer border-border" onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}>
                 <div className="w-8 h-8 overflow-hidden rounded-full bg-muted">
-                  <img src={user.avatarUrl || "/assets/images/no_image.png"} alt={user.fullName || "User"} className="object-cover w-full h-full" />
+                  <img src={user.avatarUrl || "/assets/images/no_image.png"} alt={user.fullName || user.full_name || "User"} className="object-cover w-full h-full" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-medium text-text-primary">{user.fullName}</span>
+                  <span className="text-sm font-medium text-text-primary">{user.fullName || user.full_name || "User"}</span>
                   <span className="text-xs capitalize text-text-secondary">{user.role}</span>
                 </div>
                 <Button variant="ghost" size="icon" className="text-text-secondary hover:text-primary">
@@ -130,10 +142,10 @@ const GlobalHeader = ({ onLanguageChange, currentLanguage = "en", publicOnly = f
               <>
                 <div className="flex items-center p-4 space-x-3 rounded-lg bg-muted">
                   <div className="w-12 h-12 overflow-hidden rounded-full bg-primary/10">
-                    <img src={user.avatarUrl || "/assets/images/no_image.png"} alt={user.fullName || "User"} className="object-cover w-full h-full" />
+                    <img src={user.avatarUrl || "/assets/images/no_image.png"} alt={user.fullName || user.full_name || "User"} className="object-cover w-full h-full" />
                   </div>
                   <div className="flex flex-col">
-                    <span className="font-medium text-text-primary">{user.fullName}</span>
+                    <span className="font-medium text-text-primary">{user.fullName || user.full_name || "User"}</span>
                     <span className="text-sm capitalize text-text-secondary">{user.role}</span>
                   </div>
                 </div>

@@ -543,7 +543,7 @@ export const createFarmerListing = async (req, res) => {
       id: createdListing.id,
       name: createdListing.title,
       nameAm: null,
-      image: createdListing.image || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
+      image: normalizeImageUrl(createdListing.image) || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
       pricePerKg: createdListing.pricePerUnit,
       availableQuantity: createdListing.quantity,
       location: createdListing.woreda ? `${createdListing.region}, ${createdListing.woreda}` : createdListing.region,
@@ -1081,8 +1081,9 @@ export const addListingImage = async (req, res) => {
 
     // Determine image URL - either from file upload or direct URL
     let imageUrl;
-    if (file) {
-      imageUrl = file.path;
+    if (file && file.filename) {
+      // store relative path; readers normalize to absolute
+      imageUrl = `uploads/${file.filename}`;
     } else if (url) {
       imageUrl = url;
     } else {
@@ -1131,7 +1132,10 @@ export const addListingImage = async (req, res) => {
       console.log('Image successfully inserted into database with sort_order:', nextSortOrder);
     } catch (insertError) {
       console.error('Failed to insert image into database:', insertError);
-      throw new Error(`Database error: ${insertError.message}`);
+      if (insertError?.code === 'ER_NO_SUCH_TABLE') {
+        return res.status(500).json({ error: 'listing_images table missing. Run server setup or migrations.' });
+      }
+      return res.status(500).json({ error: 'Failed to save image', details: insertError.message });
     }
 
     res.status(201).json({
