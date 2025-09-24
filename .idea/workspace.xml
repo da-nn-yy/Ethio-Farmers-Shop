@@ -4,27 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Fix image upload path handling and enhance user profile display with responsive button sizing">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Integrate session manager for authentication and cart storage with enhanced search header UI">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/Routes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/Routes.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/Button.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/Button.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/Input.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/Input.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/MobileMenu.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/MobileMenu.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/hooks/useAuth.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/useAuth.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/cart/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/cart/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/farmer-my-listings/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/farmer-my-listings/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/landing/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/landing/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/styles/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/styles/index.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/vite.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/client/vite.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/services/apiService.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/services/apiService.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/authController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/authController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/controllers/dashboardController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/dashboardController.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/src/controllers/farmerController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/farmerController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/controllers/listingController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/listingController.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/server/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,47 +94,7 @@
       <workItem from="1757063180966" duration="4112000" />
       <workItem from="1757326641249" duration="5243000" />
       <workItem from="1758548271128" duration="390000" />
-      <workItem from="1758688952438" duration="681000" />
-    </task>
-    <task id="LOCAL-00027" summary="Add comprehensive add-listing page with multi-step form and breadcrumb navigation component">
-      <option name="closed" value="true" />
-      <created>1756870370205</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1756870370205</updated>
-    </task>
-    <task id="LOCAL-00028" summary="Add multi-step form components for produce listing creation with bilingual support">
-      <option name="closed" value="true" />
-      <created>1756870389808</created>
-      <option name="number" value="00028" />
-      <option name="presentableId" value="LOCAL-00028" />
-      <option name="project" value="LOCAL" />
-      <updated>1756870389808</updated>
-    </task>
-    <task id="LOCAL-00029" summary="Add role-based sidebar navigation and activity feed components with bilingual support">
-      <option name="closed" value="true" />
-      <created>1756870500989</created>
-      <option name="number" value="00029" />
-      <option name="presentableId" value="LOCAL-00029" />
-      <option name="project" value="LOCAL" />
-      <updated>1756870500989</updated>
-    </task>
-    <task id="LOCAL-00030" summary="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication">
-      <option name="closed" value="true" />
-      <created>1756883200509</created>
-      <option name="number" value="00030" />
-      <option name="presentableId" value="LOCAL-00030" />
-      <option name="project" value="LOCAL" />
-      <updated>1756883200509</updated>
-    </task>
-    <task id="LOCAL-00031" summary="Refactor farmer dashboard to use dedicated add-listing page and enhance public listings with image support">
-      <option name="closed" value="true" />
-      <created>1756883215215</created>
-      <option name="number" value="00031" />
-      <option name="presentableId" value="LOCAL-00031" />
-      <option name="project" value="LOCAL" />
-      <updated>1756883215215</updated>
+      <workItem from="1758688952438" duration="2730000" />
     </task>
     <task id="LOCAL-00032" summary="Fix file formatting inconsistencies and improve Firebase configuration with fallback authentication">
       <option name="closed" value="true" />
@@ -502,7 +448,47 @@
       <option name="project" value="LOCAL" />
       <updated>1758689631982</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <task id="LOCAL-00076" summary="Replace ImageGallery with InstagramStyleGallery and enhance mobile responsiveness with improved input sizing and server configuration">
+      <option name="closed" value="true" />
+      <created>1758689657532</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1758689657532</updated>
+    </task>
+    <task id="LOCAL-00077" summary="Replace ImageGallery with InstagramStyleGallery and enhance mobile responsiveness with improved input sizing and server configuration">
+      <option name="closed" value="true" />
+      <created>1758689691239</created>
+      <option name="number" value="00077" />
+      <option name="presentableId" value="LOCAL-00077" />
+      <option name="project" value="LOCAL" />
+      <updated>1758689691239</updated>
+    </task>
+    <task id="LOCAL-00078" summary="Refactor listings data handling and enhance UI components with improved image gallery and mobile responsiveness">
+      <option name="closed" value="true" />
+      <created>1758689714532</created>
+      <option name="number" value="00078" />
+      <option name="presentableId" value="LOCAL-00078" />
+      <option name="project" value="LOCAL" />
+      <updated>1758689714532</updated>
+    </task>
+    <task id="LOCAL-00079" summary="Integrate session manager for authentication and cart storage with enhanced search header UI">
+      <option name="closed" value="true" />
+      <created>1758691522370</created>
+      <option name="number" value="00079" />
+      <option name="presentableId" value="LOCAL-00079" />
+      <option name="project" value="LOCAL" />
+      <updated>1758691522370</updated>
+    </task>
+    <task id="LOCAL-00080" summary="Remove AuthenticatedLayout wrapper from AdminDashboard and add admin registration endpointt">
+      <option name="closed" value="true" />
+      <created>1758691600710</created>
+      <option name="number" value="00080" />
+      <option name="presentableId" value="LOCAL-00080" />
+      <option name="project" value="LOCAL" />
+      <updated>1758691600778</updated>
+    </task>
+    <option name="localTasksCounter" value="81" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -536,9 +522,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Update API base URL configuration from port 5001 to 5000 with /api prefix" />
-    <MESSAGE value="Add comprehensive notifications and listing reviews pages with full user interaction features" />
-    <MESSAGE value="Add uploaded image files and update IDE workspace configuration" />
     <MESSAGE value="Add line breaks to improve code formatting consistency across market trends and notification controllers" />
     <MESSAGE value="Add line breaks to improve code formatting consistency across review, search, and notification route files" />
     <MESSAGE value="Add comprehensive review and notification components with real-time user interaction features" />
@@ -561,6 +544,9 @@
     <MESSAGE value="I notice that the code diff section is empty, which means there are no actual changes to analyze. Without any code changes provided, I cannot generate a meaningful commit message that relates to new code additions or modifications.&#10;&#10;Please provide the actual code diff to generate an appropriate commit message." />
     <MESSAGE value="Add public listings endpoint and improve authentication handling with enhanced user profile management" />
     <MESSAGE value="Fix image upload path handling and enhance user profile display with responsive button sizing" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix image upload path handling and enhance user profile display with responsive button sizing" />
+    <MESSAGE value="Replace ImageGallery with InstagramStyleGallery and enhance mobile responsiveness with improved input sizing and server configuration" />
+    <MESSAGE value="Refactor listings data handling and enhance UI components with improved image gallery and mobile responsiveness" />
+    <MESSAGE value="Integrate session manager for authentication and cart storage with enhanced search header UI" />
+    <option name="LAST_COMMIT_MESSAGE" value="Integrate session manager for authentication and cart storage with enhanced search header UI" />
   </component>
 </project>

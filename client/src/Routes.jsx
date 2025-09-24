@@ -83,7 +83,7 @@ const Routes = () => {
 
                     {/* Admin Login */}
                     <Route path="/admin-login" element={<AdminLogin />} />
-                    
+
                     {/* Admin Registration */}
                     <Route path="/admin-register" element={<AdminRegister />} />
                     <Route path="/app" element={<RoleRedirect />} />

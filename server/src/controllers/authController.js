@@ -12,6 +12,118 @@ export const syncUser = async (req, res) => {
   res.json({ ok: true });
 };
 
+// Admin registration endpoint
+export const registerAdmin = async (req, res) => {
+  try {
+    const { fullName, email, password, phone, adminRole } = req.body;
+
+    // Validate required fields
+    if (!email || !password || !fullName || !phone || !adminRole) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields"
+      });
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid email format"
+      });
+    }
+
+    // Validate password strength
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters long"
+      });
+    }
+
+    // Check if user already exists
+    const [existingUsers] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
+    if (existingUsers.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "Admin already exists with this email"
+      });
+    }
+
+    // Generate a unique Firebase UID for the admin
+    const generatedUid = `admin_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+
+    // Create admin user in MySQL
+    const [result] = await pool.query(
+      `INSERT INTO users (firebase_uid, email, full_name, phone, role, status)
+       VALUES (?, ?, ?, ?, 'admin', 'active')`,
+      [generatedUid, email, fullName, phone]
+    );
+
+    const userId = result.insertId;
+
+    // Create admin record in admins table
+    await pool.query(
+      `INSERT INTO admins (user_id, role, status)
+       VALUES (?, ?, 'active')`,
+      [userId, adminRole]
+    );
+
+    // Create admin profile if needed
+    try {
+      await pool.query(
+        `CREATE TABLE IF NOT EXISTS admin_profiles (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          user_id INT NOT NULL,
+          admin_role VARCHAR(50) NOT NULL,
+          permissions JSON,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`
+      );
+
+      await pool.query(
+        `INSERT INTO admin_profiles (user_id, admin_role, permissions)
+         VALUES (?, ?, ?)`,
+        [userId, adminRole, JSON.stringify({
+          canManageUsers: true,
+          canManageListings: true,
+          canManageOrders: true,
+          canViewAnalytics: true,
+          canManageSettings: adminRole === 'superadmin'
+        })]
+      );
+    } catch (profileError) {
+      console.log('Admin profile creation skipped:', profileError.message);
+    }
+
+    console.log(`New admin registered: ${email} with role: ${adminRole}`);
+
+    res.status(201).json({
+      success: true,
+      message: "Admin registered successfully",
+      admin: {
+        id: userId,
+        email,
+        fullName,
+        phone,
+        role: 'admin',
+        adminRole,
+        firebaseUid: generatedUid
+      }
+    });
+
+  } catch (error) {
+    console.error('Admin registration error:', error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to register admin"
+    });
+  }
+};
+
 // User registration with Firebase + MySQL dual registration
 export const registerUser = async (req, res) => {
   try {

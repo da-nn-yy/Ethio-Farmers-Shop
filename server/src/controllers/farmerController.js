@@ -231,16 +231,16 @@ export const getFarmerListings = async (req, res) => {
       const listingImages = imagesByListing[listing.id] || [];
       return {
         id: listing.id,
-        name: listing.name || listing.title,
-        nameAm: listing.name_am || null,
-        image: listingImages[0] || normalizeImageUrl(listing.image) || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
+        name: listing.title, // Use title since that's what exists in the schema
+        nameAm: null, // No name_am column in current schema
+        image: listingImages[0] || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
         images: listingImages, // All images
         pricePerKg: listing.pricePerUnit,
         availableQuantity: listing.quantity,
-        location: listing.woreda ? `${listing.region}, ${listing.woreda}` : (listing.region || listing.location),
+        location: listing.woreda ? `${listing.region}, ${listing.woreda}` : (listing.region || ''),
         status: statusMapOut[listing.status] || listing.status,
         createdAt: listing.created_at,
-        category: listing.category || listing.crop,
+        category: listing.crop, // Use crop since that's what exists in the schema
         unit: listing.unit,
         currency: 'ETB'
       };

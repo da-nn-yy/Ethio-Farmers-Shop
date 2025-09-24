@@ -71,6 +71,12 @@ export const authService = {
     return response.data;
   },
 
+  // Register new admin
+  registerAdmin: async (adminData) => {
+    const response = await apiClient.post('/auth/register-admin', adminData);
+    return response.data;
+  },
+
   // Development login (for testing)
   devLogin: async (credentials) => {
     const response = await apiClient.post('/auth/dev-login', credentials);
