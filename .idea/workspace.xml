@@ -4,15 +4,27 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add line breaks to improve code formatting consistency and enhance notification integration with cart functionality">
-      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756890953784-394494401.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756891974531-561637990.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892164761-633264186.png" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756892270154-766923850.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756902942632-969190112.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906040447-182016306.jpg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/server/uploads/image-1756906153234-922297177.jpg" afterDir="false" />
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Fix image upload path handling and enhance user profile display with responsive button sizing">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/Routes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/Routes.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/Button.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/Button.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/GlobalHeader.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/Input.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/Input.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/MobileMenu.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/MobileMenu.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/hooks/useAuth.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/hooks/useAuth.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/add-listing/components/ImagesSection.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/components/ProduceCard.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/cart/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/cart/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/farmer-my-listings/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/farmer-my-listings/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/landing/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/landing/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/user-profile-management/index.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/styles/index.css" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/styles/index.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/vite.config.mjs" beforeDir="false" afterPath="$PROJECT_DIR$/client/vite.config.mjs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/dashboardController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/dashboardController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/farmerController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/farmerController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/controllers/listingController.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/controllers/listingController.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/src/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/src/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -30,7 +42,7 @@
 }</component>
   <component name="GithubPullRequestsUISettings">{
   &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;git@github.com:da-nn-yy/Ethio-Farmers-Shop.git&quot;,
+    &quot;url&quot;: &quot;https://github.com/da-nn-yy/Ethio-Farmers-Shop.git&quot;,
     &quot;accountId&quot;: &quot;ee2e0ff2-3912-4423-8c2c-904e94eac788&quot;
   }
 }</component>
@@ -95,54 +107,8 @@
       <workItem from="1757027686058" duration="929000" />
       <workItem from="1757063180966" duration="4112000" />
       <workItem from="1757326641249" duration="5243000" />
-    </task>
-    <task id="LOCAL-00021" summary="Fix image upload URL generation by removing hardcoded port number">
-      <option name="closed" value="true" />
-      <created>1756742113306</created>
-      <option name="number" value="00021" />
-      <option name="presentableId" value="LOCAL-00021" />
-      <option name="project" value="LOCAL" />
-      <updated>1756742113306</updated>
-    </task>
-    <task id="LOCAL-00022" summary="Update database schema references and add public listings endpoint for testing">
-      <option name="closed" value="true" />
-      <created>1756742137431</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1756742137431</updated>
-    </task>
-    <task id="LOCAL-00023" summary="Update API base URL configuration to use port 5001 for consistent backend connectivity">
-      <option name="closed" value="true" />
-      <created>1756742150948</created>
-      <option name="number" value="00023" />
-      <option name="presentableId" value="LOCAL-00023" />
-      <option name="project" value="LOCAL" />
-      <updated>1756742150948</updated>
-    </task>
-    <task id="LOCAL-00024" summary="Add node-fetch dependency and fix file formatting inconsistencies">
-      <option name="closed" value="true" />
-      <created>1756742172048</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1756742172048</updated>
-    </task>
-    <task id="LOCAL-00025" summary="Update application branding from FarmConnect to KeGeberew and add development test login functionality">
-      <option name="closed" value="true" />
-      <created>1756870318861</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1756870318861</updated>
-    </task>
-    <task id="LOCAL-00026" summary="Add dedicated add-listing route and remove hardcoded port from Vite configuration">
-      <option name="closed" value="true" />
-      <created>1756870334514</created>
-      <option name="number" value="00026" />
-      <option name="presentableId" value="LOCAL-00026" />
-      <option name="project" value="LOCAL" />
-      <updated>1756870334514</updated>
+      <workItem from="1758548271128" duration="390000" />
+      <workItem from="1758688952438" duration="681000" />
     </task>
     <task id="LOCAL-00027" summary="Add comprehensive add-listing page with multi-step form and breadcrumb navigation component">
       <option name="closed" value="true" />
@@ -488,7 +454,55 @@
       <option name="project" value="LOCAL" />
       <updated>1757342432135</updated>
     </task>
-    <option name="localTasksCounter" value="70" />
+    <task id="LOCAL-00070" summary="Update admin sidebar styling and replace AuthenticatedTopBar with GlobalHeader in layout">
+      <option name="closed" value="true" />
+      <created>1758548337289</created>
+      <option name="number" value="00070" />
+      <option name="presentableId" value="LOCAL-00070" />
+      <option name="project" value="LOCAL" />
+      <updated>1758548337290</updated>
+    </task>
+    <task id="LOCAL-00071" summary="Add image URL normalization and enhance GlobalHeader styling with backdrop blur effects">
+      <option name="closed" value="true" />
+      <created>1758548368717</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1758548368718</updated>
+    </task>
+    <task id="LOCAL-00072" summary="Update sidebar positioning and add image URL normalization for public listings">
+      <option name="closed" value="true" />
+      <created>1758548419978</created>
+      <option name="number" value="00072" />
+      <option name="presentableId" value="LOCAL-00072" />
+      <option name="project" value="LOCAL" />
+      <updated>1758548419978</updated>
+    </task>
+    <task id="LOCAL-00073" summary="I notice that the code diff section is empty, which means there are no actual changes to analyze. Without any code changes provided, I cannot generate a meaningful commit message that relates to new code additions or modifications.&#10;&#10;Please provide the actual code diff to generate an appropriate commit message.">
+      <option name="closed" value="true" />
+      <created>1758548485358</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1758548485358</updated>
+    </task>
+    <task id="LOCAL-00074" summary="Add public listings endpoint and improve authentication handling with enhanced user profile management">
+      <option name="closed" value="true" />
+      <created>1758689609526</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1758689609526</updated>
+    </task>
+    <task id="LOCAL-00075" summary="Fix image upload path handling and enhance user profile display with responsive button sizing">
+      <option name="closed" value="true" />
+      <created>1758689631982</created>
+      <option name="number" value="00075" />
+      <option name="presentableId" value="LOCAL-00075" />
+      <option name="project" value="LOCAL" />
+      <updated>1758689631982</updated>
+    </task>
+    <option name="localTasksCounter" value="76" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -522,13 +536,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add comprehensive market trends, reviews, and notifications system with full CRUD operations and analytics" />
-    <MESSAGE value="Add comprehensive search system with advanced filtering and analytics capabilities" />
-    <MESSAGE value="Add centralized API routing system with comprehensive route organization and health check endpoint" />
-    <MESSAGE value="Fix import paths to include .jsx extension for useAuth hook" />
-    <MESSAGE value="Fix import paths to include .jsx extension for useAuth hook across dashboard components" />
-    <MESSAGE value="Add comprehensive authentication context provider with token management and user state handling" />
-    <MESSAGE value="Update API base URL configuration from port 5001 to 5000" />
     <MESSAGE value="Update API base URL configuration from port 5001 to 5000 with /api prefix" />
     <MESSAGE value="Add comprehensive notifications and listing reviews pages with full user interaction features" />
     <MESSAGE value="Add uploaded image files and update IDE workspace configuration" />
@@ -547,6 +554,13 @@
     <MESSAGE value="Add line breaks to improve code formatting consistency across notification components" />
     <MESSAGE value="Update API base URL configuration from port 5000 to 5001 and add enhanced cart interaction features" />
     <MESSAGE value="Add line breaks to improve code formatting consistency and enhance notification integration with cart functionality" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add line breaks to improve code formatting consistency and enhance notification integration with cart functionality" />
+    <MESSAGE value="Update admin sidebar styling and replace AuthenticatedTopBar with GlobalHeader in layout" />
+    <MESSAGE value="Add image URL normalization and enhance GlobalHeader styling with backdrop blur effects" />
+    <MESSAGE value="Update sidebar positioning and add image URL normalization to server" />
+    <MESSAGE value="Update sidebar positioning and add image URL normalization for public listings" />
+    <MESSAGE value="I notice that the code diff section is empty, which means there are no actual changes to analyze. Without any code changes provided, I cannot generate a meaningful commit message that relates to new code additions or modifications.&#10;&#10;Please provide the actual code diff to generate an appropriate commit message." />
+    <MESSAGE value="Add public listings endpoint and improve authentication handling with enhanced user profile management" />
+    <MESSAGE value="Fix image upload path handling and enhance user profile display with responsive button sizing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix image upload path handling and enhance user profile display with responsive button sizing" />
   </component>
 </project>

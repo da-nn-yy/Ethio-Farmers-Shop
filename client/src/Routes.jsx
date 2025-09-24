@@ -48,23 +48,23 @@ import UserReviewsPage from './pages/user-reviews';
 const RoleRedirect = () => {
   const { isAuthenticated, loading, user } = useAuth();
   const userRole = user?.role || localStorage.getItem('userRole');
-  
+
   if (loading) {
     return <div>Loading...</div>;
   }
-  
+
   if (!isAuthenticated) {
     return <AuthenticationPage />;
   }
-  
+
   if (userRole === 'admin') {
     return <Navigate to="/admin-dashboard" replace />;
   }
-  
+
   if (userRole === 'farmer') {
     return <Navigate to="/dashboard-farmer-home" replace />;
   }
-  
+
   return <Navigate to="/dashboard-buyer-home" replace />;
 };
 
@@ -76,6 +76,7 @@ const Routes = () => {
       <RouterRoutes>
                     {/* Public */}
                     <Route path="/" element={<LandingPage />} />
+                    <Route path="/landing" element={<LandingPage />} />
                     <Route path="/app" element={<RoleRedirect />} />
                     <Route path="/authentication-login-register" element={<AuthenticationPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />

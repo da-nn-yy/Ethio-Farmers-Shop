@@ -1,10 +1,11 @@
 import { pool } from '../config/database.js';
+import { normalizeImageUrl } from '../utils/url.js';
 
 // Get all active listings for buyer dashboard
 export const getAllActiveListings = async (req, res) => {
   try {
     const startTime = Date.now();
-    
+
     // First get all listings
     const listingsQuery = `
       SELECT
@@ -35,11 +36,11 @@ export const getAllActiveListings = async (req, res) => {
     `;
 
     const [listings] = await pool.query(listingsQuery);
-    
+
     // Get all images for these listings
     const listingIds = listings.map(l => l.id);
     let images = [];
-    
+
     if (listingIds.length > 0) {
       const imagesQuery = `
         SELECT listing_id, url, sort_order
@@ -47,30 +48,30 @@ export const getAllActiveListings = async (req, res) => {
         WHERE listing_id IN (${listingIds.map(() => '?').join(',')})
         ORDER BY listing_id, sort_order
       `;
-      
+
       const [imageRows] = await pool.query(imagesQuery, listingIds);
       images = imageRows;
     }
-    
+
     // Group images by listing_id
     const imagesByListing = {};
     images.forEach(img => {
       if (!imagesByListing[img.listing_id]) {
         imagesByListing[img.listing_id] = [];
       }
-      imagesByListing[img.listing_id].push(img.url);
+      imagesByListing[img.listing_id].push(normalizeImageUrl(img.url));
     });
-    
+
     // Add images to listings
     const listingsWithImages = listings.map(listing => ({
       ...listing,
       image: imagesByListing[listing.id]?.[0] || null, // Primary image for backward compatibility
       images: imagesByListing[listing.id] || [] // All images
     }));
-    
+
     const queryTime = Date.now() - startTime;
     console.log(`Active listings query took ${queryTime}ms, returned ${listingsWithImages.length} results`);
-    
+
     res.json({
       success: true,
       count: listingsWithImages.length,
@@ -79,10 +80,10 @@ export const getAllActiveListings = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching active listings:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Failed to fetch listings',
-      details: error.message 
+      details: error.message
     });
   }
 };
@@ -134,7 +135,7 @@ export const getListingById = async (req, res) => {
     `;
 
     const [imageRows] = await pool.query(imagesQuery, [id]);
-    const images = imageRows.map(img => img.url);
+    const images = imageRows.map(img => normalizeImageUrl(img.url));
 
     // Add images to listing
     const listingWithImages = {
@@ -243,7 +244,13 @@ export const searchListings = async (req, res) => {
     params.push(Number(limit), Number(offset));
 
     const [rows] = await pool.query(sql, params);
-    res.json(rows);
+    // Normalize image and avatar URLs for search listings
+    const normalized = rows.map(r => ({
+      ...r,
+      image: normalizeImageUrl(r.image),
+      farmerAvatar: normalizeImageUrl(r.farmerAvatar)
+    }));
+    res.json(normalized);
   } catch (error) {
     console.error('Error searching listings:', error);
     res.status(500).json({ error: 'Failed to search listings' });
@@ -283,7 +290,11 @@ export const getListingsByCategory = async (req, res) => {
     `;
 
     const [rows] = await pool.query(query, [category]);
-    res.json(rows);
+    res.json(rows.map(r => ({
+      ...r,
+      image: normalizeImageUrl(r.image),
+      farmerAvatar: normalizeImageUrl(r.farmerAvatar)
+    })));
   } catch (error) {
     console.error('Error fetching listings by category:', error);
     res.status(500).json({ error: 'Failed to fetch listings by category' });
@@ -323,7 +334,11 @@ export const getListingsByRegion = async (req, res) => {
     `;
 
     const [rows] = await pool.query(query, [region]);
-    res.json(rows);
+    res.json(rows.map(r => ({
+      ...r,
+      image: normalizeImageUrl(r.image),
+      farmerAvatar: normalizeImageUrl(r.farmerAvatar)
+    })));
   } catch (error) {
     console.error('Error fetching listings by region:', error);
     res.status(500).json({ error: 'Failed to fetch listings by region' });
