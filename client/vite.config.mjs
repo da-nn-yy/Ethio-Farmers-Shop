@@ -13,7 +13,9 @@ export default defineConfig({
   },
   plugins: [tsconfigPaths(), react(), tagger()],
   server: {
-    host: "0.0.0.0",
+    host: "localhost",
+    port: Number(process.env.VITE_PORT || 5173),
+    strictPort: false,
     allowedHosts: ['.amazonaws.com', '.builtwithrocket.new']
   }
 });

@@ -2,21 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
-import ImageGallery from '../../../components/ui/ImageGallery';
+import InstagramStyleGallery from '../../../components/ui/InstagramStyleGallery';
 import Button from '../../../components/ui/Button';
 import FavoriteButton from '../../../components/FavoriteButton';
+import AddToCartButton from '../../../components/ui/AddToCartButton';
 
 const ProduceCard = ({
   listing,
-  onAddToCart,
   onContactFarmer,
   onToggleBookmark,
   isBookmarked = false,
   currentLanguage = 'en'
 }) => {
   const navigate = useNavigate();
-  const [quantity, setQuantity] = useState(1);
-  const [isAdding, setIsAdding] = useState(false);
 
   const translations = {
     en: {
@@ -43,16 +41,6 @@ const ProduceCard = ({
 
   const t = translations?.[currentLanguage];
 
-  const handleAddToCart = async () => {
-    setIsAdding(true);
-    await onAddToCart(listing?.id, quantity);
-    setIsAdding(false);
-  };
-
-  const handleQuantityChange = (change) => {
-    const newQuantity = Math.max(1, Math.min(listing?.availableQuantity, quantity + change));
-    setQuantity(newQuantity);
-  };
 
   const handleViewReviews = () => {
     // Navigate to a reviews page or open a modal
@@ -87,16 +75,20 @@ const ProduceCard = ({
   return (
     <div className="bg-card rounded-lg border border-border shadow-warm hover:shadow-warm-md transition-smooth overflow-hidden">
       {/* Image Section */}
-      <div className="relative aspect-[4/3] overflow-hidden">
-        <ImageGallery
+      <div className="relative">
+        <InstagramStyleGallery
           images={listing?.images || (listing?.image ? [listing.image] : [])}
           alt={currentLanguage === 'am' && listing?.nameAm ? listing?.nameAm : listing?.name || 'Product Image'}
-          className="w-full h-full"
+          className="w-full"
+          showFullscreen={true}
           showThumbnails={false}
+          autoPlay={true}
+          autoPlayInterval={4000}
+          currentLanguage={currentLanguage}
         />
 
         {/* Favorite Button */}
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-3 right-3 z-10">
           <FavoriteButton
             listingId={listing?.id}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-smooth bg-white/90 text-text-secondary hover:bg-white hover:text-accent"
@@ -105,7 +97,7 @@ const ProduceCard = ({
 
         {/* Verification Badge */}
         {listing?.farmer?.isVerified && (
-          <div className="absolute top-3 left-3 bg-success text-success-foreground px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
+          <div className="absolute top-3 left-3 z-10 bg-success text-success-foreground px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
             <Icon name="CheckCircle" size={12} />
             <span>Verified</span>
           </div>
@@ -208,44 +200,16 @@ const ProduceCard = ({
           </div>
         </div>
 
-        {/* Quantity Selector */}
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-sm text-text-secondary">Qty:</span>
-          <div className="flex items-center border border-border rounded-lg">
-            <button
-              onClick={() => handleQuantityChange(-1)}
-              disabled={quantity <= 1}
-              className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Icon name="Minus" size={14} />
-            </button>
-            <span className="w-12 text-center text-sm font-medium">
-              {quantity}
-            </span>
-            <button
-              onClick={() => handleQuantityChange(1)}
-              disabled={quantity >= listing?.availableQuantity}
-              className="w-8 h-8 flex items-center justify-center text-text-secondary hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Icon name="Plus" size={14} />
-            </button>
-          </div>
-        </div>
 
         {/* Action Buttons */}
         <div className="flex gap-2">
-          <Button
-            variant="default"
-            size="sm"
-            onClick={handleAddToCart}
-            loading={isAdding}
+          <AddToCartButton
+            listing={listing}
             className="flex-1"
-            iconName="ShoppingCart"
-            iconPosition="left"
-            iconSize={16}
-          >
-            {t?.addToCart}
-          </Button>
+            size="sm"
+            showQuantity={true}
+            currentLanguage={currentLanguage}
+          />
           <Button
             variant="outline"
             size="sm"

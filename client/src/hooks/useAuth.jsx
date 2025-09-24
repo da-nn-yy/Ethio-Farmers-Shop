@@ -37,8 +37,12 @@ export const AuthProvider = ({ children }) => {
         // Skip API call for now to avoid hanging when backend is not available
         console.log('Using stored session data, skipping API call');
       } else {
-        // No valid stored auth
-        clearAuth();
+        // No valid stored auth - but don't clear everything immediately
+        // Just set as not authenticated without clearing localStorage
+        setUser(null);
+        setToken(null);
+        setIsAuthenticated(false);
+        setError(null);
       }
     } catch (error) {
       console.error('Auth initialization failed:', error);
@@ -54,7 +58,7 @@ export const AuthProvider = ({ children }) => {
     setToken(null);
     setIsAuthenticated(false);
     setError(null);
-    
+
     // Clear localStorage
     localStorage.removeItem('authToken');
     localStorage.removeItem('isAuthenticated');
@@ -179,12 +183,17 @@ export const AuthProvider = ({ children }) => {
     const updatedUser = { ...user, ...userData };
     setUser(updatedUser);
     localStorage.setItem('userData', JSON.stringify(updatedUser));
+
+    // Trigger a custom event to notify other components of user data changes
+    window.dispatchEvent(new CustomEvent('userDataUpdated', {
+      detail: updatedUser
+    }));
   };
 
   const refreshUser = async () => {
     try {
       if (!token) return false;
-      
+
       const profileResponse = await authService.getUserProfile();
       if (profileResponse.user) {
         setUser(profileResponse.user);
