@@ -32,17 +32,7 @@ const BrowseListingsBuyerHome = () => {
   const [bookmarkedFarmers, setBookmarkedFarmers] = useState(new Set());
 
   // Function to get default image based on category
-  const getDefaultImage = (category) => {
-    const defaultImages = {
-      'vegetables': 'https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg',
-      'fruits': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg',
-      'grains': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg',
-      'legumes': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg',
-      'spices': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg',
-      'other': 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg'
-    };
-    return defaultImages[category] || 'https://images.pexels.com/photos/143133/pexels-photo-143133.jpeg';
-  };
+  const getDefaultImage = () => '/assets/images/no_image.png';
   const [cartItems, setCartItems] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -78,169 +68,7 @@ const BrowseListingsBuyerHome = () => {
     verifiedOnly: false
   });
 
-  // Mock data for listings
-  const mockListings = [
-    {
-      id: 1,
-      name: "Premium Teff",
-      nameAm: "ምርጥ ጤፍ",
-      pricePerKg: 85,
-      availableQuantity: 150,
-      image: "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
-      freshness: "Harvested 2 days ago",
-      category: "teff",
-      farmer: {
-        id: 1,
-        name: "Abebe Kebede",
-        avatar: "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
-        location: "Debre Zeit, Oromia",
-        rating: 4.8,
-        reviewCount: 127,
-        phone: "+251911234567",
-        isVerified: true
-      }
-    },
-    {
-      id: 2,
-      name: "Organic Coffee Beans",
-      nameAm: "ኦርጋኒክ ቡና",
-      pricePerKg: 320,
-      availableQuantity: 75,
-      image: "https://images.pexels.com/photos/894695/pexels-photo-894695.jpeg",
-      freshness: "Fresh roasted",
-      category: "coffee",
-      farmer: {
-        id: 2,
-        name: "Almaz Tadesse",
-        avatar: "https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg",
-        location: "Jimma, Oromia",
-        rating: 4.9,
-        reviewCount: 89,
-        phone: "+251922345678",
-        isVerified: true
-      }
-    },
-    {
-      id: 3,
-      name: "Fresh Wheat",
-      nameAm: "ትኩስ ስንዴ",
-      pricePerKg: 45,
-      availableQuantity: 200,
-      image: "https://images.pexels.com/photos/1595104/pexels-photo-1595104.jpeg",
-      freshness: "Harvested yesterday",
-      category: "wheat",
-      farmer: {
-        id: 3,
-        name: "Getachew Molla",
-        avatar: "https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg",
-        location: "Bahir Dar, Amhara",
-        rating: 4.6,
-        reviewCount: 156,
-        phone: "+251933456789",
-        isVerified: false
-      }
-    },
-    {
-      id: 4,
-      name: "Yellow Maize",
-      nameAm: "ቢጫ በቆሎ",
-      pricePerKg: 35,
-      availableQuantity: 300,
-      image: "https://images.pexels.com/photos/547263/pexels-photo-547263.jpeg",
-      freshness: "Harvested 1 week ago",
-      category: "maize",
-      farmer: {
-        id: 4,
-        name: "Hanna Wolde",
-        avatar: "https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg",
-        location: "Hawassa, SNNP",
-        rating: 4.7,
-        reviewCount: 203,
-        phone: "+251944567890",
-        isVerified: true
-      }
-    },
-    {
-      id: 5,
-      name: "Red Kidney Beans",
-      nameAm: "ቀይ ባቄላ",
-      pricePerKg: 95,
-      availableQuantity: 120,
-      image: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg",
-      freshness: "Dried and ready",
-      category: "beans",
-      farmer: {
-        id: 5,
-        name: "Mulugeta Assefa",
-        avatar: "https://images.pexels.com/photos/1681010/pexels-photo-1681010.jpeg",
-        location: "Gondar, Amhara",
-        rating: 4.5,
-        reviewCount: 78,
-        phone: "+251955678901",
-        isVerified: true
-      }
-    },
-    {
-      id: 6,
-      name: "Sesame Seeds",
-      nameAm: "ሰሊጥ",
-      pricePerKg: 180,
-      availableQuantity: 80,
-      image: "https://images.pexels.com/photos/1435904/pexels-photo-1435904.jpeg",
-      freshness: "Premium quality",
-      category: "sesame",
-      farmer: {
-        id: 6,
-        name: "Tigist Bekele",
-        avatar: "https://images.pexels.com/photos/1130626/pexels-photo-1130626.jpeg",
-        location: "Humera, Tigray",
-        rating: 4.8,
-        reviewCount: 145,
-        phone: "+251966789012",
-        isVerified: true
-      }
-    },
-    {
-      id: 7,
-      name: "Barley Grain",
-      nameAm: "ገብስ",
-      pricePerKg: 55,
-      availableQuantity: 180,
-      image: "https://images.pexels.com/photos/1595104/pexels-photo-1595104.jpeg",
-      freshness: "Harvested 3 days ago",
-      category: "barley",
-      farmer: {
-        id: 7,
-        name: "Dawit Haile",
-        avatar: "https://images.pexels.com/photos/1043473/pexels-photo-1043473.jpeg",
-        location: "Mekelle, Tigray",
-        rating: 4.4,
-        reviewCount: 92,
-        phone: "+251977890123",
-        isVerified: false
-      }
-    },
-    {
-      id: 8,
-      name: "Chickpeas",
-      nameAm: "ሽምብራ",
-      pricePerKg: 110,
-      availableQuantity: 90,
-      image: "https://images.pexels.com/photos/1640777/pexels-photo-1640777.jpeg",
-      freshness: "Sun-dried",
-      category: "chickpeas",
-      farmer: {
-        id: 8,
-        name: "Meron Tadesse",
-        avatar: "https://images.pexels.com/photos/1239288/pexels-photo-1239288.jpeg",
-        location: "Dessie, Amhara",
-        rating: 4.6,
-        reviewCount: 134,
-        phone: "+251988901234",
-        isVerified: true
-      }
-    }
-  ];
+  // Removed mock listings; we rely on real API data only
 
   // Load language preference
   useEffect(() => {
@@ -253,14 +81,12 @@ const BrowseListingsBuyerHome = () => {
   // Load initial data with caching and retry logic
   useEffect(() => {
     const loadInitialData = async (retryCount = 0) => {
-      // Check cache first
       const cacheKey = 'listings_cache';
       const cachedData = localStorage.getItem(cacheKey);
       const cacheTimestamp = localStorage.getItem(`${cacheKey}_timestamp`);
       const now = Date.now();
       const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-      // Use cached data if it's fresh
       if (cachedData && cacheTimestamp && (now - parseInt(cacheTimestamp)) < CACHE_DURATION) {
         try {
           const parsedData = JSON.parse(cachedData);
@@ -275,61 +101,72 @@ const BrowseListingsBuyerHome = () => {
 
       setIsLoading(true);
       try {
-        console.log(`Fetching listings (attempt ${retryCount + 1})`);
-        
-        // Use the new API service to fetch listings
-        const response = await listingService.getActiveListings();
+        // Prefer public listings for unauthenticated visibility
+        const publicRes = await listingService.getPublicListings();
+        if (publicRes && Array.isArray(publicRes.listings)) {
+          const transformedListings = publicRes.listings.map(listing => ({
+            id: listing.id,
+            name: listing.name,
+            nameAm: listing.category,
+            pricePerKg: parseFloat(listing.pricePerKg || 0),
+            availableQuantity: parseFloat(listing.availableQuantity || 0),
+            image: listing.image || getDefaultImage(listing.category),
+            freshness: 'Fresh from farm',
+            category: listing.category,
+            farmer: {
+              id: listing.farmerUserId,
+              name: listing.farmerName,
+              avatar: listing.farmerAvatar,
+              location: listing.location,
+              rating: 4.5,
+              reviewCount: 50,
+              phone: '+251900000000',
+              isVerified: true
+            }
+          }));
+          setListings(transformedListings);
+          setFilteredListings(transformedListings);
+          setLastFetchTime(now);
+          localStorage.setItem(cacheKey, JSON.stringify(transformedListings));
+          localStorage.setItem(`${cacheKey}_timestamp`, now.toString());
+          return;
+        }
 
+        // Fallback to authenticated endpoint if needed
+        const response = await listingService.getActiveListings();
         if (response && response.listings && Array.isArray(response.listings)) {
-          // Transform API data to match component expectations
-          const transformedListings = response.listings.map(listing => ({
+          const transformed = response.listings.map(listing => ({
             id: listing.id,
             name: listing.title || listing.name,
-            nameAm: listing.crop, // Using crop as Amharic name for now
+            nameAm: listing.crop,
             pricePerKg: parseFloat(listing.price_per_unit || listing.pricePerKg || 0),
             availableQuantity: parseFloat(listing.quantity || listing.availableQuantity || 0),
             image: listing.image || listing.images?.[0]?.url || getDefaultImage(listing.crop || listing.category),
-            freshness: "Fresh from farm",
+            freshness: 'Fresh from farm',
             category: listing.crop || listing.category,
             farmer: {
               id: listing.farmer_user_id || listing.farmerUserId,
               name: listing.farmer_name || listing.farmerName,
-              avatar: listing.farmer_avatar || listing.farmerAvatar || "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
+              avatar: listing.farmer_avatar || listing.farmerAvatar || 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
               location: `${listing.region || listing.location}, ${listing.woreda || ''}`,
               rating: 4.5,
               reviewCount: 50,
-              phone: listing.farmer_phone || "+251900000000",
+              phone: listing.farmer_phone || '+251900000000',
               isVerified: true
             }
           }));
-
-          setListings(transformedListings);
-          setFilteredListings(transformedListings);
+          setListings(transformed);
+          setFilteredListings(transformed);
           setLastFetchTime(now);
-          
-          // Cache the data
-          localStorage.setItem(cacheKey, JSON.stringify(transformedListings));
+          localStorage.setItem(cacheKey, JSON.stringify(transformed));
           localStorage.setItem(`${cacheKey}_timestamp`, now.toString());
-          
-          console.log(`Successfully loaded ${transformedListings.length} listings`);
         } else {
           throw new Error('API did not return valid listings data');
         }
-      } catch (error) {
+        } catch (error) {
         console.error('Failed to fetch listings:', error);
-        
-        // Retry logic - retry up to 3 times with exponential backoff
-        if (retryCount < 3) {
-          const delay = Math.pow(2, retryCount) * 1000; // 1s, 2s, 4s
-          console.log(`Retrying in ${delay}ms...`);
-          setTimeout(() => loadInitialData(retryCount + 1), delay);
-          return;
-        }
-        
-        // Only fallback to mock data after all retries failed
-        console.warn('All retry attempts failed, using mock data');
-        setListings(mockListings);
-        setFilteredListings(mockListings);
+        setListings([]);
+        setFilteredListings([]);
       } finally {
         setIsLoading(false);
       }
@@ -340,14 +177,44 @@ const BrowseListingsBuyerHome = () => {
 
   // Manual refresh function
   const handleRefresh = async () => {
-    // Clear cache and force refresh
     localStorage.removeItem('listings_cache');
     localStorage.removeItem('listings_cache_timestamp');
-    
     setIsRefreshing(true);
     try {
+      const publicRes = await listingService.getPublicListings();
+      if (publicRes && Array.isArray(publicRes.listings)) {
+        const transformedListings = publicRes.listings.map(listing => ({
+          id: listing.id,
+          name: listing.name,
+          nameAm: listing.category,
+          pricePerKg: parseFloat(listing.pricePerKg || 0),
+          availableQuantity: parseFloat(listing.availableQuantity || 0),
+          image: listing.image || getDefaultImage(listing.category),
+          freshness: 'Fresh from farm',
+          category: listing.category,
+          farmer: {
+            id: listing.farmerUserId,
+            name: listing.farmerName,
+            avatar: listing.farmerAvatar,
+            location: listing.location,
+            rating: 4.5,
+            reviewCount: 50,
+            phone: '+251900000000',
+            isVerified: true
+          }
+        }));
+        setListings(transformedListings);
+        setFilteredListings(transformedListings);
+        setLastFetchTime(Date.now());
+        localStorage.setItem('listings_cache', JSON.stringify(transformedListings));
+        localStorage.setItem('listings_cache_timestamp', Date.now().toString());
+        return;
+      }
+    } catch (error) {
+      console.error('Failed to refresh public listings, falling back:', error);
+    }
+    try {
       const response = await listingService.getActiveListings();
-      
       if (response && response.listings && Array.isArray(response.listings)) {
         const transformedListings = response.listings.map(listing => ({
           id: listing.id,
@@ -355,30 +222,25 @@ const BrowseListingsBuyerHome = () => {
           nameAm: listing.crop,
           pricePerKg: parseFloat(listing.price_per_unit || listing.pricePerKg || 0),
           availableQuantity: parseFloat(listing.quantity || listing.availableQuantity || 0),
-          image: listing.image || listing.images?.[0]?.url || "https://images.pexels.com/photos/4110256/pexels-photo-4110256.jpeg",
-          freshness: "Fresh from farm",
+          image: listing.image || listing.images?.[0]?.url || getDefaultImage(listing.crop || listing.category),
+          freshness: 'Fresh from farm',
           category: listing.crop || listing.category,
           farmer: {
             id: listing.farmer_user_id || listing.farmerUserId,
             name: listing.farmer_name || listing.farmerName,
-            avatar: listing.farmer_avatar || listing.farmerAvatar || "https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg",
+            avatar: listing.farmer_avatar || listing.farmerAvatar || 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
             location: `${listing.region || listing.location}, ${listing.woreda || ''}`,
             rating: 4.5,
             reviewCount: 50,
-            phone: listing.farmer_phone || "+251900000000",
+            phone: listing.farmer_phone || '+251900000000',
             isVerified: true
           }
         }));
-
         setListings(transformedListings);
         setFilteredListings(transformedListings);
         setLastFetchTime(Date.now());
-        
-        // Cache the fresh data
         localStorage.setItem('listings_cache', JSON.stringify(transformedListings));
         localStorage.setItem('listings_cache_timestamp', Date.now().toString());
-        
-        console.log(`Refreshed: ${transformedListings.length} listings loaded`);
       }
     } catch (error) {
       console.error('Failed to refresh listings:', error);
@@ -546,12 +408,6 @@ const BrowseListingsBuyerHome = () => {
     setSearchQuery('');
   };
 
-  // Handle add to cart
-  const handleAddToCart = async (listingId, quantity) => {
-    const listing = listings?.find(l => l?.id === listingId);
-    if (!listing) return;
-    addItem({ id: listing.id, name: listing.name, nameAm: listing.nameAm, image: listing.image, pricePerKg: listing.pricePerKg }, quantity);
-  };
 
   // Handle contact farmer
   const handleContactFarmer = (phoneNumber) => {
@@ -688,7 +544,7 @@ const BrowseListingsBuyerHome = () => {
                   </span>
                 )}
               </div>
-              
+
               {/* Refresh Button */}
               <button
                 onClick={handleRefresh}
@@ -696,13 +552,13 @@ const BrowseListingsBuyerHome = () => {
                 className="p-2 text-text-secondary hover:text-primary transition-colors disabled:opacity-50"
                 title={currentLanguage === 'am' ? 'አዲስ አድርግ' : 'Refresh'}
               >
-                <Icon 
-                  name="RefreshCw" 
-                  size={16} 
-                  className={isRefreshing ? 'animate-spin' : ''} 
+                <Icon
+                  name="RefreshCw"
+                  size={16}
+                  className={isRefreshing ? 'animate-spin' : ''}
                 />
               </button>
-              
+
               {/* Last Updated Time */}
               {lastFetchTime && !isLoading && (
                 <span className="text-xs text-text-secondary">
@@ -734,7 +590,6 @@ const BrowseListingsBuyerHome = () => {
                 <ProduceCard
                   key={listing?.id}
                   listing={listing}
-                  onAddToCart={handleAddToCart}
                   onContactFarmer={handleContactFarmer}
                   onToggleBookmark={handleToggleBookmark}
                   isBookmarked={bookmarkedFarmers?.has(listing?.farmer?.id)}

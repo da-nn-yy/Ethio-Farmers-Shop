@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AuthenticatedLayout from '../../components/ui/AuthenticatedLayout.jsx';
 import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
+import InstagramStyleGallery from '../../components/ui/InstagramStyleGallery.jsx';
 import { farmerService } from '../../services/apiService';
 
 const FarmerMyListings = () => {
@@ -22,6 +23,7 @@ const FarmerMyListings = () => {
   const [updatingId, setUpdatingId] = useState(null);
   const [selectedListings, setSelectedListings] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [currentLanguage, setCurrentLanguage] = useState('en');
   const [showBulkActions, setShowBulkActions] = useState(false);
 
   const tabs = [
@@ -37,7 +39,7 @@ const FarmerMyListings = () => {
   const loadListings = async () => {
     try {
       setError(null);
-      
+
       // Load all listings for each status
       const [activeRes, inactiveRes, draftRes] = await Promise.all([
         farmerService.getFarmerListingsByStatus('active'),
@@ -71,7 +73,7 @@ const FarmerMyListings = () => {
     setActiveTab(tabId);
     setSelectedListings([]);
     setShowBulkActions(false);
-    
+
     // Load listings for the tab if not already loaded
     if (listings[tabId].length === 0 && !isLoading[tabId]) {
       loadTabListings(tabId);
@@ -82,24 +84,24 @@ const FarmerMyListings = () => {
     try {
       setUpdatingId(listing.id);
       await farmerService.updateListingStatus(listing.id, newStatus);
-      
+
       // Update the listings state
       setListings(prev => {
         const updated = { ...prev };
-        const currentTab = Object.keys(updated).find(key => 
+        const currentTab = Object.keys(updated).find(key =>
           updated[key].some(l => l.id === listing.id)
         );
-        
+
         if (currentTab) {
           updated[currentTab] = updated[currentTab].filter(l => l.id !== listing.id);
         }
-        
+
         if (newStatus === 'active') {
           updated.active = [{ ...listing, status: newStatus }, ...updated.active];
         } else if (newStatus === 'inactive') {
           updated.inactive = [{ ...listing, status: newStatus }, ...updated.inactive];
         }
-        
+
         return updated;
       });
     } catch (e) {
@@ -117,7 +119,7 @@ const FarmerMyListings = () => {
     try {
       setUpdatingId(listingId);
       await farmerService.deleteListing(listingId);
-      
+
       // Remove from all tabs
       setListings(prev => ({
         active: prev.active.filter(l => l.id !== listingId),
@@ -132,8 +134,8 @@ const FarmerMyListings = () => {
   };
 
   const handleSelectListing = (listingId) => {
-    setSelectedListings(prev => 
-      prev.includes(listingId) 
+    setSelectedListings(prev =>
+      prev.includes(listingId)
         ? prev.filter(id => id !== listingId)
         : [...prev, listingId]
     );
@@ -153,7 +155,7 @@ const FarmerMyListings = () => {
 
     try {
       setUpdatingId('bulk');
-      
+
       switch (action) {
         case 'activate':
           await farmerService.bulkUpdateListingStatus(selectedListings, 'active');
@@ -168,7 +170,7 @@ const FarmerMyListings = () => {
           await farmerService.bulkDeleteListings(selectedListings);
           break;
       }
-      
+
       // Reload the current tab
       await loadTabListings(activeTab);
       setSelectedListings([]);
@@ -217,10 +219,10 @@ const FarmerMyListings = () => {
             <h1 className="text-2xl font-bold text-text-primary">My Listings</h1>
             <p className="text-text-secondary">Manage your product listings</p>
           </div>
-          <Button 
-            variant="primary" 
-            iconName="Plus" 
-            iconPosition="left" 
+          <Button
+            variant="primary"
+            iconName="Plus"
+            iconPosition="left"
             onClick={() => navigate('/add-listing')}
           >
             Add New Listing
@@ -233,7 +235,7 @@ const FarmerMyListings = () => {
             <div className="flex items-center space-x-2">
               <Icon name="AlertCircle" size={20} className="text-red-500" />
               <span className="text-red-700">{error}</span>
-              <button 
+              <button
                 onClick={() => setError(null)}
                 className="ml-auto text-red-500 hover:text-red-700"
               >
@@ -283,7 +285,7 @@ const FarmerMyListings = () => {
               />
             </div>
           </div>
-          
+
           {selectedListings.length > 0 && (
             <div className="flex items-center space-x-3">
               <span className="text-sm text-text-secondary">
@@ -341,10 +343,10 @@ const FarmerMyListings = () => {
               {searchQuery ? 'No listings match your search.' : `You have no ${activeTab} listings.`}
             </p>
             {!searchQuery && (
-              <Button 
-                variant="primary" 
-                iconName="Plus" 
-                iconPosition="left" 
+              <Button
+                variant="primary"
+                iconName="Plus"
+                iconPosition="left"
                 onClick={() => navigate('/add-listing')}
               >
                 Create Your First Listing
@@ -385,34 +387,15 @@ const FarmerMyListings = () => {
 
                   {/* Image */}
                   <div className="relative">
-                    {listing.images && listing.images.length > 0 ? (
-                      <div className="relative w-full h-40 overflow-hidden">
-                        <img 
-                          src={listing.images[0] || '/assets/images/no_image.png'} 
-                          alt={listing.name || 'Product Image'} 
-                          className="object-cover w-full h-full" 
-                          onError={(e) => {
-                            console.log('Image failed to load:', listing.images[0]);
-                            e.target.src = '/assets/images/no_image.png';
-                          }}
-                        />
-                        {listing.images.length > 1 && (
-                          <div className="absolute top-2 left-2 bg-black bg-opacity-75 text-white px-2 py-1 rounded text-xs">
-                            +{listing.images.length - 1}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <img 
-                        src={listing.image || '/assets/images/no_image.png'} 
-                        alt={listing.name || 'Product Image'} 
-                        className="object-cover w-full h-40" 
-                        onError={(e) => {
-                          console.log('Image failed to load:', listing.image);
-                          e.target.src = '/assets/images/no_image.png';
-                        }}
-                      />
-                    )}
+                    <InstagramStyleGallery
+                      images={listing?.images || (listing?.image ? [listing.image] : [])}
+                      alt={listing.name || 'Product Image'}
+                      className="w-full h-40"
+                      showFullscreen={true}
+                      showThumbnails={false}
+                      autoPlay={false}
+                      currentLanguage={currentLanguage}
+                    />
                     {/* Status Badge */}
                     <div className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(listing.status)}`}>
                       <Icon name={getStatusIcon(listing.status)} size={12} className="inline mr-1" />
@@ -438,24 +421,24 @@ const FarmerMyListings = () => {
                     {/* Action Buttons */}
                     <div className="flex items-center justify-between">
                       <div className="flex space-x-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => navigate(`/add-listing?edit=${listing.id}`)}
                           iconName="Edit2"
                           title="Edit listing"
                         />
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
+                        <Button
+                          variant="outline"
+                          size="sm"
                           onClick={() => navigate(`/add-listing?duplicate=${listing.id}`)}
                           iconName="Copy"
                           title="Duplicate listing"
                         />
                         {listing.status === 'active' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => toggleStatus(listing, 'inactive')}
                             loading={updatingId === listing.id}
                             iconName="PauseCircle"
@@ -464,9 +447,9 @@ const FarmerMyListings = () => {
                           </Button>
                         )}
                         {listing.status === 'inactive' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => toggleStatus(listing, 'active')}
                             loading={updatingId === listing.id}
                             iconName="PlayCircle"
@@ -475,9 +458,9 @@ const FarmerMyListings = () => {
                           </Button>
                         )}
                         {listing.status === 'draft' && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
+                          <Button
+                            variant="outline"
+                            size="sm"
                             onClick={() => toggleStatus(listing, 'active')}
                             loading={updatingId === listing.id}
                             iconName="CheckCircle"
@@ -486,9 +469,9 @@ const FarmerMyListings = () => {
                           </Button>
                         )}
                       </div>
-                      <Button 
-                        variant="outline" 
-                        size="sm" 
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={() => deleteListing(listing.id)}
                         loading={updatingId === listing.id}
                         iconName="Trash2"

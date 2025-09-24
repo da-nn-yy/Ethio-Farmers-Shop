@@ -47,6 +47,18 @@ const UserProfileManagement = () => {
     fetchUser();
   }, []);
 
+  // Listen for user data updates from other components
+  useEffect(() => {
+    const handleUserDataUpdate = (event) => {
+      if (event.detail) {
+        setUser(prev => ({ ...prev, ...event.detail }));
+      }
+    };
+
+    window.addEventListener('userDataUpdated', handleUserDataUpdate);
+    return () => window.removeEventListener('userDataUpdated', handleUserDataUpdate);
+  }, []);
+
   // Handle language change
   const handleLanguageChange = (newLanguage) => {
     setCurrentLanguage(newLanguage);

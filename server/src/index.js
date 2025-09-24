@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import "dotenv/config";
+import { PUBLIC_BASE_URL, normalizeImageUrl } from "./utils/url.js";
 
 // Initialize Firebase Admin once
 import "./config/firebase.js";
@@ -17,16 +18,7 @@ import { globalErrorHandler, notFoundHandler } from "./utils/errorHandler.js";
 // App
 const app = express();
 
-// Base URL for building absolute URLs for uploaded assets
-const PUBLIC_BASE_URL = process.env.PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-
-const normalizeImageUrl = (rawUrl) => {
-  if (!rawUrl) return rawUrl;
-  const url = String(rawUrl).replace(/\\/g, '/');
-  if (/^https?:\/\//i.test(url)) return url;
-  const trimmed = url.replace(/^\/?/, '');
-  return `${PUBLIC_BASE_URL}/${trimmed}`;
-};
+// PUBLIC_BASE_URL and normalizeImageUrl now come from utils/url.js
 
 // Security middleware
 app.use(helmet({
@@ -35,10 +27,11 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
+      imgSrc: ["'self'", "data:", "https:", "http:"],
     },
   },
-  crossOriginEmbedderPolicy: false
+  crossOriginEmbedderPolicy: false,
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
 }));
 
 // Rate limiting
@@ -58,12 +51,19 @@ app.use(limiter);
 // CORS configuration
 const corsOptions = {
   origin: function (origin, callback) {
-    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:5174'];
+    const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:5173',
+      'http://localhost:3000',
+      'http://localhost:5174',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:5174'
+    ];
 
     // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -71,10 +71,14 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
 
 app.use(cors(corsOptions));
+// Explicitly handle preflight for all routes
+app.options('*', cors(corsOptions));
 
 // JSON parsing with better error handling
 app.use(express.json({
@@ -107,7 +111,13 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Serve uploaded files
-app.use('/uploads', express.static('uploads'));
+app.use('/uploads', express.static('uploads', {
+  setHeaders: (res, path, stat) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    // Allow any origin to fetch images; adjust to specific origin if desired
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+}));
 
 // Health check endpoint
 app.get("/health", (req, res) => {
