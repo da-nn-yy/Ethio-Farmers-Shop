@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth.jsx';
-import AuthenticatedLayout from '../../components/ui/AuthenticatedLayout.jsx';
 import Card from '../../components/ui/Card.jsx';
 import Icon from '../../components/AppIcon.jsx';
 import Button from '../../components/ui/Button.jsx';
@@ -49,7 +48,7 @@ const AdminDashboard = () => {
       // Fetch real admin dashboard data from API
       const data = await dashboardService.getAdminDashboard();
       setDashboardData(data);
-      
+
       // Update stats from API data
       const platformStats = data.platformStats || {};
       setStats({
@@ -128,7 +127,7 @@ const AdminDashboard = () => {
     const now = new Date();
     const time = new Date(timestamp);
     const diffInMinutes = Math.floor((now - time) / (1000 * 60));
-    
+
     if (diffInMinutes < 60) {
       return `${diffInMinutes} minutes ago`;
     } else if (diffInMinutes < 1440) {
@@ -161,8 +160,7 @@ const AdminDashboard = () => {
   }
 
   return (
-    <AuthenticatedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
         {/* Modern Header */}
         <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-sm border-b border-slate-200 dark:border-slate-700">
           <div className="px-4 mx-auto max-w-7xl lg:px-6 py-6">
@@ -172,11 +170,11 @@ const AdminDashboard = () => {
                   Admin Dashboard
                 </h1>
                 <p className="mt-2 text-slate-600 dark:text-slate-400">
-                  Welcome back, {user?.name || 'Admin'} • {new Date().toLocaleDateString('en-US', { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
+                  Welcome back, {user?.name || 'Admin'} • {new Date().toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
                   })}
                 </p>
               </div>
@@ -409,9 +407,7 @@ const AdminDashboard = () => {
           </div>
         </div>
       </div>
-    </AuthenticatedLayout>
   );
 };
 
 export default AdminDashboard;
-

@@ -22,7 +22,7 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   }
 
   if (requiredRole && userRole !== requiredRole) {
-    const fallback = userRole === 'admin' ? '/admin-dashboard' : 
+    const fallback = userRole === 'admin' ? '/admin-login' :
                      userRole === 'farmer' ? '/dashboard-farmer-home' : '/dashboard-buyer-home';
     return <Navigate to={fallback} replace />;
   }

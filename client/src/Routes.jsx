@@ -29,6 +29,8 @@ import CartPage from './pages/cart';
 import PaymentsPage from './pages/payments';
 import HelpPage from './pages/help';
 import ResetPasswordPage from './pages/authentication-login-register/components/ResetPasswordPage';
+import AdminLogin from './pages/admin-login';
+import AdminRegister from './pages/admin-register';
 import AdminDashboard from './pages/admin-dashboard';
 import AdminUsers from './pages/admin-users';
 import AdminListings from './pages/admin-listings';
@@ -42,6 +44,7 @@ import AdminContent from './pages/admin-content';
 import AdminMarketplace from './pages/admin-marketplace';
 import AdminFinancial from './pages/admin-financial';
 import AdminSecurity from './pages/admin-security';
+import AdminLayout from './components/ui/AdminLayout';
 import DevMode from './components/DevMode.jsx';
 import UserReviewsPage from './pages/user-reviews';
 
@@ -58,7 +61,7 @@ const RoleRedirect = () => {
   }
 
   if (userRole === 'admin') {
-    return <Navigate to="/admin-dashboard" replace />;
+    return <Navigate to="/admin-login" replace />;
   }
 
   if (userRole === 'farmer') {
@@ -77,6 +80,12 @@ const Routes = () => {
                     {/* Public */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/landing" element={<LandingPage />} />
+
+                    {/* Admin Login */}
+                    <Route path="/admin-login" element={<AdminLogin />} />
+                    
+                    {/* Admin Registration */}
+                    <Route path="/admin-register" element={<AdminRegister />} />
                     <Route path="/app" element={<RoleRedirect />} />
                     <Route path="/authentication-login-register" element={<AuthenticationPage />} />
                     <Route path="/reset-password" element={<ResetPasswordPage />} />
@@ -195,69 +204,95 @@ const Routes = () => {
         {/* Admin Routes */}
         <Route path="/admin-dashboard" element={
           <ProtectedRoute requiredRole="admin">
-            <AdminDashboard />
+            <AdminLayout>
+              <AdminDashboard />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/admin-users" element={
           <ProtectedRoute requiredRole="admin">
-            <AdminUsers />
+            <AdminLayout>
+              <AdminUsers />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/admin-listings" element={
           <ProtectedRoute requiredRole="admin">
-            <AdminListings />
+            <AdminLayout>
+              <AdminListings />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/admin-orders" element={
           <ProtectedRoute requiredRole="admin">
-            <AdminOrders />
+            <AdminLayout>
+              <AdminOrders />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/admin-analytics" element={
           <ProtectedRoute requiredRole="admin">
-            <AdminAnalytics />
+            <AdminLayout>
+              <AdminAnalytics />
+            </AdminLayout>
           </ProtectedRoute>
         } />
         <Route path="/admin-settings" element={
           <ProtectedRoute requiredRole="admin">
-            <AdminSettings />
+            <AdminLayout>
+              <AdminSettings />
+            </AdminLayout>
           </ProtectedRoute>
         } />
-               <Route path="/admin-chat" element={
-                 <ProtectedRoute requiredRole="admin">
-                   <AdminChat />
-                 </ProtectedRoute>
-               } />
-               <Route path="/admin-notifications" element={
-                 <ProtectedRoute requiredRole="admin">
-                   <AdminNotifications />
-                 </ProtectedRoute>
-               } />
-               <Route path="/admin-payments" element={
-                 <ProtectedRoute requiredRole="admin">
-                   <AdminPayments />
-                 </ProtectedRoute>
-               } />
-               <Route path="/admin-content" element={
-                 <ProtectedRoute requiredRole="admin">
-                   <AdminContent />
-                 </ProtectedRoute>
-               } />
-               <Route path="/admin-marketplace" element={
-                 <ProtectedRoute requiredRole="admin">
-                   <AdminMarketplace />
-                 </ProtectedRoute>
-               } />
-               <Route path="/admin-financial" element={
-                 <ProtectedRoute requiredRole="admin">
-                   <AdminFinancial />
-                 </ProtectedRoute>
-               } />
-               <Route path="/admin-security" element={
-                 <ProtectedRoute requiredRole="admin">
-                   <AdminSecurity />
-                 </ProtectedRoute>
-               } />
+        <Route path="/admin-chat" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout>
+              <AdminChat />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-notifications" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout>
+              <AdminNotifications />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-payments" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout>
+              <AdminPayments />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-content" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout>
+              <AdminContent />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-marketplace" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout>
+              <AdminMarketplace />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-financial" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout>
+              <AdminFinancial />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
+        <Route path="/admin-security" element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout>
+              <AdminSecurity />
+            </AdminLayout>
+          </ProtectedRoute>
+        } />
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

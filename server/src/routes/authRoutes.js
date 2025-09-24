@@ -3,6 +3,7 @@ import { authGuard } from "../middleware/auth.js";
 import {
   syncUser,
   registerUser,
+  registerAdmin,
   devLogin,
   getUserProfile,
   forgotPassword,
@@ -14,6 +15,7 @@ const router = Router();
 
 // Public routes
 router.post('/register', registerUser);
+router.post('/register-admin', registerAdmin);
 router.post('/dev-login', devLogin);
 router.post('/forgot-password', forgotPassword);
 router.get('/verify-reset-token/:token', verifyResetToken);
