@@ -231,9 +231,10 @@ export const getFarmerListings = async (req, res) => {
       const listingImages = imagesByListing[listing.id] || [];
       return {
         id: listing.id,
-        name: listing.title, // Use title since that's what exists in the schema
+        name: listing.name, // Selected as alias in query
         nameAm: null, // No name_am column in current schema
-        image: listingImages[0] || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
+        description: listing.description || null,
+        image: listingImages[0] || null,
         images: listingImages, // All images
         pricePerKg: listing.pricePerUnit,
         availableQuantity: listing.quantity,
@@ -543,7 +544,7 @@ export const createFarmerListing = async (req, res) => {
       id: createdListing.id,
       name: createdListing.title,
       nameAm: null,
-      image: normalizeImageUrl(createdListing.image) || "https://images.pexels.com/photos/4110404/pexels-photo-4110404.jpeg",
+      image: normalizeImageUrl(createdListing.image) || null,
       pricePerKg: createdListing.pricePerUnit,
       availableQuantity: createdListing.quantity,
       location: createdListing.woreda ? `${createdListing.region}, ${createdListing.woreda}` : createdListing.region,
@@ -1040,7 +1041,7 @@ export const deleteFarmerListing = async (req, res) => {
 export const addListingImage = async (req, res) => {
   try {
     const uid = req.user.uid;
-    const { id: listingId } = req.params;
+    const { id: listingIdParam } = req.params;
     const file = req.file;
     const { url } = req.body;
 
@@ -1051,6 +1052,15 @@ export const addListingImage = async (req, res) => {
       hasUrl: !!url,
       url: url
     });
+
+    // Basic validation
+    const listingId = Number.parseInt(listingIdParam, 10);
+    if (!Number.isFinite(listingId) || listingId <= 0) {
+      return res.status(400).json({ error: "Invalid listing id" });
+    }
+    if (!file && (!url || typeof url !== 'string' || url.trim().length === 0)) {
+      return res.status(400).json({ error: "No image file or URL provided" });
+    }
 
     // Get user ID
     let userId;
@@ -1085,18 +1095,25 @@ export const addListingImage = async (req, res) => {
       // store relative path; readers normalize to absolute
       imageUrl = `uploads/${file.filename}`;
     } else if (url) {
-      imageUrl = url;
+      imageUrl = url.trim();
     } else {
       return res.status(400).json({ error: "No image file or URL provided" });
     }
 
-    // Check if listing_images table exists and is accessible
+    // Ensure listing_images table exists (idempotent)
     try {
-      await pool.query("SELECT 1 FROM listing_images LIMIT 1");
+      await pool.query(`CREATE TABLE IF NOT EXISTS listing_images (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        listing_id INT NOT NULL,
+        url TEXT NOT NULL,
+        sort_order INT NOT NULL DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_images_listing (listing_id)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
     } catch (tableError) {
-      console.error('listing_images table not accessible:', tableError.message);
+      console.error('Failed to ensure listing_images table exists:', tableError.message);
       return res.status(500).json({
-        error: "Database table not accessible",
+        error: "Failed to prepare image storage",
         details: tableError.message
       });
     }
@@ -1142,7 +1159,7 @@ export const addListingImage = async (req, res) => {
       message: "Image added to listing successfully",
       image: {
         listing_id: listingId,
-        url: imageUrl
+        url: normalizeImageUrl(imageUrl)
       }
     });
 

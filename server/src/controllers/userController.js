@@ -53,7 +53,13 @@ export const getMe = async (req, res) => {
 
 export const updateMe = async (req, res) => {
   const uid = req.user.uid;
-  const { role, fullName, phoneNumber, email, region, woreda } = req.body || {};
+  // Accept both camelCase and snake_case from client
+  const role = req.body?.role;
+  const fullName = req.body?.fullName ?? req.body?.full_name;
+  const phoneNumber = req.body?.phoneNumber ?? req.body?.phone;
+  const email = req.body?.email;
+  const region = req.body?.region;
+  const woreda = req.body?.woreda;
   const [existing] = await pool.query("SELECT id FROM users WHERE firebase_uid = ?", [uid]);
   const toNullIfEmpty = (v) => (v === undefined || v === "" ? null : v);
   if (existing.length === 0) {

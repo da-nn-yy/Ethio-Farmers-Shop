@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authGuard } from "../middleware/auth.js";
+import { authGuard, requireRole } from "../middleware/auth.js";
 import upload, { handleUploadError, conditionalSingleUpload } from "../middleware/upload.js";
 import {
   getFarmerMetrics,
@@ -18,8 +18,8 @@ import {
 
 const router = Router();
 
-// All routes require authentication
-router.use(authGuard);
+// All routes require authentication and farmer role
+router.use(authGuard, requireRole('farmer'));
 
 // Farmer dashboard and metrics
 router.get('/metrics', getFarmerMetrics);
@@ -47,14 +47,14 @@ router.get('/debug/images/:listingId', async (req, res) => {
   try {
     const { listingId } = req.params;
     const { pool } = await import('../config/database.js');
-    
+
     const [images] = await pool.query(`
       SELECT id, listing_id, url, sort_order, created_at
-      FROM listing_images 
+      FROM listing_images
       WHERE listing_id = ?
       ORDER BY sort_order
     `, [listingId]);
-    
+
     res.json({
       listingId,
       imageCount: images.length,

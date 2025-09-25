@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { authGuard } from "../middleware/auth.js";
+import { authGuard, requireRole } from "../middleware/auth.js";
 import {
   getAllUsers,
   updateUserStatus,
@@ -14,8 +14,8 @@ import {
 
 const router = Router();
 
-// All admin routes require authentication
-router.use(authGuard);
+// All admin routes require authentication and admin role
+router.use(authGuard, requireRole('admin'));
 
 // User management
 router.get('/users', getAllUsers);
