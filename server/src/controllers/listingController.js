@@ -394,6 +394,29 @@ export const createListing = async (req, res) => {
 
     const listingId = result.insertId;
 
+    // Best-effort: notify all buyers about the new listing
+    try {
+      const notificationTitle = title || crop || 'New Product';
+      const notificationMessage = `New product listed: ${notificationTitle}`;
+      await pool.query(
+        `INSERT INTO notifications (user_id, type, payload, is_read)
+         SELECT id, 'new_listing', JSON_OBJECT(
+           'title', ?,
+           'message', ?,
+           'listingId', ?,
+           'action', 'view_listing',
+           'region', ?,
+           'woreda', ?
+         ), 0
+         FROM users
+         WHERE role = 'buyer'`,
+        [notificationTitle, notificationMessage, listingId, region || null, woreda || null]
+      );
+    } catch (notifyErr) {
+      // Non-fatal: log and continue
+      console.warn('Failed to create buyer notifications for new listing:', notifyErr.message);
+    }
+
     res.status(201).json({
       id: listingId,
       message: "Listing created successfully",

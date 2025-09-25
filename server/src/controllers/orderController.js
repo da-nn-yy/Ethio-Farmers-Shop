@@ -432,93 +432,108 @@ export const cancelOrder = async (req, res) => {
 export const getFarmerOrders = async (req, res) => {
   try {
     const uid = req.user.uid;
-    const { status, page = 1, limit = 20 } = req.query;
+    // Sanitize and validate query params
+    const rawStatus = (req.query.status || '').toString().trim().toLowerCase();
+    const allowedStatuses = new Set(['pending','confirmed','shipped','completed','cancelled','all','']);
+    const status = allowedStatuses.has(rawStatus) ? rawStatus : '';
 
-    // Get user ID
+    const pageNum = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limitNum = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+    const offset = (pageNum - 1) * limitNum;
+
+    // Resolve current user id
     let userId;
-
     if (uid.startsWith('dev-uid-')) {
-      // Dev user - use the ID from the token
       userId = req.user.id;
     } else {
-      // Real Firebase user - look up in database
       const [userRows] = await pool.query(
-        "SELECT id FROM users WHERE firebase_uid = ?",
+        'SELECT id FROM users WHERE firebase_uid = ? LIMIT 1',
         [uid]
       );
-
       if (userRows.length === 0) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: 'User not found' });
       }
       userId = userRows[0].id;
     }
-    let whereClause = "WHERE o.farmer_id = ?";
-    let params = [userId];
 
-    if (status) {
-      whereClause += " AND o.status = ?";
+    // Detect schema: orders may have farmer_user_id/buyer_user_id or farmer_id/buyer_id
+    const [hasFarmerUserIdRows] = await pool.query(
+      `SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'farmer_user_id' LIMIT 1`
+    );
+    const [hasBuyerUserIdRows] = await pool.query(
+      `SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'orders' AND COLUMN_NAME = 'buyer_user_id' LIMIT 1`
+    );
+    const useNewOrdersSchema = hasFarmerUserIdRows.length > 0 && hasBuyerUserIdRows.length > 0;
+
+    const farmerCol = useNewOrdersSchema ? 'farmer_user_id' : 'farmer_id';
+    const buyerCol = useNewOrdersSchema ? 'buyer_user_id' : 'buyer_id';
+
+    // Build WHERE clause safely
+    let whereClause = `WHERE o.${farmerCol} = ?`;
+    const params = [userId];
+    if (status && status !== 'all') {
+      whereClause += ' AND o.status = ?';
       params.push(status);
     }
 
-    const offset = (page - 1) * limit;
+    // Listings schema differences for item details
+    const [hasListingsNewColRows] = await pool.query(
+      `SELECT 1 FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'produce_listings' AND COLUMN_NAME = 'price_per_unit' LIMIT 1`
+    );
+    const listingTitle = hasListingsNewColRows.length > 0 ? 'pl.title' : 'pl.name';
 
-    // Get orders with buyer info
+    // Query orders page
     const [orders] = await pool.query(
       `SELECT
-        o.*,
-        u.full_name as buyer_name,
-        u.phone as buyer_phone,
-        u.region as buyer_region,
-        u.woreda as buyer_woreda,
-        bp.company_name,
-        bp.business_type
-      FROM orders o
-      JOIN users u ON o.buyer_id = u.id
-      LEFT JOIN buyer_profiles bp ON u.id = bp.user_id
-      ${whereClause}
-      ORDER BY o.created_at DESC
-      LIMIT ? OFFSET ?`,
-      [...params, parseInt(limit), offset]
+        o.id, o.status, o.created_at, o.updated_at, o.notes,
+        o.subtotal AS subtotal, o.total AS total,
+        u.full_name AS buyer_name, u.phone AS buyer_phone, u.region AS buyer_region, u.woreda AS buyer_woreda,
+        bp.company_name, bp.business_type
+       FROM orders o
+       JOIN users u ON o.${buyerCol} = u.id
+       LEFT JOIN buyer_profiles bp ON u.id = bp.user_id
+       ${whereClause}
+       ORDER BY o.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limitNum, offset]
     );
 
-    // Get order items for each order
+    // Load items for each order
     for (const order of orders) {
       const [items] = await pool.query(
         `SELECT
-          oi.*,
-          pl.title as listing_title,
-          NULL as image_url
-        FROM order_items oi
-        JOIN produce_listings pl ON oi.listing_id = pl.id
-        WHERE oi.order_id = ?`,
+          oi.order_id, oi.listing_id, oi.quantity, oi.price_per_unit, ${listingTitle} AS listing_title,
+          NULL AS image_url
+         FROM order_items oi
+         JOIN produce_listings pl ON oi.listing_id = pl.id
+         WHERE oi.order_id = ?`,
         [order.id]
       );
       order.items = items;
     }
 
-    // Get total count
+    // Count for pagination
     const [countResult] = await pool.query(
-      `SELECT COUNT(*) as total FROM orders o ${whereClause}`,
+      `SELECT COUNT(*) AS total FROM orders o ${whereClause}`,
       params
     );
-
-    const total = countResult[0].total;
-    const totalPages = Math.ceil(total / limit);
+    const total = Number(countResult[0]?.total || 0);
+    const totalPages = Math.ceil(total / limitNum) || 1;
 
     res.json({
       orders,
       pagination: {
-        currentPage: parseInt(page),
+        currentPage: pageNum,
         totalPages,
         total,
-        limit: parseInt(limit),
-        hasNext: page < totalPages,
-        hasPrev: page > 1
+        limit: limitNum,
+        hasNext: pageNum < totalPages,
+        hasPrev: pageNum > 1
       }
     });
   } catch (error) {
     console.error('Error fetching farmer orders:', error);
-    res.status(500).json({ error: "Failed to fetch orders" });
+    res.status(500).json({ error: 'Failed to fetch orders' });
   }
 };
 

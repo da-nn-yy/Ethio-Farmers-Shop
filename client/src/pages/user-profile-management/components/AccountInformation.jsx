@@ -120,8 +120,8 @@ const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => 
     try {
       setIsSaving(true);
       const payload = {
-        full_name: formData.fullName,
-        phone: formData.phone,
+        fullName: formData.fullName,
+        phoneNumber: formData.phone,
         email: formData.email,
         region: formData.region,
         woreda: formData.woreda,
@@ -134,15 +134,25 @@ const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => 
       // Update local auth context with the complete updated user data
       try {
         updateUser && updateUser({
-          full_name: formData.fullName,
-          fullName: formData.fullName, // Ensure both formats are available
-          phone: formData.phone,
-          phoneNumber: formData.phone, // Ensure both formats are available
-          email: formData.email,
-          region: formData.region,
-          woreda: formData.woreda,
+          full_name: updatedUser.fullName,
+          fullName: updatedUser.fullName,
+          phone: updatedUser.phoneNumber,
+          phoneNumber: updatedUser.phoneNumber,
+          email: updatedUser.email,
+          region: updatedUser.region,
+          woreda: updatedUser.woreda,
           language: formData.language
         });
+        // Fire an event so UI like nav bars update instantly
+        window.dispatchEvent(new CustomEvent('userDataUpdated', { detail: {
+          full_name: updatedUser.fullName,
+          fullName: updatedUser.fullName,
+          phone: updatedUser.phoneNumber,
+          phoneNumber: updatedUser.phoneNumber,
+          email: updatedUser.email,
+          region: updatedUser.region,
+          woreda: updatedUser.woreda
+        }}));
       } catch {}
 
       // Update parent component
@@ -163,9 +173,13 @@ const AccountInformation = ({ userRole, currentLanguage, onProfileUpdated }) => 
       const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
       const updatedUserData = {
         ...currentUser,
-        ...payload,
-        fullName: formData.fullName, // Ensure both formats are available
-        phoneNumber: formData.phone, // Ensure both formats are available
+        fullName: updatedUser.fullName,
+        full_name: updatedUser.fullName,
+        phoneNumber: updatedUser.phoneNumber,
+        phone: updatedUser.phoneNumber,
+        email: updatedUser.email,
+        region: updatedUser.region,
+        woreda: updatedUser.woreda
       };
       localStorage.setItem('userData', JSON.stringify(updatedUserData));
 
