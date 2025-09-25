@@ -70,7 +70,13 @@ const UserProfileManagement = () => {
     try {
       if (!file) return;
       const data = await userService.uploadAvatar(file);
-      setUser(prev => ({ ...(prev || {}), avatarUrl: data.avatarUrl || data.url || data.imageUrl }));
+      const newAvatar = data.avatarUrl || data.url || data.imageUrl;
+      setUser(prev => ({ ...(prev || {}), avatarUrl: newAvatar }));
+      // Persist to localStorage
+      const currentUser = JSON.parse(localStorage.getItem('userData') || '{}');
+      localStorage.setItem('userData', JSON.stringify({ ...currentUser, avatarUrl: newAvatar }));
+      // Notify app-wide listeners (e.g., nav bar) for instant update
+      window.dispatchEvent(new CustomEvent('userDataUpdated', { detail: { avatarUrl: newAvatar } }));
     } catch (e) {
       // ignore for now
     }

@@ -1,4 +1,6 @@
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -18,16 +20,26 @@ import { globalErrorHandler, notFoundHandler } from "./utils/errorHandler.js";
 // App
 const app = express();
 
+// Resolve file paths for static assets
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const clientPublicAssets = path.resolve(__dirname, "../client/public/assets");
+const clientBuildAssets = path.resolve(__dirname, "../client/build/assets");
+
 // PUBLIC_BASE_URL and normalizeImageUrl now come from utils/url.js
 
 // Security middleware
 app.use(helmet({
+  // Disable HSTS to avoid forcing HTTPS on localhost
+  hsts: false,
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       scriptSrc: ["'self'"],
       imgSrc: ["'self'", "data:", "https:", "http:"],
+      // Prevent automatic upgrade of http -> https which breaks localhost API calls
+      upgradeInsecureRequests: null
     },
   },
   crossOriginEmbedderPolicy: false,
@@ -71,7 +83,7 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin', 'X-User-Role', 'x-user-role'],
   preflightContinue: false,
   optionsSuccessStatus: 204
 };
@@ -99,6 +111,17 @@ app.use(express.json({
 
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Normalize duplicate slashes in URLs to avoid '/api//assets/*' issues
+app.use((req, res, next) => {
+  try {
+    if (typeof req.url === 'string') {
+      // Keep protocol-relative URLs intact (not applicable in express), collapse others
+      req.url = req.url.replace(/\/{2,}/g, '/');
+    }
+  } catch (_) {}
+  next();
+});
+
 // Debug middleware to log requests (only in development)
 if (process.env.NODE_ENV === 'development') {
   app.use((req, res, next) => {
@@ -118,6 +141,25 @@ app.use('/uploads', express.static('uploads', {
     res.setHeader('Access-Control-Allow-Origin', '*');
   }
 }));
+
+// Serve static frontend assets (fallback images, icons) from client
+const staticHeaders = {
+  setHeaders: (res) => {
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+  }
+};
+
+// Expose under both '/assets' and '/api/assets' to cover absolute and API-prefixed requests
+app.use('/assets', express.static(clientPublicAssets, staticHeaders));
+app.use('/api/assets', express.static(clientPublicAssets, staticHeaders));
+
+// In production, also serve built assets if present
+if (process.env.NODE_ENV === 'production') {
+  app.use('/assets', express.static(clientBuildAssets, staticHeaders));
+  app.use('/api/assets', express.static(clientBuildAssets, staticHeaders));
+}
 
 // Health check endpoint
 app.get("/health", (req, res) => {
