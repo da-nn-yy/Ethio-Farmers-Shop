@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { getAuth } from 'firebase/auth';
+import { profileService } from '../../../services/apiService';
 
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
@@ -10,7 +11,7 @@ import { Checkbox } from '../../../components/ui/Checkbox';
 const RoleSpecificSection = ({ userRole, currentLanguage }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState(
-    userRole === 'farmer' 
+    userRole === 'farmer'
       ? {
           farmName: '',
           farmSize: '',
@@ -51,81 +52,48 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
   useEffect(() => {
     const loadRoleSpecific = async () => {
       try {
-        // Try to get data from API first
-        const auth = getAuth();
-        const user = auth.currentUser;
-        if (user) {
-          const token = await user.getIdToken();
-          const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-          if (userRole === 'farmer') {
-            // Try to get farmer profile data
-            try {
-              const { data: profileData } = await axios.get(`${API_BASE}/farmer-profile/profile`, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              
-              setFormData(prev => ({
-                ...prev,
-                farmName: profileData.farm_name || prev.farmName,
-                farmSize: profileData.farm_size_ha || prev.farmSize,
-                farmSizeUnit: profileData.farm_size_unit || prev.farmSizeUnit,
-                primaryCrops: Array.isArray(profileData.crops) ? profileData.crops : prev.primaryCrops,
-                farmingMethods: Array.isArray(profileData.farming_methods) ? profileData.farming_methods : prev.farmingMethods,
-                businessHours: {
-                  start: profileData.business_hours_start || prev.businessHours.start,
-                  end: profileData.business_hours_end || prev.businessHours.end
-                },
-                seasonalAvailability: profileData.seasonal_availability || prev.seasonalAvailability,
-                farmDescription: profileData.farm_description || prev.farmDescription,
-                farmDescriptionAm: profileData.farm_description_am || prev.farmDescriptionAm,
-                experienceYears: profileData.experience_years || prev.experienceYears,
-                specializations: Array.isArray(profileData.specializations) ? profileData.specializations : prev.specializations,
-                equipment: Array.isArray(profileData.equipment) ? profileData.equipment : prev.equipment,
-                irrigationType: profileData.irrigation_type || prev.irrigationType,
-                soilType: profileData.soil_type || prev.soilType,
-                organicCertified: profileData.organic_certified || prev.organicCertified,
-                fairTradeCertified: profileData.fair_trade_certified || prev.fairTradeCertified,
-                gmoFree: profileData.gmo_free !== undefined ? profileData.gmo_free : prev.gmoFree,
-                sustainabilityPractices: Array.isArray(profileData.sustainability_practices) ? profileData.sustainability_practices : prev.sustainabilityPractices,
-                address: profileData.address || prev.address,
-              }));
-            } catch (profileError) {
-              console.warn('Failed to load farmer profile, using fallback data:', profileError);
-              // Fallback to user data if farmer profile doesn't exist
-              const { data } = await axios.get(`${API_BASE}/users/me`, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              
-              setFormData(prev => ({
-                ...prev,
-                farmSize: data.farmSize || prev.farmSize,
-                farmSizeUnit: data.farmSizeUnit || prev.farmSizeUnit,
-                primaryCrops: Array.isArray(data.primaryCrops) ? data.primaryCrops : prev.primaryCrops,
-                farmingMethods: Array.isArray(data.farmingMethods) ? data.farmingMethods : prev.farmingMethods,
-                businessHours: {
-                  start: (data.businessHours && data.businessHours.start) || prev.businessHours.start,
-                  end: (data.businessHours && data.businessHours.end) || prev.businessHours.end
-                },
-                seasonalAvailability: data.seasonalAvailability || prev.seasonalAvailability,
-              }));
-            }
-          } else {
-            // Load buyer user profile data
-            const { data } = await axios.get(`${API_BASE}/users/me`, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-            setFormData(prev => ({
-              ...prev,
-              businessType: data?.businessType || prev.businessType,
-              preferredSuppliers: data?.preferredSuppliers || prev.preferredSuppliers,
-              purchaseVolume: data?.purchaseVolume || prev.purchaseVolume,
-              deliveryPreference: data?.deliveryPreference || prev.deliveryPreference,
-              businessHours: {
-                start: (data?.businessHours && data?.businessHours?.start) || prev.businessHours.start,
-                end: (data?.businessHours && data?.businessHours?.end) || prev.businessHours.end
-              },
-            }));
-          }
+        // Unified profile fetch regardless of role
+        const unified = await profileService.getProfile();
+        if (userRole === 'farmer' && unified?.profile) {
+          const profileData = unified.profile;
+          setFormData(prev => ({
+            ...prev,
+            farmName: profileData.farm_name || prev.farmName,
+            farmSize: profileData.farm_size_ha || prev.farmSize,
+            farmSizeUnit: profileData.farm_size_unit || prev.farmSizeUnit,
+            primaryCrops: Array.isArray(profileData.crops) ? profileData.crops : prev.primaryCrops,
+            farmingMethods: Array.isArray(profileData.farming_methods) ? profileData.farming_methods : prev.farmingMethods,
+            businessHours: {
+              start: profileData.business_hours_start || prev.businessHours.start,
+              end: profileData.business_hours_end || prev.businessHours.end
+            },
+            seasonalAvailability: profileData.seasonal_availability || prev.seasonalAvailability,
+            farmDescription: profileData.farm_description || prev.farmDescription,
+            farmDescriptionAm: profileData.farm_description_am || prev.farmDescriptionAm,
+            experienceYears: profileData.experience_years || prev.experienceYears,
+            specializations: Array.isArray(profileData.specializations) ? profileData.specializations : prev.specializations,
+            equipment: Array.isArray(profileData.equipment) ? profileData.equipment : prev.equipment,
+            irrigationType: profileData.irrigation_type || prev.irrigationType,
+            soilType: profileData.soil_type || prev.soilType,
+            organicCertified: profileData.organic_certified || prev.organicCertified,
+            fairTradeCertified: profileData.fair_trade_certified || prev.fairTradeCertified,
+            gmoFree: profileData.gmo_free !== undefined ? profileData.gmo_free : prev.gmoFree,
+            sustainabilityPractices: Array.isArray(profileData.sustainability_practices) ? profileData.sustainability_practices : prev.sustainabilityPractices,
+            address: profileData.address || prev.address,
+          }));
+        } else if (unified?.user) {
+          const data = unified.user;
+          setFormData(prev => ({
+            ...prev,
+            businessType: data?.businessType || prev.businessType,
+            preferredSuppliers: data?.preferredSuppliers || prev.preferredSuppliers,
+            purchaseVolume: data?.purchaseVolume || prev.purchaseVolume,
+            deliveryPreference: data?.deliveryPreference || prev.deliveryPreference,
+            businessHours: {
+              start: (data?.businessHours && data?.businessHours?.start) || prev.businessHours.start,
+              end: (data?.businessHours && data?.businessHours?.end) || prev.businessHours.end
+            },
+          }));
         }
       } catch (e) {
         console.error('Failed to load role-specific data:', e);
@@ -264,7 +232,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
   const handleArrayChange = (field, value, checked) => {
     setFormData(prev => ({
       ...prev,
-      [field]: checked 
+      [field]: checked
         ? [...prev?.[field], value]
         : prev?.[field]?.filter(item => item !== value)
     }));
@@ -279,48 +247,33 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         ...formData
       }));
 
-      // Try to save via API if available
+      // Try to save via unified API
       try {
-        const auth = getAuth();
-        const user = auth.currentUser;
-        if (user) {
-          const token = await user.getIdToken();
-          const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-          
-          if (userRole === 'farmer') {
-            // Save to farmer profile API
-            const farmerProfileData = {
-              farm_name: formData.farmName,
-              farm_size_ha: formData.farmSize,
-              farm_size_unit: formData.farmSizeUnit,
-              crops: formData.primaryCrops,
-              farming_methods: formData.farmingMethods,
-              seasonal_availability: formData.seasonalAvailability,
-              business_hours_start: formData.businessHours.start,
-              business_hours_end: formData.businessHours.end,
-              farm_description: formData.farmDescription,
-              farm_description_am: formData.farmDescriptionAm,
-              experience_years: formData.experienceYears,
-              specializations: formData.specializations,
-              equipment: formData.equipment,
-              irrigation_type: formData.irrigationType,
-              soil_type: formData.soilType,
-              organic_certified: formData.organicCertified,
-              fair_trade_certified: formData.fairTradeCertified,
-              gmo_free: formData.gmoFree,
-              sustainability_practices: formData.sustainabilityPractices,
-              address: formData.address
-            };
-            
-            await axios.put(`${API_BASE}/farmer-profile/profile`, farmerProfileData, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-          } else {
-            // Save to user API for buyers
-            await axios.put(`${API_BASE}/users/me`, formData, {
-              headers: { Authorization: `Bearer ${token}` }
-            });
-          }
+        if (userRole === 'farmer') {
+          await profileService.updateProfile({
+            farm_name: formData.farmName,
+            farm_size_ha: formData.farmSize,
+            farm_size_unit: formData.farmSizeUnit,
+            crops: formData.primaryCrops,
+            farming_methods: formData.farmingMethods,
+            seasonal_availability: formData.seasonalAvailability,
+            business_hours_start: formData.businessHours.start,
+            business_hours_end: formData.businessHours.end,
+            farm_description: formData.farmDescription,
+            farm_description_am: formData.farmDescriptionAm,
+            experience_years: formData.experienceYears,
+            specializations: formData.specializations,
+            equipment: formData.equipment,
+            irrigation_type: formData.irrigationType,
+            soil_type: formData.soilType,
+            organic_certified: formData.organicCertified,
+            fair_trade_certified: formData.fairTradeCertified,
+            gmo_free: formData.gmoFree,
+            sustainability_practices: formData.sustainabilityPractices,
+            address: formData.address
+          });
+        } else {
+          await profileService.updateProfile(formData);
         }
       } catch (apiError) {
         console.warn('API save failed, data saved locally:', apiError);
@@ -349,7 +302,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Basic Farm Information', 'የእርሻ መሰረታዊ መረጃ')}
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Input
             label={getLabel('Farm Name', 'የእርሻ ስም')}
@@ -359,7 +312,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
             disabled={!isEditing}
             placeholder={getLabel('Enter your farm name', 'የእርሻዎን ስም ያስገቡ')}
           />
-          
+
           <div className="flex space-x-2">
             <Input
               label={getLabel('Farm Size', 'የእርሻ መጠን')}
@@ -382,7 +335,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
               className="w-32"
             />
           </div>
-          
+
           <Input
             label={getLabel('Experience (Years)', 'ልምድ (ዓመታት)')}
             type="number"
@@ -391,7 +344,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
             disabled={!isEditing}
             placeholder="0"
           />
-          
+
           <Select
             label={getLabel('Seasonal Availability', 'የወቅት አቅርቦት')}
             options={[
@@ -404,7 +357,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
             disabled={!isEditing}
           />
         </div>
-        
+
         <div className="mt-4">
           <Input
             label={getLabel('Farm Address', 'የእርሻ አድራሻ')}
@@ -422,7 +375,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Farm Description', 'የእርሻ መግለጫ')}
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">
@@ -437,7 +390,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
               placeholder={getLabel('Describe your farm, its history, and what makes it special...', 'እርሻዎን፣ ታሪኩን እና ምን እንደሚያስደንቅ ይግለጹ...')}
             />
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-text-primary mb-2">
               {getLabel('Description (Amharic)', 'መግለጫ (አማርኛ)')}
@@ -459,7 +412,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Primary Crops', 'ዋና ሰብሎች')}
         </h3>
-        
+
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {cropOptions?.map((crop) => (
             <Checkbox
@@ -478,7 +431,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Farming Methods', 'የእርሻ ዘዴዎች')}
         </h3>
-        
+
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {farmingMethodOptions?.map((method) => (
             <Checkbox
@@ -497,7 +450,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Farm Characteristics', 'የእርሻ ባህሪያት')}
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Select
             label={getLabel('Irrigation Type', 'የማጠራቀሚያ አይነት')}
@@ -509,7 +462,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
             onChange={(value) => handleInputChange('irrigationType', value)}
             disabled={!isEditing}
           />
-          
+
           <Select
             label={getLabel('Soil Type', 'የአፈር አይነት')}
             options={soilTypeOptions?.map(type => ({
@@ -528,7 +481,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Specializations', 'ልዩ ችሎታዎች')}
         </h3>
-        
+
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {specializationOptions?.map((spec) => (
             <Checkbox
@@ -547,7 +500,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Farm Equipment', 'የእርሻ መሳሪያዎች')}
         </h3>
-        
+
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {equipmentOptions?.map((equipment) => (
             <Checkbox
@@ -566,7 +519,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Certifications & Standards', 'ማረጋገጫዎች እና ደረጃዎች')}
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="flex items-center space-x-3">
             <input
@@ -581,7 +534,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
               {getLabel('Organic Certified', 'ኦርጋኒክ የተረጋገጠ')}
             </label>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <input
               type="checkbox"
@@ -595,7 +548,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
               {getLabel('Fair Trade Certified', 'ፌር ትሬድ የተረጋገጠ')}
             </label>
           </div>
-          
+
           <div className="flex items-center space-x-3">
             <input
               type="checkbox"
@@ -617,7 +570,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Sustainability Practices', 'የተቀጣጣይነት ልምዶች')}
         </h3>
-        
+
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
           {sustainabilityOptions?.map((practice) => (
             <Checkbox
@@ -636,7 +589,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Available Hours', 'የመገኘት ሰዓት')}
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Input
             label={getLabel('Start Time', 'መጀመሪያ ሰዓት')}
@@ -645,7 +598,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
             onChange={(e) => handleInputChange('businessHours.start', e?.target?.value)}
             disabled={!isEditing}
           />
-          
+
           <Input
             label={getLabel('End Time', 'መጨረሻ ሰዓት')}
             type="time"
@@ -665,7 +618,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Business Information', 'የንግድ መረጃ')}
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Select
             label={getLabel('Business Type', 'የንግድ አይነት')}
@@ -677,7 +630,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
             onChange={(value) => handleInputChange('businessType', value)}
             disabled={!isEditing}
           />
-          
+
           <Select
             label={getLabel('Purchase Volume', 'የግዢ መጠን')}
             options={purchaseVolumeOptions?.map(volume => ({
@@ -696,7 +649,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
         <h3 className="text-lg font-semibold text-text-primary mb-4">
           {getLabel('Purchasing Preferences', 'የግዢ ምርጫዎች')}
         </h3>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Select
             label={getLabel('Preferred Suppliers', 'የተመረጡ አቅራቢዎች')}
@@ -710,7 +663,7 @@ const RoleSpecificSection = ({ userRole, currentLanguage }) => {
             onChange={(value) => handleInputChange('preferredSuppliers', value)}
             disabled={!isEditing}
           />
-          
+
           <Select
             label={getLabel('Delivery Preference', 'የማድረስ ምርጫ')}
             options={[

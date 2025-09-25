@@ -9,6 +9,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState(null);
@@ -46,11 +47,25 @@ export const AuthProvider = ({ children }) => {
         setToken(storedToken);
         setIsAuthenticated(true);
         if (storedUser) {
-          try { setUser(JSON.parse(storedUser)); } catch {}
+          try {
+            const parsed = JSON.parse(storedUser);
+            setUser(parsed);
+            if (parsed?.role) setRole(parsed.role);
+          } catch {}
         }
 
-        // Skip API call for now to avoid hanging when backend is not available
-        console.log('Using stored session data, skipping API call');
+        // Also attempt to fetch fresh user from backend to ensure real data
+        try {
+          const me = await userService.getMe();
+          if (me) {
+            setUser(me);
+            setRole(me.role || null);
+            sessionManager.setSessionData('userData', JSON.stringify(me));
+            if (me.role) sessionManager.setSessionData('userRole', me.role);
+          }
+        } catch (_) {
+          // Non-fatal if backend is down
+        }
       } else {
         // No valid stored auth - clear everything
         setUser(null);
@@ -77,6 +92,7 @@ export const AuthProvider = ({ children }) => {
   const clearAuth = () => {
     setUser(null);
     setToken(null);
+    setRole(null);
     setIsAuthenticated(false);
     setError(null);
 
@@ -85,38 +101,24 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (credentials) => {
-    // Check if this is a dev mode login
-    if (credentials.devMode) {
-      const devUserData = JSON.parse(localStorage.getItem('devUserData') || '{}');
-      console.log('Dev mode login - user data:', devUserData);
-      setUser(devUserData);
-      setToken(localStorage.getItem('authToken'));
-      setIsAuthenticated(true);
-      setError(null);
-      console.log('Dev mode login successful');
-      return { success: true, user: devUserData };
-    }
     try {
       setLoading(true);
       setError(null);
 
-      const response = await authService.devLogin(credentials);
+      // Enforce real auth: try to get user from backend after external auth
+      // The actual sign-in should occur via Firebase UI elsewhere
+      const me = await userService.getMe();
 
-      if (response.user && response.devToken) {
-        setUser(response.user);
-        setToken(response.devToken);
+      if (me) {
+        setUser(me);
+        setRole(me.role || null);
         setIsAuthenticated(true);
-
-        // Store in session manager for session-based storage
-        sessionManager.setSessionData('authToken', response.devToken);
         sessionManager.setSessionData('isAuthenticated', 'true');
-        sessionManager.setSessionData('userData', JSON.stringify(response.user));
-        sessionManager.setSessionData('userRole', response.user.role);
-
-        return { success: true, user: response.user };
-      } else {
-        throw new Error('Invalid response from server');
+        sessionManager.setSessionData('userData', JSON.stringify(me));
+        if (me.role) sessionManager.setSessionData('userRole', me.role);
+        return { success: true, user: me };
       }
+      throw new Error('Authentication failed');
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.error || error.message || 'Login failed';
@@ -167,6 +169,7 @@ export const AuthProvider = ({ children }) => {
           const me = await userService.getMe();
           if (me) {
             setUser(me);
+            setRole(me.role || null);
             setIsAuthenticated(true);
             localStorage.setItem('isAuthenticated', 'true');
             if (me.role) localStorage.setItem('userRole', me.role);
@@ -200,6 +203,7 @@ export const AuthProvider = ({ children }) => {
   const updateUser = (userData) => {
     const updatedUser = { ...user, ...userData };
     setUser(updatedUser);
+    if (updatedUser?.role) setRole(updatedUser.role);
     localStorage.setItem('userData', JSON.stringify(updatedUser));
 
     // Trigger a custom event to notify other components of user data changes
@@ -211,11 +215,12 @@ export const AuthProvider = ({ children }) => {
   const refreshUser = async () => {
     try {
       if (!token) return false;
-
-      const profileResponse = await authService.getUserProfile();
-      if (profileResponse.user) {
-        setUser(profileResponse.user);
-        localStorage.setItem('userData', JSON.stringify(profileResponse.user));
+      const me = await userService.getMe();
+      if (me) {
+        setUser(me);
+        setRole(me.role || null);
+        localStorage.setItem('userData', JSON.stringify(me));
+        if (me.role) localStorage.setItem('userRole', me.role);
         return true;
       }
       return false;
@@ -232,6 +237,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     token,
+    role: role || user?.role || sessionManager.getSessionData('userRole') || localStorage.getItem('userRole'),
     loading,
     isAuthenticated,
     error,
