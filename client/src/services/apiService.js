@@ -3,61 +3,112 @@ import axios from 'axios';
 // API Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
+// Lightweight auth storage helpers (supports both localStorage and sessionStorage)
+const authStorage = {
+  getToken() {
+    // Prefer sessionStorage for dev tokens, then localStorage
+    const sessionToken = (() => {
+      try { return sessionStorage.getItem('authToken'); } catch { return null; }
+    })();
+    const localToken = (() => {
+      try { return localStorage.getItem('authToken'); } catch { return null; }
+    })();
+    return sessionToken || localToken || null;
+  },
+  getRole() {
+    const sRole = (() => { try { return sessionStorage.getItem('userRole'); } catch { return null; } })();
+    const lRole = (() => { try { return localStorage.getItem('userRole'); } catch { return null; } })();
+    return sRole || lRole || null;
+  },
+  set(token, role) {
+    try { sessionStorage.setItem('authToken', token); } catch {}
+    try { if (role) sessionStorage.setItem('userRole', role); } catch {}
+  },
+  clear() {
+    try { sessionStorage.removeItem('authToken'); } catch {}
+    try { sessionStorage.removeItem('isAuthenticated'); } catch {}
+    try { sessionStorage.removeItem('userRole'); } catch {}
+    try { localStorage.removeItem('authToken'); } catch {}
+    try { localStorage.removeItem('isAuthenticated'); } catch {}
+    try { localStorage.removeItem('userRole'); } catch {}
+  }
+};
+
 // Create axios instance with default config
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'X-Requested-With': 'XMLHttpRequest'
   },
-  timeout: 15000,
-  withCredentials: true,
+  timeout: 20000,
+  withCredentials: false
 });
 
-// Request interceptor to add auth token
-apiClient.interceptors.request.use(
-  async (config) => {
-    try {
-      // Check if Firebase is configured
-      const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-      if (firebaseApiKey && firebaseApiKey !== 'placeholder_key') {
-        // Prefer Firebase ID token if available
-        const { auth } = await import('../firebase');
-        if (auth && auth.currentUser) {
-          const idToken = await auth.currentUser.getIdToken();
+async function attachAuthHeaders(config) {
+  // Prefer Firebase ID token when available
+  try {
+    const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+    if (firebaseApiKey && firebaseApiKey !== 'placeholder_key') {
+      const { auth } = await import('../firebase');
+      if (auth && auth.currentUser) {
+        const idToken = await auth.currentUser.getIdToken();
+        if (idToken) {
           config.headers.Authorization = `Bearer ${idToken}`;
-          return config;
         }
       }
-    } catch (_) {
-      // ignore
     }
-    const token = localStorage.getItem('authToken');
+  } catch {}
+
+  // Fallback to stored tokens (dev or custom JWT)
+  if (!config.headers.Authorization) {
+    const token = authStorage.getToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
   }
+
+  // Optionally send role hint (server should still verify from DB/token)
+  const role = authStorage.getRole();
+  if (role && !config.headers['X-User-Role']) {
+    config.headers['X-User-Role'] = role;
+  }
+
+  return config;
+}
+
+// Request interceptor to add auth token and role headers
+apiClient.interceptors.request.use(
+  async (config) => {
+    const updated = await attachAuthHeaders(config);
+    return updated;
+  },
+  (error) => Promise.reject(error)
 );
+
+function redirectToLogin() {
+  const currentPath = window.location.pathname;
+  const publicPaths = ['/', '/landing', '/authentication-login-register', '/reset-password'];
+  if (!publicPaths.includes(currentPath)) {
+    authStorage.clear();
+    window.location.href = '/authentication-login-register';
+  }
+}
 
 // Response interceptor for error handling
 apiClient.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      // Only redirect to login if we're not already on a public page
-      const currentPath = window.location.pathname;
-      const publicPaths = ['/', '/landing', '/authentication-login-register', '/reset-password'];
-
-      if (!publicPaths.includes(currentPath)) {
-        // Unauthorized - clear token and redirect to login
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('isAuthenticated');
-        localStorage.removeItem('userRole');
-        window.location.href = '/authentication-login-register';
-      }
+  async (error) => {
+    const status = error?.response?.status;
+    if (status === 401) {
+      redirectToLogin();
+    } else if (status === 403) {
+      // Dispatch a lightweight browser event so pages/components can react (toast, etc.)
+      try {
+        window.dispatchEvent(new CustomEvent('api:forbidden', { detail: { url: error?.config?.url } }));
+      } catch {}
+      // Optional: if user is authenticated but lacks role, you might route them away
+      // Keep the promise rejection so callers can handle gracefully
     }
     return Promise.reject(error);
   }
@@ -77,15 +128,9 @@ export const authService = {
     return response.data;
   },
 
-  // Development login (for testing)
-  devLogin: async (credentials) => {
-    const response = await apiClient.post('/auth/dev-login', credentials);
-    if (response.data.devToken) {
-      localStorage.setItem('authToken', response.data.devToken);
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('userRole', response.data.user.role);
-    }
-    return response.data;
+  // Development login disabled in production-ready build
+  devLogin: async () => {
+    throw new Error('Development login is disabled. Use real authentication.');
   },
 
   // Sync user with backend
@@ -122,6 +167,18 @@ export const authService = {
   // Reset password
   resetPassword: async (resetData) => {
     const response = await apiClient.post('/auth/reset-password', resetData);
+    return response.data;
+  }
+};
+
+// Unified Profile Service (standardizes role-specific profile access)
+export const profileService = {
+  getProfile: async () => {
+    const response = await apiClient.get('/profile');
+    return response.data;
+  },
+  updateProfile: async (payload) => {
+    const response = await apiClient.put('/profile', payload);
     return response.data;
   }
 };
