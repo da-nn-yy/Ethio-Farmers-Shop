@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Fix farmer listings data transformation and add admin registration endpoint" />
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="updated: a rolespecific section and useAuth hooks">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/FRONTEND_BACKEND_INTEGRATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -87,55 +91,10 @@
       <workItem from="1757063180966" duration="4112000" />
       <workItem from="1757326641249" duration="5243000" />
       <workItem from="1758548271128" duration="390000" />
-      <workItem from="1758688952438" duration="3266000" />
-    </task>
-    <task id="LOCAL-00033" summary="Refactor authentication to use custom auth hook and enhance filter panel with instant filtering and sort functionality">
-      <option name="closed" value="true" />
-      <created>1757013804419</created>
-      <option name="number" value="00033" />
-      <option name="presentableId" value="LOCAL-00033" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013804419</updated>
-    </task>
-    <task id="LOCAL-00034" summary="Add comprehensive user authentication system with Firebase integration and development testing support">
-      <option name="closed" value="true" />
-      <created>1757013822774</created>
-      <option name="number" value="00034" />
-      <option name="presentableId" value="LOCAL-00034" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013822774</updated>
-    </task>
-    <task id="LOCAL-00035" summary="Fix database import path and streamline farmer route structure">
-      <option name="closed" value="true" />
-      <created>1757013841463</created>
-      <option name="number" value="00035" />
-      <option name="presentableId" value="LOCAL-00035" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013841463</updated>
-    </task>
-    <task id="LOCAL-00036" summary="Refactor dashboard components to use centralized API services and custom auth hook">
-      <option name="closed" value="true" />
-      <created>1757013858861</created>
-      <option name="number" value="00036" />
-      <option name="presentableId" value="LOCAL-00036" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013858861</updated>
-    </task>
-    <task id="LOCAL-00037" summary="Add farmer order management and enhance listing controller with CRUD operations">
-      <option name="closed" value="true" />
-      <created>1757013889502</created>
-      <option name="number" value="00037" />
-      <option name="presentableId" value="LOCAL-00037" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013889502</updated>
-    </task>
-    <task id="LOCAL-00038" summary="Refactor user routes to use cleaner URL structure and centralized authentication middleware">
-      <option name="closed" value="true" />
-      <created>1757013911754</created>
-      <option name="number" value="00038" />
-      <option name="presentableId" value="LOCAL-00038" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013911754</updated>
+      <workItem from="1758688952438" duration="3913000" />
+      <workItem from="1758695096420" duration="2898000" />
+      <workItem from="1758700660761" duration="495000" />
+      <workItem from="1758783602037" duration="1439000" />
     </task>
     <task id="LOCAL-00039" summary="Add comprehensive dashboard controller with role-based analytics and centralized API service layer">
       <option name="closed" value="true" />
@@ -481,7 +440,55 @@
       <option name="project" value="LOCAL" />
       <updated>1758692805039</updated>
     </task>
-    <option name="localTasksCounter" value="82" />
+    <task id="LOCAL-00082" summary="Update IDE workspace configuration and clean up change list">
+      <option name="closed" value="true" />
+      <created>1758694040886</created>
+      <option name="number" value="00082" />
+      <option name="presentableId" value="LOCAL-00082" />
+      <option name="project" value="LOCAL" />
+      <updated>1758694040886</updated>
+    </task>
+    <task id="LOCAL-00083" summary="updated: a dashboardRoutes, apiSevice and authentication file for better authentication">
+      <option name="closed" value="true" />
+      <created>1758783703014</created>
+      <option name="number" value="00083" />
+      <option name="presentableId" value="LOCAL-00083" />
+      <option name="project" value="LOCAL" />
+      <updated>1758783703015</updated>
+    </task>
+    <task id="LOCAL-00084" summary="modified the index files of server and index files of client of favorite and user profile managment pages">
+      <option name="closed" value="true" />
+      <created>1758783786878</created>
+      <option name="number" value="00084" />
+      <option name="presentableId" value="LOCAL-00084" />
+      <option name="project" value="LOCAL" />
+      <updated>1758783786878</updated>
+    </task>
+    <task id="LOCAL-00085" summary="modified: teh account information jsx file and a server userController and related files of Order and listing files from the server side">
+      <option name="closed" value="true" />
+      <created>1758783864291</created>
+      <option name="number" value="00085" />
+      <option name="presentableId" value="LOCAL-00085" />
+      <option name="project" value="LOCAL" />
+      <updated>1758783864291</updated>
+    </task>
+    <task id="LOCAL-00086" summary="modified: teh account information jsx file and a server userController and related files of Order and listing files from the server side">
+      <option name="closed" value="true" />
+      <created>1758783890903</created>
+      <option name="number" value="00086" />
+      <option name="presentableId" value="LOCAL-00086" />
+      <option name="project" value="LOCAL" />
+      <updated>1758783890903</updated>
+    </task>
+    <task id="LOCAL-00087" summary="updated: a rolespecific section and useAuth hooks">
+      <option name="closed" value="true" />
+      <created>1758783948649</created>
+      <option name="number" value="00087" />
+      <option name="presentableId" value="LOCAL-00087" />
+      <option name="project" value="LOCAL" />
+      <updated>1758783948649</updated>
+    </task>
+    <option name="localTasksCounter" value="88" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -515,11 +522,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add line breaks to improve code formatting consistency across review, search, and notification route files" />
-    <MESSAGE value="Add comprehensive review and notification components with real-time user interaction features" />
-    <MESSAGE value="Refactor file structure by renaming component or module file" />
-    <MESSAGE value="Add account deletion functionality and improve authentication integration with Firebase" />
-    <MESSAGE value="Add line breaks to improve code formatting consistency across review components and routes" />
     <MESSAGE value="Add line breaks to improve code formatting consistency across market trends and review controllers" />
     <MESSAGE value="Update API base URL configuration to use port 5001 and remove development authentication bypass" />
     <MESSAGE value="Fix authentication integration and update API base URL configuration across dashboard components" />
@@ -540,6 +542,11 @@
     <MESSAGE value="Refactor listings data handling and enhance UI components with improved image gallery and mobile responsiveness" />
     <MESSAGE value="Integrate session manager for authentication and cart storage with enhanced search header UI" />
     <MESSAGE value="Fix farmer listings data transformation and add admin registration endpoint" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix farmer listings data transformation and add admin registration endpoint" />
+    <MESSAGE value="Update IDE workspace configuration and clean up change list" />
+    <MESSAGE value="updated: a dashboardRoutes, apiSevice and authentication file for better authentication" />
+    <MESSAGE value="modified the index files of server and index files of client of favorite and user profile managment pages" />
+    <MESSAGE value="modified: teh account information jsx file and a server userController and related files of Order and listing files from the server side" />
+    <MESSAGE value="updated: a rolespecific section and useAuth hooks" />
+    <option name="LAST_COMMIT_MESSAGE" value="updated: a rolespecific section and useAuth hooks" />
   </component>
 </project>

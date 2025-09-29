@@ -498,13 +498,13 @@ const BrowseListingsBuyerHome = () => {
         onFilterClick={() => setIsFilterPanelOpen(true)}
         currentLanguage={currentLanguage}
       />
-      {/* Filter Chips */}
-      <FilterChips
-        activeFilters={getActiveFilters()}
-        onRemoveFilter={handleRemoveFilter}
-        onClearAll={handleClearAllFilters}
-        currentLanguage={currentLanguage}
-      />
+      {/*/!* Filter Chips *!/*/}
+      {/*<FilterChips*/}
+      {/*  activeFilters={getActiveFilters()}*/}
+      {/*  onRemoveFilter={handleRemoveFilter}*/}
+      {/*  onClearAll={handleClearAllFilters}*/}
+      {/*  currentLanguage={currentLanguage}*/}
+      {/*/>*/}
 
       {/* Top filter bar (replaces sidebar) */}
       <div className="p-4 lg:p-6">
