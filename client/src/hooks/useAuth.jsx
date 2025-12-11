@@ -26,9 +26,42 @@ export const AuthProvider = ({ children }) => {
 
     window.addEventListener('sessionCleared', handleSessionCleared);
 
+    // Listen to Firebase auth state changes
+    let unsubscribe = null;
+    (async () => {
+      try {
+        const { auth } = await import('../firebase');
+        if (auth) {
+          const { onAuthStateChanged } = await import('firebase/auth');
+          unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+            if (firebaseUser) {
+              try {
+                const me = await userService.getMe();
+                if (me) {
+                  setUser(me);
+                  setRole(me.role || null);
+                  setIsAuthenticated(true);
+                  sessionManager.setSessionData('isAuthenticated', 'true');
+                  sessionManager.setSessionData('userData', JSON.stringify(me));
+                  if (me.role) sessionManager.setSessionData('userRole', me.role);
+                }
+              } catch (err) {
+                console.error('Failed to sync user after Firebase auth change:', err);
+              }
+            } else {
+              clearAuth();
+            }
+          });
+        }
+      } catch (err) {
+        // Firebase not configured, ignore
+      }
+    })();
+
     // Cleanup event listener
     return () => {
       window.removeEventListener('sessionCleared', handleSessionCleared);
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 
@@ -37,10 +70,10 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      // Use session manager for session-based storage
-      const storedToken = sessionManager.getSessionData('authToken');
-      const storedAuth = sessionManager.getSessionData('isAuthenticated');
-      const storedUser = sessionManager.getSessionData('userData');
+      // Use session manager for session-based storage, fallback to localStorage
+      const storedToken = sessionManager.getSessionData('authToken') || localStorage.getItem('authToken');
+      const storedAuth = sessionManager.getSessionData('isAuthenticated') || localStorage.getItem('isAuthenticated');
+      const storedUser = sessionManager.getSessionData('userData') || localStorage.getItem('userData');
 
       if (storedToken && storedAuth === 'true') {
         // Immediately hydrate session from storage to avoid flicker/redirects
@@ -201,10 +234,17 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateUser = (userData) => {
-    const updatedUser = { ...user, ...userData };
+    const updatedUser = userData || { ...user, ...userData };
     setUser(updatedUser);
     if (updatedUser?.role) setRole(updatedUser.role);
+    setIsAuthenticated(true);
+    setToken(localStorage.getItem('authToken') || sessionManager.getSessionData('authToken'));
     localStorage.setItem('userData', JSON.stringify(updatedUser));
+    sessionManager.setSessionData('userData', JSON.stringify(updatedUser));
+    if (updatedUser?.role) {
+      localStorage.setItem('userRole', updatedUser.role);
+      sessionManager.setSessionData('userRole', updatedUser.role);
+    }
 
     // Trigger a custom event to notify other components of user data changes
     window.dispatchEvent(new CustomEvent('userDataUpdated', {
