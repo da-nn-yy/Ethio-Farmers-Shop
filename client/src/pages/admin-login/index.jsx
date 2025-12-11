@@ -4,10 +4,11 @@ import { useAuth } from '../../hooks/useAuth.jsx';
 import Button from '../../components/ui/Button.jsx';
 import Icon from '../../components/AppIcon.jsx';
 import { useLanguage } from '../../hooks/useLanguage.jsx';
+import sessionManager from '../../utils/sessionManager.js';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, isAuthenticated, user, updateUser, refreshUser } = useAuth();
   const { language } = useLanguage();
   const [formData, setFormData] = useState({
     email: '',
@@ -93,29 +94,113 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      await login(formData.email, formData.password, formData.rememberMe);
+      // Use Firebase authentication for admin login
+      const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth');
+      const { auth } = await import('../../firebase');
 
-      // Check if user is admin after login
-      if (user?.role === 'admin') {
-        navigate('/admin-dashboard');
-      } else {
+      if (!auth) {
+        throw new Error('Firebase is not configured');
+      }
+
+      // Sign in with Firebase
+      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+      const firebaseUser = userCredential.user;
+
+      // Get ID token and verify user role from backend
+      const idToken = await firebaseUser.getIdToken();
+
+      // Fetch user profile from backend to check role
+      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_BASE}/users/me`, {
+        headers: {
+          'Authorization': `Bearer ${idToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user profile');
+      }
+
+      const userData = await response.json();
+
+      // Check if user is admin
+      if (userData.role !== 'admin') {
+        // Sign out if not admin
+        await auth.signOut();
         setError(t.loginError);
+        setIsLoading(false);
+        return;
+      }
+
+      // Fetch user data from backend
+      const { userService } = await import('../../services/apiService');
+      const me = await userService.getMe();
+
+      if (!me) {
+        throw new Error('Failed to fetch user profile');
+      }
+
+      // Store auth token in sessionManager (auth hook checks this)
+      sessionManager.setSessionData('authToken', idToken);
+      sessionManager.setSessionData('userData', JSON.stringify(me));
+      sessionManager.setSessionData('userRole', me.role);
+      sessionManager.setSessionData('isAuthenticated', 'true');
+
+      // Also store in localStorage for API interceptor
+      localStorage.setItem('authToken', idToken);
+      localStorage.setItem('userData', JSON.stringify(me));
+      localStorage.setItem('userRole', me.role);
+      localStorage.setItem('isAuthenticated', 'true');
+
+      // Force update auth context immediately - this sets isAuthenticated to true
+      updateUser(me);
+
+      // Small delay to ensure React state updates
+      await new Promise(resolve => setTimeout(resolve, 200));
+
+      // Force navigation - use window.location as fallback if navigate doesn't work
+      try {
+        navigate('/admin-dashboard', { replace: true });
+        // If still on login page after a moment, force reload
+        setTimeout(() => {
+          if (window.location.pathname === '/admin-login') {
+            window.location.href = '/admin-dashboard';
+          }
+        }, 500);
+      } catch (err) {
+        // Fallback to direct navigation
+        window.location.href = '/admin-dashboard';
       }
     } catch (error) {
-      console.error('Login error:', error);
-      setError(t.loginError);
+      console.error('Admin login error:', error);
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        setError(t.loginError);
+      } else if (error.code === 'auth/invalid-email') {
+        setError(t.invalidEmail);
+      } else {
+        setError(error.message || t.loginError);
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleDevLogin = () => {
-    // Quick dev login for admin
-    setFormData({
-      email: 'admin@ethiofarm.com',
-      password: 'admin123',
-      rememberMe: false
-    });
+  const handleDevLogin = async () => {
+    // Quick dev login for admin - only in development
+    if (process.env.NODE_ENV === 'development') {
+      setFormData({
+        email: 'admin@ethiofarm.com',
+        password: 'admin123',
+        rememberMe: false
+      });
+      // Auto-submit after setting form data
+      setTimeout(() => {
+        const form = document.querySelector('form');
+        if (form) {
+          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        }
+      }, 100);
+    }
   };
 
   return (

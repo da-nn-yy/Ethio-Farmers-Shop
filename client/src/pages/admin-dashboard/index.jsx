@@ -29,17 +29,26 @@ const AdminDashboard = () => {
   const [dashboardData, setDashboardData] = useState(null);
 
   React.useEffect(() => {
-    if (isAuthenticated && user?.role === 'admin') {
-      // Admin user, stay on dashboard
+    // Check authentication and role
+    const checkAuth = async () => {
+      // If not authenticated, redirect to admin login
+      if (!isAuthenticated) {
+        navigate('/admin-login', { replace: true });
+        return;
+      }
+
+      // If user role is not admin, redirect to appropriate dashboard
+      if (user?.role !== 'admin') {
+        const fallback = user?.role === 'farmer' ? '/dashboard-farmer-home' : '/dashboard-buyer-home';
+        navigate(fallback, { replace: true });
+        return;
+      }
+
+      // Admin user authenticated, load dashboard data
       loadDashboardData();
-      return;
-    } else if (isAuthenticated) {
-      // Redirect non-admin users to their appropriate dashboard
-      const fallback = user?.role === 'farmer' ? '/dashboard-farmer-home' : '/dashboard-buyer-home';
-      navigate(fallback);
-    } else {
-      navigate('/authentication-login-register');
-    }
+    };
+
+    checkAuth();
   }, [isAuthenticated, user, navigate]);
 
   const loadDashboardData = async () => {
