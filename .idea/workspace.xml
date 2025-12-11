@@ -4,10 +4,8 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="updated: a rolespecific section and useAuth hooks">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add StandardImageUpload component, UserMenu component, and unified profile routes">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/FRONTEND_BACKEND_INTEGRATION.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/pages/browse-listings-buyer-home/index.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,78 +93,7 @@
       <workItem from="1758695096420" duration="2898000" />
       <workItem from="1758700660761" duration="495000" />
       <workItem from="1758783602037" duration="1439000" />
-    </task>
-    <task id="LOCAL-00039" summary="Add comprehensive dashboard controller with role-based analytics and centralized API service layer">
-      <option name="closed" value="true" />
-      <created>1757013932236</created>
-      <option name="number" value="00039" />
-      <option name="presentableId" value="LOCAL-00039" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013932236</updated>
-    </task>
-    <task id="LOCAL-00040" summary="Add comprehensive favorites system with bulk operations and frontend integration">
-      <option name="closed" value="true" />
-      <created>1757013958147</created>
-      <option name="number" value="00040" />
-      <option name="presentableId" value="LOCAL-00040" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013958147</updated>
-    </task>
-    <task id="LOCAL-00041" summary="Add comprehensive market trends, reviews, and notifications system with full CRUD operations and analytics">
-      <option name="closed" value="true" />
-      <created>1757013978585</created>
-      <option name="number" value="00041" />
-      <option name="presentableId" value="LOCAL-00041" />
-      <option name="project" value="LOCAL" />
-      <updated>1757013978585</updated>
-    </task>
-    <task id="LOCAL-00042" summary="Add comprehensive search system with advanced filtering and analytics capabilities">
-      <option name="closed" value="true" />
-      <created>1757014006866</created>
-      <option name="number" value="00042" />
-      <option name="presentableId" value="LOCAL-00042" />
-      <option name="project" value="LOCAL" />
-      <updated>1757014006866</updated>
-    </task>
-    <task id="LOCAL-00043" summary="Add centralized API routing system with comprehensive route organization and health check endpoint">
-      <option name="closed" value="true" />
-      <created>1757014041033</created>
-      <option name="number" value="00043" />
-      <option name="presentableId" value="LOCAL-00043" />
-      <option name="project" value="LOCAL" />
-      <updated>1757014041033</updated>
-    </task>
-    <task id="LOCAL-00044" summary="Fix import paths to include .jsx extension for useAuth hook">
-      <option name="closed" value="true" />
-      <created>1757016022924</created>
-      <option name="number" value="00044" />
-      <option name="presentableId" value="LOCAL-00044" />
-      <option name="project" value="LOCAL" />
-      <updated>1757016022924</updated>
-    </task>
-    <task id="LOCAL-00045" summary="Fix import paths to include .jsx extension for useAuth hook">
-      <option name="closed" value="true" />
-      <created>1757016067513</created>
-      <option name="number" value="00045" />
-      <option name="presentableId" value="LOCAL-00045" />
-      <option name="project" value="LOCAL" />
-      <updated>1757016067513</updated>
-    </task>
-    <task id="LOCAL-00046" summary="Fix import paths to include .jsx extension for useAuth hook across dashboard components">
-      <option name="closed" value="true" />
-      <created>1757016087592</created>
-      <option name="number" value="00046" />
-      <option name="presentableId" value="LOCAL-00046" />
-      <option name="project" value="LOCAL" />
-      <updated>1757016087592</updated>
-    </task>
-    <task id="LOCAL-00047" summary="Add comprehensive authentication context provider with token management and user state handling">
-      <option name="closed" value="true" />
-      <created>1757016122979</created>
-      <option name="number" value="00047" />
-      <option name="presentableId" value="LOCAL-00047" />
-      <option name="project" value="LOCAL" />
-      <updated>1757016122979</updated>
+      <workItem from="1759121309043" duration="1026000" />
     </task>
     <task id="LOCAL-00048" summary="Update API base URL configuration from port 5001 to 5000">
       <option name="closed" value="true" />
@@ -488,7 +415,79 @@
       <option name="project" value="LOCAL" />
       <updated>1758783948649</updated>
     </task>
-    <option name="localTasksCounter" value="88" />
+    <task id="LOCAL-00088" summary="move FilterChips component from buyer home page and clean up documentation">
+      <option name="closed" value="true" />
+      <created>1759121353425</created>
+      <option name="number" value="00088" />
+      <option name="presentableId" value="LOCAL-00088" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121353425</updated>
+    </task>
+    <task id="LOCAL-00089" summary="I notice that the code diff section is empty, which means there are no actual changes to analyze. Without any code changes provided, I cannot generate a meaningful commit message that relates to new code additions or modifications.">
+      <option name="closed" value="true" />
+      <created>1759121496947</created>
+      <option name="number" value="00089" />
+      <option name="presentableId" value="LOCAL-00089" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121496947</updated>
+    </task>
+    <task id="LOCAL-00090" summary="Add comprehensive admin layout and cart functionality with UI components">
+      <option name="closed" value="true" />
+      <created>1759121618795</created>
+      <option name="number" value="00090" />
+      <option name="presentableId" value="LOCAL-00090" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121618795</updated>
+    </task>
+    <task id="LOCAL-00091" summary="Add enhanced cart page with multilingual support and database image management script">
+      <option name="closed" value="true" />
+      <created>1759121634081</created>
+      <option name="number" value="00091" />
+      <option name="presentableId" value="LOCAL-00091" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121634081</updated>
+    </task>
+    <task id="LOCAL-00092" summary="Add admin authentication pages with multilingual support and form validation">
+      <option name="closed" value="true" />
+      <created>1759121646305</created>
+      <option name="number" value="00092" />
+      <option name="presentableId" value="LOCAL-00092" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121646305</updated>
+    </task>
+    <task id="LOCAL-00093" summary="Add comprehensive image gallery components with multilingual support and fullscreen functionality">
+      <option name="closed" value="true" />
+      <created>1759121661680</created>
+      <option name="number" value="00093" />
+      <option name="presentableId" value="LOCAL-00093" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121661680</updated>
+    </task>
+    <task id="LOCAL-00094" summary="Add mobile-responsive CSS styles and URL utility for image handling">
+      <option name="closed" value="true" />
+      <created>1759121686854</created>
+      <option name="number" value="00094" />
+      <option name="presentableId" value="LOCAL-00094" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121686854</updated>
+    </task>
+    <task id="LOCAL-00095" summary="Add session management utility and unified profile controller for role-based authentication">
+      <option name="closed" value="true" />
+      <created>1759121700403</created>
+      <option name="number" value="00095" />
+      <option name="presentableId" value="LOCAL-00095" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121700403</updated>
+    </task>
+    <task id="LOCAL-00096" summary="Add StandardImageUpload component, UserMenu component, and unified profile routes">
+      <option name="closed" value="true" />
+      <created>1759121718776</created>
+      <option name="number" value="00096" />
+      <option name="presentableId" value="LOCAL-00096" />
+      <option name="project" value="LOCAL" />
+      <updated>1759121718776</updated>
+    </task>
+    <option name="localTasksCounter" value="97" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -522,15 +521,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Add line breaks to improve code formatting consistency across market trends and review controllers" />
-    <MESSAGE value="Update API base URL configuration to use port 5001 and remove development authentication bypass" />
-    <MESSAGE value="Fix authentication integration and update API base URL configuration across dashboard components" />
-    <MESSAGE value="Update database import path and improve authentication handling across controllers and services" />
-    <MESSAGE value="Update API base URL configuration and fix farmer endpoint paths for listing and image upload functionality" />
-    <MESSAGE value="Update avatar handling and add admin listing deletion functionality" />
-    <MESSAGE value="Add line breaks to improve code formatting consistency across notification components" />
-    <MESSAGE value="Update API base URL configuration from port 5000 to 5001 and add enhanced cart interaction features" />
-    <MESSAGE value="Add line breaks to improve code formatting consistency and enhance notification integration with cart functionality" />
     <MESSAGE value="Update admin sidebar styling and replace AuthenticatedTopBar with GlobalHeader in layout" />
     <MESSAGE value="Add image URL normalization and enhance GlobalHeader styling with backdrop blur effects" />
     <MESSAGE value="Update sidebar positioning and add image URL normalization to server" />
@@ -547,6 +537,15 @@
     <MESSAGE value="modified the index files of server and index files of client of favorite and user profile managment pages" />
     <MESSAGE value="modified: teh account information jsx file and a server userController and related files of Order and listing files from the server side" />
     <MESSAGE value="updated: a rolespecific section and useAuth hooks" />
-    <option name="LAST_COMMIT_MESSAGE" value="updated: a rolespecific section and useAuth hooks" />
+    <MESSAGE value="move FilterChips component from buyer home page and clean up documentation" />
+    <MESSAGE value="I notice that the code diff section is empty, which means there are no actual changes to analyze. Without any code changes provided, I cannot generate a meaningful commit message that relates to new code additions or modifications." />
+    <MESSAGE value="Add comprehensive admin layout and cart functionality with UI components" />
+    <MESSAGE value="Add enhanced cart page with multilingual support and database image management script" />
+    <MESSAGE value="Add admin authentication pages with multilingual support and form validation" />
+    <MESSAGE value="Add comprehensive image gallery components with multilingual support and fullscreen functionality" />
+    <MESSAGE value="Add mobile-responsive CSS styles and URL utility for image handling" />
+    <MESSAGE value="Add session management utility and unified profile controller for role-based authentication" />
+    <MESSAGE value="Add StandardImageUpload component, UserMenu component, and unified profile routes" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add StandardImageUpload component, UserMenu component, and unified profile routes" />
   </component>
 </project>
