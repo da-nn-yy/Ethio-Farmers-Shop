@@ -174,6 +174,7 @@ app.get("/health", (req, res) => {
 // Public buyer listings endpoint (no authentication required)
 app.get("/public/listings", async (req, res) => {
   try {
+    // Get all active listings
     const [rows] = await pool.query(`
       SELECT
         pl.id,
@@ -183,23 +184,47 @@ app.get("/public/listings", async (req, res) => {
         pl.quantity as availableQuantity,
         pl.region as location,
         pl.status,
+        pl.description,
+        pl.unit,
+        pl.currency,
         u.id as farmerUserId,
         u.full_name as farmerName,
-        li.url as image,
         ua.url as farmerAvatar,
         pl.created_at as createdAt
       FROM produce_listings pl
       JOIN users u ON pl.farmer_user_id = u.id
-      LEFT JOIN listing_images li ON pl.id = li.listing_id AND li.sort_order = 0
       LEFT JOIN user_avatars ua ON ua.user_id = u.id
       WHERE pl.status = 'active' AND pl.quantity > 0
       ORDER BY pl.created_at DESC
       LIMIT 50
     `);
 
+    // Get all images for these listings
+    const listingIds = rows.map(r => r.id);
+    let imagesByListing = {};
+
+    if (listingIds.length > 0) {
+      const [imageRows] = await pool.query(`
+        SELECT listing_id, url, sort_order
+        FROM listing_images
+        WHERE listing_id IN (${listingIds.map(() => '?').join(',')})
+        ORDER BY listing_id, sort_order
+      `, listingIds);
+
+      // Group images by listing_id
+      imageRows.forEach(img => {
+        if (!imagesByListing[img.listing_id]) {
+          imagesByListing[img.listing_id] = [];
+        }
+        imagesByListing[img.listing_id].push(normalizeImageUrl(img.url));
+      });
+    }
+
+    // Map listings with all their images
     const listings = rows.map((r) => ({
       ...r,
-      image: normalizeImageUrl(r.image),
+      image: imagesByListing[r.id]?.[0] || null, // Primary image for backward compatibility
+      images: imagesByListing[r.id] || [], // All images
       farmerAvatar: normalizeImageUrl(r.farmerAvatar),
     }));
 
