@@ -47,17 +47,17 @@ const apiClient = axios.create({
 
 async function attachAuthHeaders(config) {
   // Prefer Firebase ID token when available
-  try {
-    const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
-    if (firebaseApiKey && firebaseApiKey !== 'placeholder_key') {
-      const { auth } = await import('../firebase');
-      if (auth && auth.currentUser) {
-        const idToken = await auth.currentUser.getIdToken();
+    try {
+      const firebaseApiKey = import.meta.env.VITE_FIREBASE_API_KEY;
+      if (firebaseApiKey && firebaseApiKey !== 'placeholder_key') {
+        const { auth } = await import('../firebase');
+        if (auth && auth.currentUser) {
+          const idToken = await auth.currentUser.getIdToken();
         if (idToken) {
           config.headers.Authorization = `Bearer ${idToken}`;
         }
+        }
       }
-    }
   } catch {}
 
   // Fallback to stored tokens (dev or custom JWT)
@@ -74,7 +74,7 @@ async function attachAuthHeaders(config) {
     config.headers['X-User-Role'] = role;
   }
 
-  return config;
+    return config;
 }
 
 // Request interceptor to add auth token and role headers
@@ -87,12 +87,12 @@ apiClient.interceptors.request.use(
 );
 
 function redirectToLogin() {
-  const currentPath = window.location.pathname;
-  const publicPaths = ['/', '/landing', '/authentication-login-register', '/reset-password'];
-  if (!publicPaths.includes(currentPath)) {
+      const currentPath = window.location.pathname;
+      const publicPaths = ['/', '/landing', '/authentication-login-register', '/reset-password'];
+      if (!publicPaths.includes(currentPath)) {
     authStorage.clear();
-    window.location.href = '/authentication-login-register';
-  }
+        window.location.href = '/authentication-login-register';
+      }
 }
 
 // Response interceptor for error handling

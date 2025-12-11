@@ -484,13 +484,40 @@ export const createFarmerListing = async (req, res) => {
     // Add image if provided
     if (image) {
       try {
+        // Ensure listing_images table exists
+        await pool.query(`CREATE TABLE IF NOT EXISTS listing_images (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          listing_id INT NOT NULL,
+          url TEXT NOT NULL,
+          sort_order INT NOT NULL DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_images_listing (listing_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
+        // Store relative path if it's a full URL, otherwise store as-is
+        let imagePath = image;
+        if (image.startsWith('http://') || image.startsWith('https://')) {
+          // Extract relative path from full URL (e.g., "http://localhost:5000/uploads/file.jpg" -> "uploads/file.jpg")
+          try {
+            const urlObj = new URL(image);
+            imagePath = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname;
+          } catch {
+            // If URL parsing fails, try simple string extraction
+            const match = image.match(/\/uploads\/[^\/]+$/);
+            if (match) {
+              imagePath = match[0].slice(1); // Remove leading slash
+            }
+          }
+        }
+
         await pool.query(
           `INSERT INTO listing_images (listing_id, url, sort_order) VALUES (?, ?, 0)`,
-          [listingId, image]
+          [listingId, imagePath]
         );
-        console.log('Primary image added to listing with sort_order 0');
-      } catch (_) {
-        // ignore if legacy schema without listing_images
+        console.log('Primary image added to listing with sort_order 0:', imagePath);
+      } catch (err) {
+        console.error('Error adding image to listing:', err);
+        // Continue even if image insert fails
       }
     }
 
@@ -836,14 +863,22 @@ export const uploadImage = async (req, res) => {
       return res.status(400).json({ error: "No image file provided" });
     }
 
-    // Generate the URL for the uploaded image
-    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    // Store relative path in database (will be normalized when read)
+    const relativePath = `uploads/${req.file.filename}`;
 
-    console.log('Image uploaded successfully:', imageUrl);
+    // Generate public URL for response (normalized)
+    const publicUrl = normalizeImageUrl(relativePath);
+
+    console.log('Image uploaded successfully:', {
+      filename: req.file.filename,
+      relativePath,
+      publicUrl
+    });
 
     res.json({
       message: "Image uploaded successfully",
-      imageUrl: imageUrl,
+      imageUrl: publicUrl, // Return public URL for immediate use
+      relativePath: relativePath, // Also return relative path for database storage
       filename: req.file.filename
     });
   } catch (error) {
