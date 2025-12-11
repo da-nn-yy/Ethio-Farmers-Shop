@@ -61,7 +61,7 @@ const RoleRedirect = () => {
   }
 
   if (userRole === 'admin') {
-    return <Navigate to="/admin-login" replace />;
+    return <Navigate to="/admin-dashboard" replace />;
   }
 
   if (userRole === 'farmer') {

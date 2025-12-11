@@ -18,7 +18,9 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/authentication-login-register" replace />;
+    // Redirect to admin login if accessing admin routes, otherwise user login
+    const isAdminRoute = window.location.pathname.startsWith('/admin');
+    return <Navigate to={isAdminRoute ? "/admin-login" : "/authentication-login-register"} replace />;
   }
 
   if (requiredRole && userRole !== requiredRole) {
