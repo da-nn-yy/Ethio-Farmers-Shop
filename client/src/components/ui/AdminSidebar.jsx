@@ -23,11 +23,11 @@ const AdminSidebar = ({ isCollapsed, onToggleCollapse }) => {
       name: 'Overview',
       nameAm: 'አጠቃላይ እይታ',
       icon: 'Home',
-      items: [
+        items: [
         {
           name: 'Dashboard',
           nameAm: 'ዳሽቦርድ',
-          path: '/admin-dashboard',
+          path: '/admin/dashboard',
           icon: 'Home',
           badge: null
         }
@@ -38,74 +38,74 @@ const AdminSidebar = ({ isCollapsed, onToggleCollapse }) => {
       name: 'Management',
       nameAm: 'አያያዝ',
       icon: 'Users',
-      items: [
+          items: [
         {
           name: 'Users',
           nameAm: 'ተጠቃሚዎች',
-          path: '/admin-users',
+          path: '/admin/users',
           icon: 'Users',
           badge: null
         },
         {
           name: 'Listings',
           nameAm: 'ዝርዝሮች',
-          path: '/admin-listings',
+          path: '/admin/listings',
           icon: 'Package',
           badge: null
         },
         {
           name: 'Orders',
           nameAm: 'ትዕዛዞች',
-          path: '/admin-orders',
+          path: '/admin/orders',
           icon: 'ShoppingCart',
           badge: null
         },
         {
           name: 'Chat',
           nameAm: 'ውይይት',
-          path: '/admin-chat',
+          path: '/admin/chat',
           icon: 'MessageCircle',
           badge: null
         },
         {
           name: 'Notifications',
           nameAm: 'ማሳወቂያዎች',
-          path: '/admin-notifications',
+          path: '/admin/notifications',
           icon: 'Bell',
           badge: null
         },
         {
           name: 'Payments',
           nameAm: 'ክፍያዎች',
-          path: '/admin-payments',
+          path: '/admin/payments',
           icon: 'CreditCard',
           badge: null
         },
         {
           name: 'Content',
           nameAm: 'ይዘት',
-          path: '/admin-content',
+          path: '/admin/content',
           icon: 'File',
           badge: null
         },
         {
           name: 'Marketplace',
           nameAm: 'ገበያ',
-          path: '/admin-marketplace',
+          path: '/admin/marketplace',
           icon: 'Store',
           badge: null
         },
         {
           name: 'Financial',
           nameAm: 'ገንዘብ',
-          path: '/admin-financial',
+          path: '/admin/financial',
           icon: 'DollarSign',
           badge: null
         },
         {
           name: 'Security',
           nameAm: 'ደህንነት',
-          path: '/admin-security',
+          path: '/admin/security',
           icon: 'Shield',
           badge: null
         }
@@ -120,7 +120,7 @@ const AdminSidebar = ({ isCollapsed, onToggleCollapse }) => {
         {
           name: 'Analytics',
           nameAm: 'ትንተና',
-          path: '/admin-analytics',
+          path: '/admin/analytics',
           icon: 'BarChart3',
           badge: null
         }
@@ -135,7 +135,7 @@ const AdminSidebar = ({ isCollapsed, onToggleCollapse }) => {
         {
           name: 'Settings',
           nameAm: 'ቅንብሮች',
-          path: '/admin-settings',
+          path: '/admin/settings',
           icon: 'Settings',
           badge: null
         }

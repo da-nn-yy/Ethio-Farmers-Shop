@@ -49,15 +49,15 @@ const AdminLayout = ({ children }) => {
   };
 
   const adminMenuItems = [
-    { path: '/admin-dashboard', label: 'Dashboard', labelAm: 'ዳሽቦርድ', icon: 'LayoutDashboard' },
-    { path: '/admin-users', label: 'Users', labelAm: 'ተጠቃሚዎች', icon: 'Users' },
-    { path: '/admin-listings', label: 'Listings', labelAm: 'ዝርዝሮች', icon: 'Package' },
-    { path: '/admin-orders', label: 'Orders', labelAm: 'ትዕዛዞች', icon: 'ShoppingCart' },
-    { path: '/admin-payments', label: 'Payments', labelAm: 'ክፍያዎች', icon: 'CreditCard' },
-    { path: '/admin-analytics', label: 'Analytics', labelAm: 'ትንታኔ', icon: 'BarChart3' },
-    { path: '/admin-notifications', label: 'Notifications', labelAm: 'ማሳወቂያዎች', icon: 'Bell' },
-    { path: '/admin-chat', label: 'Chat', labelAm: 'ውይይት', icon: 'MessageCircle' },
-    { path: '/admin-settings', label: 'Settings', labelAm: 'ቅንብሮች', icon: 'Settings' }
+    { path: '/admin/dashboard', label: 'Dashboard', labelAm: 'ዳሽቦርድ', icon: 'LayoutDashboard' },
+    { path: '/admin/users', label: 'Users', labelAm: 'ተጠቃሚዎች', icon: 'Users' },
+    { path: '/admin/listings', label: 'Listings', labelAm: 'ዝርዝሮች', icon: 'Package' },
+    { path: '/admin/orders', label: 'Orders', labelAm: 'ትዕዛዞች', icon: 'ShoppingCart' },
+    { path: '/admin/payments', label: 'Payments', labelAm: 'ክፍያዎች', icon: 'CreditCard' },
+    { path: '/admin/analytics', label: 'Analytics', labelAm: 'ትንታኔ', icon: 'BarChart3' },
+    { path: '/admin/notifications', label: 'Notifications', labelAm: 'ማሳወቂያዎች', icon: 'Bell' },
+    { path: '/admin/chat', label: 'Chat', labelAm: 'ውይይት', icon: 'MessageCircle' },
+    { path: '/admin/settings', label: 'Settings', labelAm: 'ቅንብሮች', icon: 'Settings' }
   ];
 
   return (
@@ -129,7 +129,7 @@ const AdminLayout = ({ children }) => {
                 {isUserMenuOpen && (
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
                     <button
-                      onClick={() => navigate('/admin-settings')}
+                      onClick={() => navigate('/admin/settings')}
                       className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >
                       <Icon name="Settings" size={16} className="mr-3" />
@@ -198,5 +198,3 @@ const AdminLayout = ({ children }) => {
 };
 
 export default AdminLayout;
-
-
