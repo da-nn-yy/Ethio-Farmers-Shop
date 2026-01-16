@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
-import AuthenticatedLayout from '../../components/ui/AuthenticatedLayout.jsx';
+import AdminPage from '../../components/ui/AdminPage.jsx';
 import Card from '../../components/ui/Card.jsx';
 import Icon from '../../components/AppIcon.jsx';
 import Button from '../../components/ui/Button.jsx';
@@ -11,27 +11,14 @@ const AdminSettings = () => {
   const [activeTab, setActiveTab] = useState('general');
   const [isLoading, setIsLoading] = useState(false);
   const [settings, setSettings] = useState({
-    general: {
-      siteName: 'Ethio Farmers Shop',
-      siteDescription: 'Connecting farmers with buyers across Ethiopia',
-      defaultLanguage: 'en',
-      timezone: 'Africa/Addis_Ababa',
-      currency: 'ETB',
-      maintenanceMode: false
-    },
-    notifications: {
-      emailNotifications: true,
-      smsNotifications: false,
-      pushNotifications: true,
-      orderAlerts: true,
-      userRegistrationAlerts: true,
-      systemAlerts: true
-    },
-    security: {
-      twoFactorAuth: true,
-      passwordMinLength: 8,
-      sessionTimeout: 30,
-      maxLoginAttempts: 5,
+    return (
+      <AdminPage
+        title="System Settings"
+        subtitle="Configure global settings for the platform"
+        actions={<>
+          <Button variant="primary" size="sm" onClick={handleSaveSettings}>Save Changes</Button>
+        </>}
+      >
       ipWhitelist: false,
       auditLogging: true
     },

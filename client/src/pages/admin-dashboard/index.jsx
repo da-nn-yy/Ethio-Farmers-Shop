@@ -201,7 +201,7 @@ const AdminDashboard = () => {
                   variant="primary"
                   size="sm"
                   iconName="Download"
-                  onClick={() => navigate('/admin-analytics')}
+                  onClick={() => navigate('/admin/analytics')}
                 >
                   View Analytics
                 </Button>
@@ -291,7 +291,7 @@ const AdminDashboard = () => {
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <button
-                    onClick={() => navigate('/admin-users')}
+                    onClick={() => navigate('/admin/users')}
                     className="group p-6 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-xl hover:from-blue-100 hover:to-blue-200 dark:hover:from-blue-900/30 dark:hover:to-blue-800/30 transition-all duration-200 hover:scale-105"
                   >
                     <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -302,7 +302,7 @@ const AdminDashboard = () => {
                   </button>
 
                   <button
-                    onClick={() => navigate('/admin-listings')}
+                    onClick={() => navigate('/admin/listings')}
                     className="group p-6 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 rounded-xl hover:from-green-100 hover:to-green-200 dark:hover:from-green-900/30 dark:hover:to-green-800/30 transition-all duration-200 hover:scale-105"
                   >
                     <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -313,7 +313,7 @@ const AdminDashboard = () => {
                   </button>
 
                   <button
-                    onClick={() => navigate('/admin-orders')}
+                    onClick={() => navigate('/admin/orders')}
                     className="group p-6 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-xl hover:from-purple-100 hover:to-purple-200 dark:hover:from-purple-900/30 dark:hover:to-purple-800/30 transition-all duration-200 hover:scale-105"
                   >
                     <div className="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -324,7 +324,7 @@ const AdminDashboard = () => {
                   </button>
 
                   <button
-                    onClick={() => navigate('/admin-analytics')}
+                    onClick={() => navigate('/admin/analytics')}
                     className="group p-6 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-xl hover:from-orange-100 hover:to-orange-200 dark:hover:from-orange-900/30 dark:hover:to-orange-800/30 transition-all duration-200 hover:scale-105"
                   >
                     <div className="w-12 h-12 bg-orange-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -335,7 +335,7 @@ const AdminDashboard = () => {
                   </button>
 
                   <button
-                    onClick={() => navigate('/admin-settings')}
+                    onClick={() => navigate('/admin/settings')}
                     className="group p-6 bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/20 dark:to-gray-800/20 rounded-xl hover:from-gray-100 hover:to-gray-200 dark:hover:from-gray-900/30 dark:hover:to-gray-800/30 transition-all duration-200 hover:scale-105"
                   >
                     <div className="w-12 h-12 bg-gray-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -346,7 +346,7 @@ const AdminDashboard = () => {
                   </button>
 
                   <button
-                    onClick={() => navigate('/admin-notifications')}
+                    onClick={() => navigate('/admin/notifications')}
                     className="group p-6 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-xl hover:from-red-100 hover:to-red-200 dark:hover:from-red-900/30 dark:hover:to-red-800/30 transition-all duration-200 hover:scale-105"
                   >
                     <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -357,7 +357,7 @@ const AdminDashboard = () => {
                   </button>
 
                   <button
-                    onClick={() => navigate('/admin-payments')}
+                    onClick={() => navigate('/admin/payments')}
                     className="group p-6 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-xl hover:from-indigo-100 hover:to-indigo-200 dark:hover:from-indigo-900/30 dark:hover:to-indigo-800/30 transition-all duration-200 hover:scale-105"
                   >
                     <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -373,7 +373,7 @@ const AdminDashboard = () => {
             <Card className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-slate-900 dark:text-white">Recent Activity</h3>
-                <Button variant="ghost" size="sm" onClick={() => navigate('/admin-orders')}>
+                <Button variant="ghost" size="sm" onClick={() => navigate('/admin/orders')}>
                   View All
                 </Button>
               </div>

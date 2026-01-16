@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
-import AuthenticatedLayout from '../../components/ui/AuthenticatedLayout.jsx';
+import AdminPage from '../../components/ui/AdminPage.jsx';
 import Card from '../../components/ui/Card.jsx';
 import Icon from '../../components/AppIcon.jsx';
 import Button from '../../components/ui/Button.jsx';
@@ -157,39 +157,26 @@ const AdminAnalytics = () => {
   }
 
   return (
-    <AuthenticatedLayout>
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-        {/* Header */}
-        <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm shadow-sm border-b border-slate-200 dark:border-slate-700">
-          <div className="px-4 mx-auto max-w-7xl lg:px-6 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Analytics Dashboard</h1>
-                <p className="mt-2 text-slate-600 dark:text-slate-400">
-                  Business intelligence and performance insights
-                </p>
-              </div>
-              <div className="flex items-center space-x-4">
-                <select
-                  value={timeRange}
-                  onChange={(e) => setTimeRange(e.target.value)}
-                  className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
-                >
-                  <option value="7d">Last 7 days</option>
-                  <option value="30d">Last 30 days</option>
-                  <option value="90d">Last 90 days</option>
-                  <option value="1y">Last year</option>
-                </select>
-                <Button variant="outline" size="sm" iconName="Download">Export Report</Button>
-                <Button variant="primary" size="sm" iconName="RefreshCw" onClick={loadAnalyticsData}>
-                  Refresh
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="px-4 mx-auto max-w-7xl lg:px-6 py-8">
+    <AdminPage
+      title="Analytics Dashboard"
+      subtitle="Business intelligence and performance insights"
+      actions={<>
+        <select
+          value={timeRange}
+          onChange={(e) => setTimeRange(e.target.value)}
+          className="px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-slate-700 dark:text-white"
+        >
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+          <option value="1y">Last year</option>
+        </select>
+        <Button variant="outline" size="sm" iconName="Download">Export Report</Button>
+        <Button variant="primary" size="sm" iconName="RefreshCw" onClick={loadAnalyticsData}>
+          Refresh
+        </Button>
+      </>}
+    >
           {/* Key Metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <Card className="p-6 hover:shadow-lg transition-shadow">

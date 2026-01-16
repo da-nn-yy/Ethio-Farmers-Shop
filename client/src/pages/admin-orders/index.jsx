@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth.jsx';
-import AuthenticatedLayout from '../../components/ui/AuthenticatedLayout.jsx';
+import AdminPage from '../../components/ui/AdminPage.jsx';
 import Card from '../../components/ui/Card.jsx';
 import Icon from '../../components/AppIcon.jsx';
 import Button from '../../components/ui/Button.jsx';
@@ -17,27 +17,14 @@ const AdminOrders = () => {
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 50,
-    total: 0,
-    pages: 0
-  });
-
-  // Mock orders data
-  const mockOrders = [
-    {
-      id: 'ORD-001',
-      buyer: 'Meron Tadesse',
-      farmer: 'Alemayehu Kebede',
-      items: [
-        { name: 'Premium Teff', quantity: 50, price: 85, total: 4250 },
-        { name: 'Fresh Wheat', quantity: 30, price: 45, total: 1350 }
-      ],
-      status: 'pending',
-      total: 5600,
-      createdAt: '2024-01-20',
-      deliveryDate: '2024-01-25',
-      paymentMethod: 'Bank Transfer',
-      address: 'Addis Ababa, Ethiopia'
-    },
+    return (
+      <AdminPage
+        title="Order Management"
+        subtitle="Track and manage orders placed on the platform"
+        actions={<>
+          <Button variant="outline" size="sm" iconName="Download">Export</Button>
+        </>}
+      >
     {
       id: 'ORD-002',
       buyer: 'Hanna Wolde',

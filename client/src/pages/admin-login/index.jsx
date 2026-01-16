@@ -56,7 +56,7 @@ const AdminLogin = () => {
   // Redirect if already authenticated as admin
   React.useEffect(() => {
     if (isAuthenticated && user?.role === 'admin') {
-      navigate('/admin-dashboard');
+      navigate('/admin/dashboard');
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -159,17 +159,17 @@ const AdminLogin = () => {
       await new Promise(resolve => setTimeout(resolve, 200));
 
       // Force navigation - use window.location as fallback if navigate doesn't work
-      try {
-        navigate('/admin-dashboard', { replace: true });
+        try {
+        navigate('/admin/dashboard', { replace: true });
         // If still on login page after a moment, force reload
         setTimeout(() => {
           if (window.location.pathname === '/admin-login') {
-            window.location.href = '/admin-dashboard';
+            window.location.href = '/admin/dashboard';
           }
         }, 500);
       } catch (err) {
         // Fallback to direct navigation
-        window.location.href = '/admin-dashboard';
+        window.location.href = '/admin/dashboard';
       }
     } catch (error) {
       console.error('Admin login error:', error);
