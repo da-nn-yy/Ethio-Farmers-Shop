@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Update admin route paths to use consistent /admin prefix structure">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/Routes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/Routes.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ProtectedRoute.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ProtectedRoute.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/auth/UserMenu.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/auth/UserMenu.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/ui/RoleBasedSidebar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/RoleBasedSidebar.jsx" afterDir="false" />
-    </list>
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add modular route structure with role-based routing for farmers, buyers, admin, and shared functionality" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -99,55 +93,7 @@
       <workItem from="1758783602037" duration="1439000" />
       <workItem from="1759121309043" duration="1026000" />
       <workItem from="1765490464887" duration="470000" />
-      <workItem from="1768538187133" duration="315000" />
-    </task>
-    <task id="LOCAL-00058" summary="Add account deletion functionality and improve authentication integration with Firebase">
-      <option name="closed" value="true" />
-      <created>1757074967409</created>
-      <option name="number" value="00058" />
-      <option name="presentableId" value="LOCAL-00058" />
-      <option name="project" value="LOCAL" />
-      <updated>1757074967409</updated>
-    </task>
-    <task id="LOCAL-00059" summary="Add line breaks to improve code formatting consistency across review components and routes">
-      <option name="closed" value="true" />
-      <created>1757075115468</created>
-      <option name="number" value="00059" />
-      <option name="presentableId" value="LOCAL-00059" />
-      <option name="project" value="LOCAL" />
-      <updated>1757075115468</updated>
-    </task>
-    <task id="LOCAL-00060" summary="Add line breaks to improve code formatting consistency across market trends and review controllers">
-      <option name="closed" value="true" />
-      <created>1757075148995</created>
-      <option name="number" value="00060" />
-      <option name="presentableId" value="LOCAL-00060" />
-      <option name="project" value="LOCAL" />
-      <updated>1757075148995</updated>
-    </task>
-    <task id="LOCAL-00061" summary="Update API base URL configuration to use port 5001 and remove development authentication bypass">
-      <option name="closed" value="true" />
-      <created>1757331424145</created>
-      <option name="number" value="00061" />
-      <option name="presentableId" value="LOCAL-00061" />
-      <option name="project" value="LOCAL" />
-      <updated>1757331424145</updated>
-    </task>
-    <task id="LOCAL-00062" summary="Fix authentication integration and update API base URL configuration across dashboard components">
-      <option name="closed" value="true" />
-      <created>1757331545623</created>
-      <option name="number" value="00062" />
-      <option name="presentableId" value="LOCAL-00062" />
-      <option name="project" value="LOCAL" />
-      <updated>1757331545624</updated>
-    </task>
-    <task id="LOCAL-00063" summary="Update database import path and improve authentication handling across controllers and services">
-      <option name="closed" value="true" />
-      <created>1757331710082</created>
-      <option name="number" value="00063" />
-      <option name="presentableId" value="LOCAL-00063" />
-      <option name="project" value="LOCAL" />
-      <updated>1757331710082</updated>
+      <workItem from="1768538187133" duration="1194000" />
     </task>
     <task id="LOCAL-00064" summary="Update API base URL configuration and fix farmer endpoint paths for listing and image upload functionality">
       <option name="closed" value="true" />
@@ -493,7 +439,55 @@
       <option name="project" value="LOCAL" />
       <updated>1768538435575</updated>
     </task>
-    <option name="localTasksCounter" value="107" />
+    <task id="LOCAL-00107" summary="Update admin route paths to use consistent /admin prefix structure">
+      <option name="closed" value="true" />
+      <created>1768539325918</created>
+      <option name="number" value="00107" />
+      <option name="presentableId" value="LOCAL-00107" />
+      <option name="project" value="LOCAL" />
+      <updated>1768539325918</updated>
+    </task>
+    <task id="LOCAL-00108" summary="Refactor routing system to use modular route structure with role-based path organization">
+      <option name="closed" value="true" />
+      <created>1768539355376</created>
+      <option name="number" value="00108" />
+      <option name="presentableId" value="LOCAL-00108" />
+      <option name="project" value="LOCAL" />
+      <updated>1768539355376</updated>
+    </task>
+    <task id="LOCAL-00109" summary="Refactor routing system to use modular route structure with role-based path organization">
+      <option name="closed" value="true" />
+      <created>1768539400870</created>
+      <option name="number" value="00109" />
+      <option name="presentableId" value="LOCAL-00109" />
+      <option name="project" value="LOCAL" />
+      <updated>1768539400870</updated>
+    </task>
+    <task id="LOCAL-00110" summary="Refactor routing system to use modular route structure with role-based path organization">
+      <option name="closed" value="true" />
+      <created>1768539411899</created>
+      <option name="number" value="00110" />
+      <option name="presentableId" value="LOCAL-00110" />
+      <option name="project" value="LOCAL" />
+      <updated>1768539411899</updated>
+    </task>
+    <task id="LOCAL-00111" summary="Add AdminPage layout component with breadcrumb navigation and action support">
+      <option name="closed" value="true" />
+      <created>1768539524751</created>
+      <option name="number" value="00111" />
+      <option name="presentableId" value="LOCAL-00111" />
+      <option name="project" value="LOCAL" />
+      <updated>1768539524751</updated>
+    </task>
+    <task id="LOCAL-00112" summary="Add modular route structure with role-based routing for farmers, buyers, admin, and shared functionality">
+      <option name="closed" value="true" />
+      <created>1768539540978</created>
+      <option name="number" value="00112" />
+      <option name="presentableId" value="LOCAL-00112" />
+      <option name="project" value="LOCAL" />
+      <updated>1768539540979</updated>
+    </task>
+    <option name="localTasksCounter" value="113" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -527,10 +521,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Integrate session manager for authentication and cart storage with enhanced search header UI" />
-    <MESSAGE value="Fix farmer listings data transformation and add admin registration endpoint" />
-    <MESSAGE value="Update IDE workspace configuration and clean up change list" />
-    <MESSAGE value="updated: a dashboardRoutes, apiSevice and authentication file for better authentication" />
     <MESSAGE value="modified the index files of server and index files of client of favorite and user profile managment pages" />
     <MESSAGE value="modified: teh account information jsx file and a server userController and related files of Order and listing files from the server side" />
     <MESSAGE value="updated: a rolespecific section and useAuth hooks" />
@@ -552,6 +542,10 @@
     <MESSAGE value="Add admin user creation script with Firebase and database integration" />
     <MESSAGE value="Update admin dashboard navigation path and add farmer profile management routes" />
     <MESSAGE value="Update admin route paths to use consistent /admin prefix structure" />
-    <option name="LAST_COMMIT_MESSAGE" value="Update admin route paths to use consistent /admin prefix structure" />
+    <MESSAGE value="Refactor routing system to use modular route structure with role-based path organization" />
+    <MESSAGE value="Refactor admin settings page to use AdminPage component and improve code organization" />
+    <MESSAGE value="Add AdminPage layout component with breadcrumb navigation and action support" />
+    <MESSAGE value="Add modular route structure with role-based routing for farmers, buyers, admin, and shared functionality" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add modular route structure with role-based routing for farmers, buyers, admin, and shared functionality" />
   </component>
 </project>
