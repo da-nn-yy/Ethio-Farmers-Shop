@@ -31,9 +31,7 @@ const AdminLogin = () => {
       loginError: 'Invalid admin credentials',
       required: 'This field is required',
       invalidEmail: 'Please enter a valid email address',
-      backToHome: 'Back to Home',
-      devMode: 'Development Mode',
-      devLogin: 'Quick Dev Login'
+      backToHome: 'Back to Home'
     },
     am: {
       title: 'የአስተዳደር መግቢያ',
@@ -45,9 +43,7 @@ const AdminLogin = () => {
       loginError: 'የማይሰራ የአስተዳደር ምስክር',
       required: 'ይህ መስክ ያስፈልጋል',
       invalidEmail: 'እባክዎ ትክክለኛ ኢሜይል ያስገቡ',
-      backToHome: 'ወደ ቤት ተመለስ',
-      devMode: 'የልማት ሁነታ',
-      devLogin: 'ፈጣን የልማት መግቢያ'
+      backToHome: 'ወደ ቤት ተመለስ'
     }
   };
 
@@ -185,24 +181,6 @@ const AdminLogin = () => {
     }
   };
 
-  const handleDevLogin = async () => {
-    // Quick dev login for admin - only in development
-    if (process.env.NODE_ENV === 'development') {
-      setFormData({
-        email: 'admin@ethiofarm.com',
-        password: 'admin123',
-        rememberMe: false
-      });
-      // Auto-submit after setting form data
-      setTimeout(() => {
-        const form = document.querySelector('form');
-        if (form) {
-          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-        }
-      }, 100);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-surface to-accent/5 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -304,24 +282,6 @@ const AdminLogin = () => {
               {t.login}
             </Button>
           </form>
-
-          {/* Dev Mode Section */}
-          {process.env.NODE_ENV === 'development' && (
-            <div className="mt-6 pt-6 border-t border-border">
-              <div className="text-center">
-                <p className="text-sm text-text-secondary mb-3">{t.devMode}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDevLogin}
-                  className="w-full"
-                >
-                  <Icon name="Zap" size={16} className="mr-2" />
-                  {t.devLogin}
-                </Button>
-              </div>
-            </div>
-          )}
 
           {/* Back to Home and Register */}
           <div className="mt-6 space-y-3">
