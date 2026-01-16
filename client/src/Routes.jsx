@@ -5,7 +5,6 @@ import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth.jsx";
-import DevMode from './components/DevMode.jsx';
 import AuthenticationPage from './pages/authentication-login-register';
 
 // Import separated route files
@@ -71,7 +70,6 @@ const Routes = () => {
           {/* 404 - Not Found */}
           <Route path="*" element={<NotFound />} />
         </RouterRoutes>
-        <DevMode />
       </ErrorBoundary>
     </BrowserRouter>
   );
