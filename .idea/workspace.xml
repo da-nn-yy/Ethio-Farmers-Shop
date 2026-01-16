@@ -4,8 +4,12 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Add StandardImageUpload component, UserMenu component, and unified profile routes">
+    <list default="true" id="f6e6093a-68ba-45f2-be03-46b2fd2d70ff" name="Changes" comment="Update admin route paths to use consistent /admin prefix structure">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/Routes.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/Routes.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ProtectedRoute.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ProtectedRoute.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/auth/UserMenu.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/auth/UserMenu.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ui/RoleBasedSidebar.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ui/RoleBasedSidebar.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -94,86 +98,8 @@
       <workItem from="1758700660761" duration="495000" />
       <workItem from="1758783602037" duration="1439000" />
       <workItem from="1759121309043" duration="1026000" />
-    </task>
-    <task id="LOCAL-00048" summary="Update API base URL configuration from port 5001 to 5000">
-      <option name="closed" value="true" />
-      <created>1757020459260</created>
-      <option name="number" value="00048" />
-      <option name="presentableId" value="LOCAL-00048" />
-      <option name="project" value="LOCAL" />
-      <updated>1757020459260</updated>
-    </task>
-    <task id="LOCAL-00049" summary="Update API base URL configuration from port 5001 to 5000">
-      <option name="closed" value="true" />
-      <created>1757020491379</created>
-      <option name="number" value="00049" />
-      <option name="presentableId" value="LOCAL-00049" />
-      <option name="project" value="LOCAL" />
-      <updated>1757020491379</updated>
-    </task>
-    <task id="LOCAL-00050" summary="Update API base URL configuration from port 5001 to 5000 with /api prefix">
-      <option name="closed" value="true" />
-      <created>1757020508940</created>
-      <option name="number" value="00050" />
-      <option name="presentableId" value="LOCAL-00050" />
-      <option name="project" value="LOCAL" />
-      <updated>1757020508941</updated>
-    </task>
-    <task id="LOCAL-00051" summary="Add comprehensive notifications and listing reviews pages with full user interaction features">
-      <option name="closed" value="true" />
-      <created>1757020931866</created>
-      <option name="number" value="00051" />
-      <option name="presentableId" value="LOCAL-00051" />
-      <option name="project" value="LOCAL" />
-      <updated>1757020931866</updated>
-    </task>
-    <task id="LOCAL-00052" summary="Add uploaded image files and update IDE workspace configuration">
-      <option name="closed" value="true" />
-      <created>1757025626025</created>
-      <option name="number" value="00052" />
-      <option name="presentableId" value="LOCAL-00052" />
-      <option name="project" value="LOCAL" />
-      <updated>1757025626026</updated>
-    </task>
-    <task id="LOCAL-00053" summary="Add uploaded image files and update IDE workspace configuration">
-      <option name="closed" value="true" />
-      <created>1757025643927</created>
-      <option name="number" value="00053" />
-      <option name="presentableId" value="LOCAL-00053" />
-      <option name="project" value="LOCAL" />
-      <updated>1757025643927</updated>
-    </task>
-    <task id="LOCAL-00054" summary="Add line breaks to improve code formatting consistency across market trends and notification controllers">
-      <option name="closed" value="true" />
-      <created>1757025774286</created>
-      <option name="number" value="00054" />
-      <option name="presentableId" value="LOCAL-00054" />
-      <option name="project" value="LOCAL" />
-      <updated>1757025774286</updated>
-    </task>
-    <task id="LOCAL-00055" summary="Add line breaks to improve code formatting consistency across review, search, and notification route files">
-      <option name="closed" value="true" />
-      <created>1757026304560</created>
-      <option name="number" value="00055" />
-      <option name="presentableId" value="LOCAL-00055" />
-      <option name="project" value="LOCAL" />
-      <updated>1757026304560</updated>
-    </task>
-    <task id="LOCAL-00056" summary="Add comprehensive review and notification components with real-time user interaction features">
-      <option name="closed" value="true" />
-      <created>1757026329138</created>
-      <option name="number" value="00056" />
-      <option name="presentableId" value="LOCAL-00056" />
-      <option name="project" value="LOCAL" />
-      <updated>1757026329138</updated>
-    </task>
-    <task id="LOCAL-00057" summary="Refactor file structure by renaming component or module file">
-      <option name="closed" value="true" />
-      <created>1757063241838</created>
-      <option name="number" value="00057" />
-      <option name="presentableId" value="LOCAL-00057" />
-      <option name="project" value="LOCAL" />
-      <updated>1757063241838</updated>
+      <workItem from="1765490464887" duration="470000" />
+      <workItem from="1768538187133" duration="315000" />
     </task>
     <task id="LOCAL-00058" summary="Add account deletion functionality and improve authentication integration with Firebase">
       <option name="closed" value="true" />
@@ -487,7 +413,87 @@
       <option name="project" value="LOCAL" />
       <updated>1759121718776</updated>
     </task>
-    <option name="localTasksCounter" value="97" />
+    <task id="LOCAL-00097" summary="Fix image URL handling and improve listing creation with proper image storage">
+      <option name="closed" value="true" />
+      <created>1765490493210</created>
+      <option name="number" value="00097" />
+      <option name="presentableId" value="LOCAL-00097" />
+      <option name="project" value="LOCAL" />
+      <updated>1765490493211</updated>
+    </task>
+    <task id="LOCAL-00098" summary="Improve admin authentication flow with Firebase integration and enhanced session management">
+      <option name="closed" value="true" />
+      <created>1765490513820</created>
+      <option name="number" value="00098" />
+      <option name="presentableId" value="LOCAL-00098" />
+      <option name="project" value="LOCAL" />
+      <updated>1765490513820</updated>
+    </task>
+    <task id="LOCAL-00099" summary="Fix admin role redirect to dashboard and improve route authentication handling">
+      <option name="closed" value="true" />
+      <created>1765490536381</created>
+      <option name="number" value="00099" />
+      <option name="presentableId" value="LOCAL-00099" />
+      <option name="project" value="LOCAL" />
+      <updated>1765490536381</updated>
+    </task>
+    <task id="LOCAL-00100" summary="Enhance public listings endpoint with comprehensive image support and additional product details">
+      <option name="closed" value="true" />
+      <created>1765490549262</created>
+      <option name="number" value="00100" />
+      <option name="presentableId" value="LOCAL-00100" />
+      <option name="project" value="LOCAL" />
+      <updated>1765490549262</updated>
+    </task>
+    <task id="LOCAL-00101" summary="Enhance useAuth hook with Firebase auth state listener and improve updateUser method">
+      <option name="closed" value="true" />
+      <created>1765490575737</created>
+      <option name="number" value="00101" />
+      <option name="presentableId" value="LOCAL-00101" />
+      <option name="project" value="LOCAL" />
+      <updated>1765490575737</updated>
+    </task>
+    <task id="LOCAL-00102" summary="Update IDE workspace configuration and commit history">
+      <option name="closed" value="true" />
+      <created>1765490682247</created>
+      <option name="number" value="00102" />
+      <option name="presentableId" value="LOCAL-00102" />
+      <option name="project" value="LOCAL" />
+      <updated>1765490682247</updated>
+    </task>
+    <task id="LOCAL-00103" summary="Add admin user creation script with Firebase and database integration">
+      <option name="closed" value="true" />
+      <created>1765490725459</created>
+      <option name="number" value="00103" />
+      <option name="presentableId" value="LOCAL-00103" />
+      <option name="project" value="LOCAL" />
+      <updated>1765490725459</updated>
+    </task>
+    <task id="LOCAL-00104" summary="Update admin route paths to use consistent /admin prefix structure">
+      <option name="closed" value="true" />
+      <created>1768538310703</created>
+      <option name="number" value="00104" />
+      <option name="presentableId" value="LOCAL-00104" />
+      <option name="project" value="LOCAL" />
+      <updated>1768538310704</updated>
+    </task>
+    <task id="LOCAL-00105" summary="Update admin dashboard navigation path and add farmer profile management routes">
+      <option name="closed" value="true" />
+      <created>1768538327332</created>
+      <option name="number" value="00105" />
+      <option name="presentableId" value="LOCAL-00105" />
+      <option name="project" value="LOCAL" />
+      <updated>1768538327333</updated>
+    </task>
+    <task id="LOCAL-00106" summary="Update admin route paths to use consistent /admin prefix structure">
+      <option name="closed" value="true" />
+      <created>1768538435575</created>
+      <option name="number" value="00106" />
+      <option name="presentableId" value="LOCAL-00106" />
+      <option name="project" value="LOCAL" />
+      <updated>1768538435575</updated>
+    </task>
+    <option name="localTasksCounter" value="107" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -521,15 +527,6 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="Update admin sidebar styling and replace AuthenticatedTopBar with GlobalHeader in layout" />
-    <MESSAGE value="Add image URL normalization and enhance GlobalHeader styling with backdrop blur effects" />
-    <MESSAGE value="Update sidebar positioning and add image URL normalization to server" />
-    <MESSAGE value="Update sidebar positioning and add image URL normalization for public listings" />
-    <MESSAGE value="I notice that the code diff section is empty, which means there are no actual changes to analyze. Without any code changes provided, I cannot generate a meaningful commit message that relates to new code additions or modifications.&#10;&#10;Please provide the actual code diff to generate an appropriate commit message." />
-    <MESSAGE value="Add public listings endpoint and improve authentication handling with enhanced user profile management" />
-    <MESSAGE value="Fix image upload path handling and enhance user profile display with responsive button sizing" />
-    <MESSAGE value="Replace ImageGallery with InstagramStyleGallery and enhance mobile responsiveness with improved input sizing and server configuration" />
-    <MESSAGE value="Refactor listings data handling and enhance UI components with improved image gallery and mobile responsiveness" />
     <MESSAGE value="Integrate session manager for authentication and cart storage with enhanced search header UI" />
     <MESSAGE value="Fix farmer listings data transformation and add admin registration endpoint" />
     <MESSAGE value="Update IDE workspace configuration and clean up change list" />
@@ -546,6 +543,15 @@
     <MESSAGE value="Add mobile-responsive CSS styles and URL utility for image handling" />
     <MESSAGE value="Add session management utility and unified profile controller for role-based authentication" />
     <MESSAGE value="Add StandardImageUpload component, UserMenu component, and unified profile routes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add StandardImageUpload component, UserMenu component, and unified profile routes" />
+    <MESSAGE value="Fix image URL handling and improve listing creation with proper image storage" />
+    <MESSAGE value="Improve admin authentication flow with Firebase integration and enhanced session management" />
+    <MESSAGE value="Fix admin role redirect to dashboard and improve route authentication handling" />
+    <MESSAGE value="Enhance public listings endpoint with comprehensive image support and additional product details" />
+    <MESSAGE value="Update IDE workspace configuration and commit history" />
+    <MESSAGE value="I cannot generate a commit message as no code changes were provided in the diff section." />
+    <MESSAGE value="Add admin user creation script with Firebase and database integration" />
+    <MESSAGE value="Update admin dashboard navigation path and add farmer profile management routes" />
+    <MESSAGE value="Update admin route paths to use consistent /admin prefix structure" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update admin route paths to use consistent /admin prefix structure" />
   </component>
 </project>
