@@ -14,7 +14,7 @@ const UserMenu = () => {
   const getDashboardLink = () => {
     if (user?.role === 'farmer') return '/dashboard-farmer-home';
     if (user?.role === 'buyer') return '/dashboard-buyer-home';
-    if (user?.role === 'admin') return '/admin-dashboard';
+    if (user?.role === 'admin') return '/admin/dashboard';
     return '/app';
   };
 

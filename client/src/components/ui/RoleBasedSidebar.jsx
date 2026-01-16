@@ -155,7 +155,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'Dashboard',
           nameAm: 'ዳሽቦርድ',
-          path: '/admin-dashboard',
+          path: '/admin/dashboard',
           icon: 'Home',
           badge: null,
           shortcut: '1'
@@ -171,7 +171,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'User Management',
           nameAm: 'የተጠቃሚ አያያዝ',
-          path: '/admin-users',
+          path: '/admin/users',
           icon: 'Users',
           badge: adminStats.pendingApprovals > 0 ? adminStats.pendingApprovals : null,
           badgeColor: 'bg-orange-500',
@@ -180,7 +180,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'Listing Management',
           nameAm: 'የዝርዝር አያያዝ',
-          path: '/admin-listings',
+          path: '/admin/listings',
           icon: 'Package',
           badge: null,
           shortcut: '3'
@@ -188,7 +188,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'Order Management',
           nameAm: 'የትዕዛዝ አያያዝ',
-          path: '/admin-orders',
+          path: '/admin/orders',
           icon: 'ShoppingCart',
           badge: null,
           shortcut: '4'
@@ -196,7 +196,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'Financial Management',
           nameAm: 'የገንዘብ አያያዝ',
-          path: '/admin-financial-management',
+          path: '/admin/financial',
           icon: 'CreditCard',
           badge: null,
           shortcut: '5'
@@ -212,7 +212,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'Analytics Dashboard',
           nameAm: 'የትንተና ዳሽቦርድ',
-          path: '/admin-analytics',
+          path: '/admin/analytics',
           icon: 'BarChart3',
           badge: null,
           shortcut: '6'
@@ -228,7 +228,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'Reports',
           nameAm: 'ሪፖርቶች',
-          path: '/admin-reports',
+          path: '/admin/reports',
           icon: 'FileText',
           badge: null,
           shortcut: '8'
@@ -244,7 +244,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'System Settings',
           nameAm: 'የስርዓት ቅንብሮች',
-          path: '/admin-settings',
+          path: '/admin/settings',
           icon: 'Settings',
           badge: adminStats.systemAlerts > 0 ? adminStats.systemAlerts : null,
           badgeColor: 'bg-red-500',
@@ -253,7 +253,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'Security Management',
           nameAm: 'የደህንነት አያያዝ',
-          path: '/admin-security-management',
+          path: '/admin/security',
           icon: 'Shield',
           badge: adminStats.criticalIssues > 0 ? adminStats.criticalIssues : null,
           badgeColor: 'bg-red-600',
@@ -262,7 +262,7 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
         {
           name: 'Notifications',
           nameAm: 'ማሳወቂያዎች',
-          path: '/notifications',
+          path: '/admin/notifications',
           icon: 'Bell',
           badge: notificationCount > 0 ? notificationCount : null,
           badgeColor: 'bg-blue-500',
@@ -333,21 +333,21 @@ const RoleBasedSidebar = ({ userRole, isAuthenticated, isCollapsed, onToggleColl
     const handleKeyPress = (e) => {
       if (e.ctrlKey || e.metaKey) {
         switch (e.key.toLowerCase()) {
-          case 'u':
+            case 'u':
             e.preventDefault();
-            navigate('/admin-users');
+            navigate('/admin/users');
             return;
           case 'a':
             e.preventDefault();
-            navigate('/admin-listings');
+            navigate('/admin/listings');
             return;
           case 'r':
             e.preventDefault();
-            navigate('/admin-reports');
+            navigate('/admin/reports');
             return;
           case 'h':
             e.preventDefault();
-            navigate('/admin-settings');
+            navigate('/admin/settings');
             return;
         }
       }
