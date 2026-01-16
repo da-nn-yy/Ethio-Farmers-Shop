@@ -3,50 +3,17 @@ import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
-import LandingPage from './pages/landing';
-import DashboardFarmerHome from './pages/dashboard-farmer-home';
-import AuthenticationPage from './pages/authentication-login-register';
-import OrderManagement from './pages/order-management';
-import FarmerOrders from './pages/order-management/FarmerOrders.jsx';
-import UserProfileManagement from './pages/user-profile-management';
-import MarketTrendsDashboard from './pages/market-trends-dashboard';
-import FarmerMarketTrends from './pages/farmer-market-trends';
-import BuyerMarketTrends from './pages/buyer-market-trends';
-import BrowseListingsBuyerHome from './pages/browse-listings-buyer-home';
-import BuyerDashboard from './pages/dashboard-buyer-home';
-import AddListing from './pages/add-listing';
-import ListingReviewsPage from './pages/listing-reviews';
-import FarmerReviews from './pages/reviews/FarmerReviews.jsx';
-import NotificationsPage from './pages/notifications';
-import ChatPage from './pages/chat';
-import FarmerMyListings from './pages/farmer-my-listings';
-import FavoritesPage from './pages/favorites';
-import FarmerActivityPage from './pages/dashboard-farmer-home/components/FarmerActivityPage.jsx';
-import ProtectedRoute from './components/ProtectedRoute';
 import { Navigate } from "react-router-dom";
 import { useAuth } from "./hooks/useAuth.jsx";
-import CartPage from './pages/cart';
-import PaymentsPage from './pages/payments';
-import HelpPage from './pages/help';
-import ResetPasswordPage from './pages/authentication-login-register/components/ResetPasswordPage';
-import AdminLogin from './pages/admin-login';
-import AdminRegister from './pages/admin-register';
-import AdminDashboard from './pages/admin-dashboard';
-import AdminUsers from './pages/admin-users';
-import AdminListings from './pages/admin-listings';
-import AdminOrders from './pages/admin-orders';
-import AdminAnalytics from './pages/admin-analytics';
-import AdminSettings from './pages/admin-settings';
-import AdminChat from './pages/admin-chat';
-import AdminNotifications from './pages/admin-notifications';
-import AdminPayments from './pages/admin-payments';
-import AdminContent from './pages/admin-content';
-import AdminMarketplace from './pages/admin-marketplace';
-import AdminFinancial from './pages/admin-financial';
-import AdminSecurity from './pages/admin-security';
-import AdminLayout from './components/ui/AdminLayout';
 import DevMode from './components/DevMode.jsx';
-import UserReviewsPage from './pages/user-reviews';
+import AuthenticationPage from './pages/authentication-login-register';
+
+// Import separated route files
+import { publicRoutes } from './routes/publicRoutes';
+import { adminRoutes } from './routes/adminRoutes';
+import { farmerRoutes } from './routes/farmerRoutes';
+import { buyerRoutes } from './routes/buyerRoutes';
+import { sharedRoutes } from './routes/sharedRoutes';
 
 const RoleRedirect = () => {
   const { isAuthenticated, loading, user } = useAuth();
@@ -60,244 +27,51 @@ const RoleRedirect = () => {
     return <AuthenticationPage />;
   }
 
+  // Redirect to role-specific dashboard using new route structure
   if (userRole === 'admin') {
-    return <Navigate to="/admin-dashboard" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   if (userRole === 'farmer') {
-    return <Navigate to="/dashboard-farmer-home" replace />;
+    return <Navigate to="/farmer/dashboard" replace />;
   }
 
-  return <Navigate to="/dashboard-buyer-home" replace />;
+  if (userRole === 'buyer') {
+    return <Navigate to="/buyer/dashboard" replace />;
+  }
+
+  // Fallback to buyer dashboard
+  return <Navigate to="/buyer/dashboard" replace />;
 };
 
 const Routes = () => {
   return (
     <BrowserRouter>
       <ErrorBoundary>
-      <ScrollToTop />
-      <RouterRoutes>
-                    {/* Public */}
-                    <Route path="/" element={<LandingPage />} />
-                    <Route path="/landing" element={<LandingPage />} />
+        <ScrollToTop />
+        <RouterRoutes>
+          {/* Public Routes - No authentication required */}
+          {publicRoutes}
 
-                    {/* Admin Login */}
-                    <Route path="/admin-login" element={<AdminLogin />} />
+          {/* Role Redirect */}
+          <Route path="/app" element={<RoleRedirect />} />
 
-                    {/* Admin Registration */}
-                    <Route path="/admin-register" element={<AdminRegister />} />
-                    <Route path="/app" element={<RoleRedirect />} />
-                    <Route path="/authentication-login-register" element={<AuthenticationPage />} />
-                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+          {/* Admin Routes - Admin role required */}
+          {adminRoutes}
 
-        {/* Protected by role */}
-        <Route path="/dashboard-farmer-home" element={
-          <ProtectedRoute requiredRole="farmer">
-            <DashboardFarmerHome />
-          </ProtectedRoute>
-        } />
-        <Route path="/farmer-my-listings" element={
-          <ProtectedRoute requiredRole="farmer">
-            <FarmerMyListings />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard-buyer-home" element={
-          <ProtectedRoute requiredRole="buyer">
-            <BuyerDashboard />
-          </ProtectedRoute>
-        } />
+          {/* Farmer Routes - Farmer role required */}
+          {farmerRoutes}
 
-        {/* General protected pages (either role) */}
-        <Route path="/order-management" element={
-          <ProtectedRoute>
-            <OrderManagement />
-          </ProtectedRoute>
-        } />
-        <Route path="/orders-farmer" element={
-          <ProtectedRoute requiredRole="farmer">
-            <FarmerOrders />
-          </ProtectedRoute>
-        } />
-        <Route path="/farmer-activity" element={
-          <ProtectedRoute requiredRole="farmer">
-            <FarmerActivityPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/user-profile-management" element={
-          <ProtectedRoute>
-            <UserProfileManagement />
-          </ProtectedRoute>
-        } />
-        {/* Market trends accessible to both roles */}
-        <Route path="/market-trends-dashboard" element={
-          <ProtectedRoute>
-            <MarketTrendsDashboard />
-          </ProtectedRoute>
-        } />
-        {/* Role-specific market trends (still supported) */}
-        <Route path="/farmer-market-trends" element={
-          <ProtectedRoute requiredRole="farmer">
-            <FarmerMarketTrends />
-          </ProtectedRoute>
-        } />
-        <Route path="/buyer-market-trends" element={
-          <ProtectedRoute requiredRole="buyer">
-            <BuyerMarketTrends />
-          </ProtectedRoute>
-        } />
-        <Route path="/browse-listings-buyer-home" element={
-          <ProtectedRoute requiredRole="buyer">
-            <BrowseListingsBuyerHome />
-          </ProtectedRoute>
-        } />
-        <Route path="/favorites" element={
-          <ProtectedRoute requiredRole="buyer">
-            <FavoritesPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/user-reviews" element={
-          <ProtectedRoute requiredRole="buyer">
-            <UserReviewsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/add-listing" element={
-          <ProtectedRoute requiredRole="farmer">
-            <AddListing />
-          </ProtectedRoute>
-        } />
-        <Route path="/listing/:id/reviews" element={
-          <ProtectedRoute requiredRole="buyer">
-            <ListingReviewsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/farmer-reviews" element={
-          <ProtectedRoute requiredRole="farmer">
-            <FarmerReviews />
-          </ProtectedRoute>
-        } />
-        <Route path="/notifications" element={
-          <ProtectedRoute>
-            <NotificationsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/chat" element={
-          <ProtectedRoute>
-            <ChatPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/help" element={
-          <ProtectedRoute>
-            <HelpPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/cart" element={
-          <ProtectedRoute requiredRole="buyer">
-            <CartPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/payments" element={
-          <ProtectedRoute>
-            <PaymentsPage />
-          </ProtectedRoute>
-        } />
+          {/* Buyer Routes - Buyer role required */}
+          {buyerRoutes}
 
-        {/* Admin Routes */}
-        <Route path="/admin-dashboard" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminDashboard />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-users" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminUsers />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-listings" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminListings />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-orders" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminOrders />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-analytics" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminAnalytics />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-settings" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminSettings />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-chat" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminChat />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-notifications" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminNotifications />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-payments" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminPayments />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-content" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminContent />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-marketplace" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminMarketplace />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-financial" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminFinancial />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
-        <Route path="/admin-security" element={
-          <ProtectedRoute requiredRole="admin">
-            <AdminLayout>
-              <AdminSecurity />
-            </AdminLayout>
-          </ProtectedRoute>
-        } />
+          {/* Shared Routes - Any authenticated user */}
+          {sharedRoutes}
 
-        {/* 404 */}
-        <Route path="*" element={<NotFound />} />
-      </RouterRoutes>
-      <DevMode />
+          {/* 404 - Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </RouterRoutes>
+        <DevMode />
       </ErrorBoundary>
     </BrowserRouter>
   );

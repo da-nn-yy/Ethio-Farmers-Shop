@@ -24,8 +24,10 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
   }
 
   if (requiredRole && userRole !== requiredRole) {
-    const fallback = userRole === 'admin' ? '/admin-login' :
-                     userRole === 'farmer' ? '/dashboard-farmer-home' : '/dashboard-buyer-home';
+    // Redirect to role-specific dashboard using new route structure
+    const fallback = userRole === 'admin' ? '/admin/dashboard' :
+                     userRole === 'farmer' ? '/farmer/dashboard' :
+                     userRole === 'buyer' ? '/buyer/dashboard' : '/authentication-login-register';
     return <Navigate to={fallback} replace />;
   }
 
