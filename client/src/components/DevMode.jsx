@@ -43,7 +43,7 @@ const DevMode = () => {
   const handleDevLogin = async () => {
     // Simple dev key validation (in production, this would be more secure)
     const validKeys = ['dev123', 'admin123', 'test123', 'ethiofarm'];
-    
+
     if (!validKeys.includes(devKey)) {
       alert('Invalid dev key. Try: dev123, admin123, test123, or ethiofarm');
       return;
@@ -51,7 +51,7 @@ const DevMode = () => {
 
     // Create dev user data based on selected role
     const devUserData = createDevUserData(selectedRole);
-    
+
     // Set dev mode in localStorage
     localStorage.setItem('devMode', 'true');
     localStorage.setItem('devRole', selectedRole);
@@ -68,14 +68,14 @@ const DevMode = () => {
       console.log('Calling login with devMode: true');
       const result = await login({ devMode: true });
       console.log('Login result:', result);
-      
+
       setIsDevMode(true);
       setIsOpen(false);
       setDevKey('');
 
       // Navigate to appropriate dashboard
       if (selectedRole === 'admin') {
-        navigate('/admin-dashboard');
+        navigate('/admin/dashboard');
       } else if (selectedRole === 'farmer') {
         navigate('/dashboard-farmer-home');
       } else if (selectedRole === 'buyer') {
@@ -224,13 +224,13 @@ const DevMode = () => {
                 {selectedRole} Access
               </h4>
               <p className="text-sm text-gray-600">
-                {selectedRole === 'admin' && 
+                {selectedRole === 'admin' &&
                   'Full admin access to all features: user management, listings, orders, analytics, and system settings.'
                 }
-                {selectedRole === 'farmer' && 
+                {selectedRole === 'farmer' &&
                   'Farmer dashboard with listing management, order tracking, and market trends.'
                 }
-                {selectedRole === 'buyer' && 
+                {selectedRole === 'buyer' &&
                   'Buyer dashboard with product browsing, cart management, and order history.'
                 }
               </p>

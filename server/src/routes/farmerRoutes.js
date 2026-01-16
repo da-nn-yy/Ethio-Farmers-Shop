@@ -15,11 +15,27 @@ import {
   addListingImage,
   deleteFarmerListing
 } from "../controllers/farmerController.js";
+import {
+  getFarmerDashboard
+} from "../controllers/dashboardController.js";
+import {
+  getFarmerProfile,
+  updateFarmerProfile,
+  getFarmerProfileStats,
+  uploadCertification,
+  getFarmerCertifications
+} from "../controllers/farmerProfileController.js";
+import {
+  getFarmerReviews
+} from "../controllers/reviewController.js";
 
 const router = Router();
 
 // All routes require authentication and farmer role
 router.use(authGuard, requireRole('farmer'));
+
+// Farmer Dashboard
+router.get('/dashboard', getFarmerDashboard);
 
 // Farmer dashboard and metrics
 router.get('/metrics', getFarmerMetrics);
@@ -36,6 +52,18 @@ router.delete('/listings/bulk', bulkDeleteListings);
 
 // Farmer orders
 router.get('/orders', getFarmerOrders);
+
+// Farmer Profile
+router.get('/profile', getFarmerProfile);
+router.put('/profile', updateFarmerProfile);
+router.get('/profile/stats', getFarmerProfileStats);
+
+// Farmer Certifications
+router.post('/certifications', upload.single('certification_document'), handleUploadError, uploadCertification);
+router.get('/certifications', getFarmerCertifications);
+
+// Farmer Reviews
+router.get('/reviews', getFarmerReviews);
 
 // Image upload
 router.post('/upload-image', upload.single('image'), handleUploadError, uploadImage);
