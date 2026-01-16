@@ -74,38 +74,34 @@ export const AuthProvider = ({ children }) => {
       const storedToken = sessionManager.getSessionData('authToken') || localStorage.getItem('authToken');
       const storedAuth = sessionManager.getSessionData('isAuthenticated') || localStorage.getItem('isAuthenticated');
       const storedUser = sessionManager.getSessionData('userData') || localStorage.getItem('userData');
-
       if (storedToken && storedAuth === 'true') {
-        // Immediately hydrate session from storage to avoid flicker/redirects
         setToken(storedToken);
-        setIsAuthenticated(true);
-        if (storedUser) {
-          try {
-            const parsed = JSON.parse(storedUser);
-            setUser(parsed);
-            if (parsed?.role) setRole(parsed.role);
-          } catch {}
-        }
-
-        // Also attempt to fetch fresh user from backend to ensure real data
+        // Require a successful backend user fetch; otherwise clear session
         try {
           const me = await userService.getMe();
           if (me) {
             setUser(me);
             setRole(me.role || null);
+            setIsAuthenticated(true);
+            sessionManager.setSessionData('isAuthenticated', 'true');
             sessionManager.setSessionData('userData', JSON.stringify(me));
             if (me.role) sessionManager.setSessionData('userRole', me.role);
+          } else {
+            clearSessionData();
           }
-        } catch (_) {
-          // Non-fatal if backend is down
+        } catch (err) {
+          console.error('Auth validation failed, clearing session:', err);
+          clearSessionData();
+          setUser(null);
+          setRole(null);
+          setIsAuthenticated(false);
         }
       } else {
-        // No valid stored auth - clear everything
+        clearSessionData();
         setUser(null);
         setToken(null);
         setIsAuthenticated(false);
         setError(null);
-        clearSessionData(); // Clear any remaining session data
       }
     } catch (error) {
       console.error('Auth initialization failed:', error);
@@ -138,20 +134,20 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       setError(null);
 
-      // Enforce real auth: try to get user from backend after external auth
-      // The actual sign-in should occur via Firebase UI elsewhere
+      // Enforce real auth: only proceed when backend returns a real user profile
       const me = await userService.getMe();
 
-      if (me) {
-        setUser(me);
-        setRole(me.role || null);
-        setIsAuthenticated(true);
-        sessionManager.setSessionData('isAuthenticated', 'true');
-        sessionManager.setSessionData('userData', JSON.stringify(me));
-        if (me.role) sessionManager.setSessionData('userRole', me.role);
-        return { success: true, user: me };
+      if (!me) {
+        throw new Error('Authentication failed');
       }
-      throw new Error('Authentication failed');
+
+      setUser(me);
+      setRole(me.role || null);
+      setIsAuthenticated(true);
+      sessionManager.setSessionData('isAuthenticated', 'true');
+      sessionManager.setSessionData('userData', JSON.stringify(me));
+      if (me.role) sessionManager.setSessionData('userRole', me.role);
+      return { success: true, user: me };
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.error || error.message || 'Login failed';
@@ -172,45 +168,25 @@ export const AuthProvider = ({ children }) => {
 
       const response = await authService.register(userData);
 
-      // Try to authenticate the user immediately after successful registration
+      // Optional auto-login: attempt Firebase sign-in; if it fails, require manual login.
       try {
         const { email, password } = userData;
-        // Prefer real Firebase sign-in when available (server returns firebase_user in prod flow)
-        let signedIn = false;
-        try {
-          const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth');
-          const auth = getAuth();
-          await signInWithEmailAndPassword(auth, email, password);
-          signedIn = true;
-        } catch (_) {
-          // ignore, may be dev mode without Firebase
-        }
+        const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth');
+        const auth = getAuth();
+        await signInWithEmailAndPassword(auth, email, password);
 
-        // If Firebase sign-in isn't available, fall back to dev login token
-        if (!signedIn) {
-          try {
-            await authService.devLogin({ email, password });
-            signedIn = true;
-          } catch (_) {}
+        // After Firebase sign-in, fetch user profile to confirm real account
+        const me = await userService.getMe();
+        if (me) {
+          setUser(me);
+          setRole(me.role || null);
+          setIsAuthenticated(true);
+          sessionManager.setSessionData('isAuthenticated', 'true');
+          sessionManager.setSessionData('userData', JSON.stringify(me));
+          if (me.role) sessionManager.setSessionData('userRole', me.role);
         }
-
-        // Best-effort: sync user and hydrate role/user locally
-        try {
-          await authService.syncUser();
-        } catch (_) {}
-        try {
-          const me = await userService.getMe();
-          if (me) {
-            setUser(me);
-            setRole(me.role || null);
-            setIsAuthenticated(true);
-            localStorage.setItem('isAuthenticated', 'true');
-            if (me.role) localStorage.setItem('userRole', me.role);
-            localStorage.setItem('userData', JSON.stringify(me));
-          }
-        } catch (_) {}
       } catch (_) {
-        // Non-fatal: even if auto login fails, registration still succeeded
+        // Auto-login failed; user must sign in manually
       }
 
       return { success: true, data: response };

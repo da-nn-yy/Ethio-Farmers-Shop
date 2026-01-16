@@ -42,12 +42,36 @@ export const registerAdmin = async (req, res) => {
       });
     }
 
+    // Normalize and validate phone
+    const normalizedPhone = (() => {
+      if (!phone) return null;
+      const trimmed = String(phone).trim();
+      if (!/^\+?[0-9]{8,15}$/.test(trimmed)) return null;
+      return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
+    })();
+
+    if (!normalizedPhone) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid phone number format"
+      });
+    }
+
     // Check if user already exists
     const [existingUsers] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
     if (existingUsers.length > 0) {
       return res.status(409).json({
         success: false,
         message: "Admin already exists with this email"
+      });
+    }
+
+    // Enforce phone uniqueness
+    const [existingPhone] = await pool.query("SELECT id FROM users WHERE phone = ?", [normalizedPhone]);
+    if (existingPhone.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: "Admin already exists with this phone number"
       });
     }
 
@@ -58,7 +82,7 @@ export const registerAdmin = async (req, res) => {
     const [result] = await pool.query(
       `INSERT INTO users (firebase_uid, email, full_name, phone, role, status)
        VALUES (?, ?, ?, ?, 'admin', 'active')`,
-      [generatedUid, email, fullName, phone]
+      [generatedUid, email, fullName, normalizedPhone]
     );
 
     const userId = result.insertId;
@@ -134,10 +158,26 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
+    const normalizedPhone = (() => {
+      const trimmed = String(phone || '').trim();
+      if (!/^\+?[0-9]{8,15}$/.test(trimmed)) return null;
+      return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
+    })();
+
+    if (!normalizedPhone) {
+      return res.status(400).json({ error: "Invalid phone number format" });
+    }
+
     // Check if user already exists in MySQL
     const [existingUsers] = await pool.query("SELECT id FROM users WHERE email = ?", [email]);
     if (existingUsers.length > 0) {
       return res.status(409).json({ error: "User already exists with this email" });
+    }
+
+    // Enforce phone uniqueness in MySQL
+    const [existingPhone] = await pool.query("SELECT id FROM users WHERE phone = ?", [normalizedPhone]);
+    if (existingPhone.length > 0) {
+      return res.status(409).json({ error: "User already exists with this phone number" });
     }
 
     const isFirebaseConfigured = (() => {
@@ -151,7 +191,7 @@ export const registerUser = async (req, res) => {
       const [result] = await pool.query(
         `INSERT INTO users (firebase_uid, email, full_name, phone, role, region, woreda)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [generatedUid, email, full_name, phone || null, role, region || null, woreda || null]
+        [generatedUid, email, full_name, normalizedPhone, role, region || null, woreda || null]
       );
       // Ensure avatar table exists (non-blocking)
       try {
@@ -196,26 +236,13 @@ export const registerUser = async (req, res) => {
     }
 
     try {
-      // Normalize phone to E.164 if present
-      const normalizedPhone = (() => {
-        if (!phone) return undefined;
-        const trimmed = String(phone).trim();
-        if (!trimmed) return undefined;
-        return trimmed.startsWith('+') ? trimmed : `+${trimmed}`;
-      })();
-
-      // Check if phone already exists in Firebase; if so, skip attaching phone to Firebase user
-      let usePhoneForFirebase = Boolean(normalizedPhone);
-      if (normalizedPhone) {
-        try {
-          await admin.auth().getUserByPhoneNumber(normalizedPhone);
-          // If no error: phone exists -> do not send phone to Firebase
-          usePhoneForFirebase = false;
-        } catch (lookupErr) {
-          // If user-not-found, we can use the phone. Otherwise, be conservative and skip
-          if (!(lookupErr && lookupErr.code === 'auth/user-not-found')) {
-            usePhoneForFirebase = false;
-          }
+      // Ensure phone does not exist in Firebase; if found, reject registration
+      try {
+        await admin.auth().getUserByPhoneNumber(normalizedPhone);
+        return res.status(409).json({ error: "User already exists with this phone number" });
+      } catch (lookupErr) {
+        if (!(lookupErr && lookupErr.code === 'auth/user-not-found')) {
+          return res.status(500).json({ error: "Failed to validate phone number" });
         }
       }
 
@@ -224,7 +251,7 @@ export const registerUser = async (req, res) => {
         email: email,
         password: password,
         displayName: full_name,
-        ...(usePhoneForFirebase ? { phoneNumber: normalizedPhone } : {})
+        phoneNumber: normalizedPhone
       });
 
       const firebaseUid = firebaseUser.uid;
@@ -232,7 +259,7 @@ export const registerUser = async (req, res) => {
       const [result] = await pool.query(
         `INSERT INTO users (firebase_uid, email, full_name, phone, role, region, woreda)
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
-        [firebaseUid, email, full_name, phone || null, role, region || null, woreda || null]
+        [firebaseUid, email, full_name, normalizedPhone, role, region || null, woreda || null]
       );
       // Ensure avatar table exists (non-blocking)
       try {
@@ -301,7 +328,7 @@ export const registerUser = async (req, res) => {
           const [result] = await pool.query(
             `INSERT INTO users (firebase_uid, email, full_name, phone, role, region, woreda)
              VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [firebaseUid, email, full_name, phone || null, role, region || null, woreda || null]
+            [firebaseUid, email, full_name, normalizedPhone, role, region || null, woreda || null]
           );
 
           try {
@@ -360,7 +387,7 @@ export const registerUser = async (req, res) => {
         return res.status(409).json({ error: "User already exists with this email" });
       }
       if (firebaseError.code === 'auth/phone-number-already-exists') {
-        return res.status(409).json({ error: "Phone number already exists" });
+        return res.status(409).json({ error: "User already exists with this phone number" });
       }
       return res.status(500).json({
         error: "Failed to register user",
