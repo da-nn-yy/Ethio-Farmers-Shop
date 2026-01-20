@@ -1080,6 +1080,9 @@ export const addListingImage = async (req, res) => {
     const file = req.file;
     const { url } = req.body;
 
+    // Parse listingId before any usage
+    const listingId = Number.parseInt(listingIdParam, 10);
+
     console.log('addListingImage called with:', {
       uid,
       listingId,
@@ -1089,7 +1092,6 @@ export const addListingImage = async (req, res) => {
     });
 
     // Basic validation
-    const listingId = Number.parseInt(listingIdParam, 10);
     if (!Number.isFinite(listingId) || listingId <= 0) {
       return res.status(400).json({ error: "Invalid listing id" });
     }
