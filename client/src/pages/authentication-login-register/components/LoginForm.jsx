@@ -45,17 +45,19 @@ const LoginForm = ({ currentLanguage, onAuthSuccess, onForgotPassword }) => {
     setIsLoading(true);
 
     try {
-      const result = await login(formData);
+      const result = await login({ email: formData.email, password: formData.password });
 
       if (result.success) {
         localStorage.setItem('currentLanguage', currentLanguage);
-        onAuthSuccess(result.user.role);
+        const role = result.user.role;
+        onAuthSuccess(role);
 
-        if (result.user.role === 'farmer') {
-          navigate('/dashboard-farmer-home');
-        } else {
-          navigate('/dashboard-buyer-home');
-        }
+        const destination = role === 'farmer'
+          ? '/farmer/dashboard'
+          : role === 'buyer'
+            ? '/buyer/dashboard'
+            : '/';
+        navigate(destination);
       } else {
         setErrors({
           general: result.error || (currentLanguage === 'am' ? 'የተሳሳተ መለያ ወይም የይለፍ ቃል' : 'Invalid credentials')
