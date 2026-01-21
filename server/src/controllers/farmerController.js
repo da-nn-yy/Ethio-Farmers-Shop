@@ -1202,6 +1202,9 @@ export const addListingImage = async (req, res) => {
 
   } catch (error) {
     console.error('Error adding image to listing:', error);
-    res.status(500).json({ error: "Failed to add image to listing" });
+    res.status(500).json({
+      error: "Failed to add image to listing",
+      details: error?.message
+    });
   }
 };

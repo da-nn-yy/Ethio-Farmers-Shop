@@ -23,8 +23,9 @@ const app = express();
 // Resolve file paths for static assets
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const clientPublicAssets = path.resolve(__dirname, "../client/public/assets");
-const clientBuildAssets = path.resolve(__dirname, "../client/build/assets");
+// Note: __dirname points to server/src; client is a sibling to server at project root
+const clientPublicAssets = path.resolve(__dirname, "../../client/public/assets");
+const clientBuildAssets = path.resolve(__dirname, "../../client/build/assets");
 
 // PUBLIC_BASE_URL and normalizeImageUrl now come from utils/url.js
 
@@ -47,20 +48,7 @@ app.use(helmet({
 }));
 
 // Rate limiting
-const limiter = rateLimit({
-  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
-  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
-  message: {
-    error: "Too many requests from this IP, please try again later.",
-    retryAfter: "15 minutes"
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use(limiter);
-
-// CORS configuration
+// CORS configuration (must run before rate limiting so preflight gets headers)
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') || [
@@ -91,6 +79,19 @@ const corsOptions = {
 app.use(cors(corsOptions));
 // Explicitly handle preflight for all routes
 app.options('*', cors(corsOptions));
+
+const limiter = rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS) || 100, // limit each IP to 100 requests per windowMs
+  message: {
+    error: "Too many requests from this IP, please try again later.",
+    retryAfter: "15 minutes"
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
 
 // JSON parsing with better error handling
 app.use(express.json({

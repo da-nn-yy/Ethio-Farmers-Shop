@@ -40,6 +40,8 @@ router.use('/reviews', reviewRoutes);
 // ============================================
 router.use('/admin', adminRoutes);
 router.use('/farmer', farmerRoutes);
+// Backward-compatible alias (client expects /farmers/*)
+router.use('/farmers', farmerRoutes);
 router.use('/buyer', buyerRoutes);
 
 // ============================================
