@@ -210,13 +210,22 @@ export const conditionalSingleUpload = (fieldName) => {
   const single = upload.single(fieldName);
   return (req, res, next) => {
     const contentType = req.headers['content-type'] || '';
+    console.log('conditionalSingleUpload - Content-Type:', contentType);
+    
     if (contentType.startsWith('multipart/form-data')) {
+      console.log('Processing multipart/form-data upload for field:', fieldName);
       return single(req, res, (err) => {
-        if (err) return handleUploadError(err, req, res, next);
+        if (err) {
+          console.error('Multer error in conditionalSingleUpload:', err);
+          return handleUploadError(err, req, res, next);
+        }
         return cleanupUploadedFiles(req, res, next);
       });
+    } else {
+      console.log('Skipping multer - not multipart/form-data, content-type:', contentType);
+      // For JSON requests, just pass through to the next middleware
+      return next();
     }
-    return next();
   };
 };
 

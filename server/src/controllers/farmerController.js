@@ -1075,55 +1075,100 @@ export const deleteFarmerListing = async (req, res) => {
 // Add image to a specific listing
 export const addListingImage = async (req, res) => {
   try {
-    const uid = req.user.uid;
+    const uid = req.user?.uid;
     const { id: listingIdParam } = req.params;
     const file = req.file;
-    const { url } = req.body;
+    const { url } = req.body || {};
 
     // Parse listingId before any usage
     const listingId = Number.parseInt(listingIdParam, 10);
 
-    console.log('addListingImage called with:', {
+    console.log('=== addListingImage DEBUG ===');
+    console.log('Request details:', {
       uid,
       listingId,
+      listingIdParam,
       hasFile: !!file,
+      fileInfo: file ? {
+        filename: file.filename,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        path: file.path
+      } : null,
       hasUrl: !!url,
-      url: url
+      url: url,
+      contentType: req.headers['content-type'],
+      bodyKeys: req.body ? Object.keys(req.body) : [],
+      userInfo: req.user ? { uid: req.user.uid, id: req.user.id } : 'No user'
     });
 
     // Basic validation
+    if (!uid) {
+      console.error('No user found in request');
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+    
     if (!Number.isFinite(listingId) || listingId <= 0) {
+      console.error('Invalid listing ID:', listingIdParam);
       return res.status(400).json({ error: "Invalid listing id" });
     }
+    
     if (!file && (!url || typeof url !== 'string' || url.trim().length === 0)) {
-      return res.status(400).json({ error: "No image file or URL provided" });
+      console.error('No image file or URL provided');
+      return res.status(400).json({ 
+        error: "No image file or URL provided",
+        details: "Either upload a file or provide a valid URL"
+      });
     }
 
     // Get user ID
     let userId;
 
-    if (uid.startsWith('dev-uid-')) {
-      userId = req.user.id;
-    } else {
-      const [userRows] = await pool.query(
-        "SELECT id FROM users WHERE firebase_uid = ?",
-        [uid]
+    try {
+      if (uid.startsWith('dev-uid-')) {
+        userId = req.user.id;
+        console.log('Using dev user ID:', userId);
+      } else {
+        const [userRows] = await pool.query(
+          "SELECT id FROM users WHERE firebase_uid = ?",
+          [uid]
+        );
+
+        if (userRows.length === 0) {
+          console.error('User not found for uid:', uid);
+          return res.status(404).json({ error: "User not found" });
+        }
+        userId = userRows[0].id;
+        console.log('Found user ID:', userId, 'for uid:', uid);
+      }
+
+      // Verify user owns the listing (check both old and new schema)
+      const [listings] = await pool.query(
+        "SELECT * FROM produce_listings WHERE id = ? AND (farmer_user_id = ? OR farmer_id = ?)",
+        [listingId, userId, userId]
       );
 
-      if (userRows.length === 0) {
-        return res.status(404).json({ error: "User not found" });
+      if (listings.length === 0) {
+        console.error('Listing not found or not authorized:', {
+          listingId,
+          userId,
+          uid
+        });
+        return res.status(404).json({ error: "Listing not found or not authorized" });
       }
-      userId = userRows[0].id;
-    }
-
-    // Verify user owns the listing (check both old and new schema)
-    const [listings] = await pool.query(
-      "SELECT * FROM produce_listings WHERE id = ? AND (farmer_user_id = ? OR farmer_id = ?)",
-      [listingId, userId, userId]
-    );
-
-    if (listings.length === 0) {
-      return res.status(404).json({ error: "Listing not found or not authorized" });
+      
+      console.log('Listing ownership verified:', {
+        listingId,
+        userId,
+        listingTitle: listings[0].title || listings[0].name
+      });
+    } catch (dbError) {
+      console.error('Database error while checking user/listing:', dbError);
+      return res.status(500).json({
+        error: "Database error",
+        details: process.env.NODE_ENV === 'development' ? dbError.message : undefined
+      });
     }
 
     // Determine image URL - either from file upload or direct URL
@@ -1132,7 +1177,29 @@ export const addListingImage = async (req, res) => {
       // store relative path; readers normalize to absolute
       imageUrl = `uploads/${file.filename}`;
     } else if (url) {
-      imageUrl = url.trim();
+      const trimmedUrl = url.trim();
+      // If it's a full URL, extract the relative path for storage
+      if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
+        try {
+          const urlObj = new URL(trimmedUrl);
+          // Extract path like "/uploads/file.jpg" -> "uploads/file.jpg"
+          imageUrl = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname;
+          console.log('Extracted relative path from full URL:', { original: trimmedUrl, relative: imageUrl });
+        } catch (urlParseError) {
+          console.warn('Failed to parse URL, storing as-is:', urlParseError.message);
+          // Fallback: try to extract uploads path manually
+          const match = trimmedUrl.match(/\/uploads\/[^\/\s]+/);
+          if (match) {
+            imageUrl = match[0].slice(1); // Remove leading slash
+          } else {
+            imageUrl = trimmedUrl; // Store as-is if we can't parse it
+          }
+        }
+      } else {
+        // Already a relative path
+        imageUrl = trimmedUrl;
+      }
+      console.log('Final imageUrl for storage:', imageUrl);
     } else {
       return res.status(400).json({ error: "No image file or URL provided" });
     }
@@ -1155,35 +1222,57 @@ export const addListingImage = async (req, res) => {
       });
     }
 
-    // Get the next sort order for this listing
-    let nextSortOrder = 0;
+    // Determine if sort_order column exists (legacy compatibility)
+    let hasSortOrder = true;
     try {
-      const [existingImages] = await pool.query(
-        "SELECT MAX(sort_order) as max_sort FROM listing_images WHERE listing_id = ?",
-        [listingId]
-      );
-
-      nextSortOrder = (existingImages[0]?.max_sort ?? -1) + 1;
-    } catch (sortError) {
-      console.warn('Could not get max sort order, using 0:', sortError.message);
-      nextSortOrder = 0;
+      hasSortOrder = await columnExists('listing_images', 'sort_order');
+      console.log('sort_order column check result:', hasSortOrder);
+    } catch (sortOrderCheckError) {
+      console.warn('Could not check for sort_order column, assuming it exists:', sortOrderCheckError.message);
+      hasSortOrder = true; // Default to true for safety
     }
 
-    // Insert image into listing_images table
+    // Get the next sort order for this listing (only if column exists)
+    let nextSortOrder = 0;
+    if (hasSortOrder) {
+      try {
+        const [existingImages] = await pool.query(
+          "SELECT MAX(sort_order) as max_sort FROM listing_images WHERE listing_id = ?",
+          [listingId]
+        );
+        nextSortOrder = (existingImages[0]?.max_sort ?? -1) + 1;
+      } catch (sortError) {
+        console.warn('Could not get max sort order, using 0:', sortError.message);
+        nextSortOrder = 0;
+      }
+    }
+
+    // Insert image into listing_images table (handle legacy schema without sort_order)
     console.log('Inserting image into listing_images table:', {
       listingId,
       imageUrl,
       userId,
-      sortOrder: nextSortOrder
+      sortOrder: hasSortOrder ? nextSortOrder : '(none)'
     });
 
     try {
-      await pool.query(
-        "INSERT INTO listing_images (listing_id, url, sort_order) VALUES (?, ?, ?)",
-        [listingId, imageUrl, nextSortOrder]
-      );
+      if (hasSortOrder) {
+        await pool.query(
+          "INSERT INTO listing_images (listing_id, url, sort_order) VALUES (?, ?, ?)",
+          [listingId, imageUrl, nextSortOrder]
+        );
+      } else {
+        await pool.query(
+          "INSERT INTO listing_images (listing_id, url) VALUES (?, ?)",
+          [listingId, imageUrl]
+        );
+      }
 
-      console.log('Image successfully inserted into database with sort_order:', nextSortOrder);
+      if (hasSortOrder) {
+        console.log('Image successfully inserted into database with sort_order:', nextSortOrder);
+      } else {
+        console.log('Image successfully inserted into database (legacy listing_images without sort_order)');
+      }
     } catch (insertError) {
       console.error('Failed to insert image into database:', insertError);
       if (insertError?.code === 'ER_NO_SUCH_TABLE') {
@@ -1201,10 +1290,55 @@ export const addListingImage = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Error adding image to listing:', error);
-    res.status(500).json({
-      error: "Failed to add image to listing",
-      details: error?.message
+    console.error('=== ERROR adding image to listing ===');
+    console.error('Error type:', error?.constructor?.name);
+    console.error('Error message:', error?.message);
+    console.error('Error code:', error?.code);
+    console.error('Error stack:', error?.stack);
+    console.error('Request details:', {
+      uid: req.user?.uid,
+      listingId: req.params?.id,
+      hasFile: !!req.file,
+      hasUrl: !!req.body?.url,
+      url: req.body?.url
     });
+    
+    // Provide more specific error messages
+    let errorMessage = "Failed to add image to listing";
+    let statusCode = 500;
+    let errorDetails = undefined;
+    
+    if (error?.code === 'ER_NO_SUCH_TABLE') {
+      errorMessage = 'Database table missing';
+      statusCode = 500;
+      errorDetails = error.message;
+    } else if (error?.code?.startsWith('ER_')) {
+      errorMessage = 'Database error occurred';
+      statusCode = 500;
+      errorDetails = error.message;
+    } else if (error?.message?.includes('permission')) {
+      errorMessage = 'Permission denied';
+      statusCode = 403;
+      errorDetails = error.message;
+    } else {
+      errorDetails = error?.message;
+    }
+    
+    const response = {
+      success: false,
+      error: errorMessage
+    };
+    
+    // Always include details in development, optionally in production
+    if (errorDetails) {
+      response.details = errorDetails;
+    }
+    
+    if (process.env.NODE_ENV === 'development') {
+      response.stack = error?.stack;
+      response.errorCode = error?.code;
+    }
+    
+    res.status(statusCode).json(response);
   }
 };

@@ -75,14 +75,54 @@ export const registerAdmin = async (req, res) => {
       });
     }
 
-    // Generate a unique Firebase UID for the admin
-    const generatedUid = `admin_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+    // Create admin in Firebase (if configured)
+    let firebaseUid = null;
+    try {
+      const isFirebaseConfigured = (() => {
+        try { return admin?.apps?.length > 0; } catch { return false; }
+      })();
+
+      if (isFirebaseConfigured) {
+        // Ensure phone is not already in use in Firebase
+        try {
+          await admin.auth().getUserByPhoneNumber(normalizedPhone);
+          return res.status(409).json({ success: false, message: "Phone number already exists in Firebase" });
+        } catch (lookupErr) {
+          if (!(lookupErr && lookupErr.code === 'auth/user-not-found')) {
+            return res.status(500).json({ success: false, message: "Failed to validate phone number" });
+          }
+        }
+
+        const fbUser = await admin.auth().createUser({
+          email,
+          password,
+          displayName: fullName,
+          phoneNumber: normalizedPhone
+        });
+        firebaseUid = fbUser.uid;
+
+        await admin.auth().setCustomUserClaims(firebaseUid, {
+          role: 'admin'
+        });
+      } else {
+        // Fallback: generate a pseudo uid when Firebase is not configured
+        firebaseUid = `admin_${Date.now()}_${Math.floor(Math.random()*1000)}`;
+      }
+    } catch (fbErr) {
+      if (fbErr.code === 'auth/email-already-exists') {
+        return res.status(409).json({ success: false, message: "Admin already exists with this email" });
+      }
+      if (fbErr.code === 'auth/phone-number-already-exists') {
+        return res.status(409).json({ success: false, message: "Admin already exists with this phone number" });
+      }
+      return res.status(500).json({ success: false, message: "Failed to create admin in Firebase", details: fbErr.message });
+    }
 
     // Create admin user in MySQL
     const [result] = await pool.query(
       `INSERT INTO users (firebase_uid, email, full_name, phone, role, status)
        VALUES (?, ?, ?, ?, 'admin', 'active')`,
-      [generatedUid, email, fullName, normalizedPhone]
+      [firebaseUid, email, fullName, normalizedPhone]
     );
 
     const userId = result.insertId;
@@ -135,7 +175,7 @@ export const registerAdmin = async (req, res) => {
         phone,
         role: 'admin',
         adminRole,
-        firebaseUid: generatedUid
+        firebaseUid
       }
     });
 
