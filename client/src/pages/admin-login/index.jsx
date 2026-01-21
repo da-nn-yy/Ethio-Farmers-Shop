@@ -4,11 +4,10 @@ import { useAuth } from '../../hooks/useAuth.jsx';
 import Button from '../../components/ui/Button.jsx';
 import Icon from '../../components/AppIcon.jsx';
 import { useLanguage } from '../../hooks/useLanguage.jsx';
-import sessionManager from '../../utils/sessionManager.js';
 
 const AdminLogin = () => {
   const navigate = useNavigate();
-  const { login, isAuthenticated, user, updateUser, refreshUser } = useAuth();
+  const { login, isAuthenticated, user, updateUser } = useAuth();
   const { language } = useLanguage();
   const [formData, setFormData] = useState({
     email: '',
@@ -90,81 +89,27 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      // Use Firebase authentication for admin login
-      const { getAuth, signInWithEmailAndPassword } = await import('firebase/auth');
-      const { auth } = await import('../../firebase');
+      const result = await login(
+        { email: formData.email, password: formData.password },
+        { requiredRole: 'admin' }
+      );
 
-      if (!auth) {
-        throw new Error('Firebase is not configured');
-      }
-
-      // Sign in with Firebase
-      const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-      const firebaseUser = userCredential.user;
-
-      // Get ID token and verify user role from backend
-      const idToken = await firebaseUser.getIdToken();
-
-      // Fetch user profile from backend to check role
-      const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-      const response = await fetch(`${API_BASE}/users/me`, {
-        headers: {
-          'Authorization': `Bearer ${idToken}`
-        }
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch user profile');
-      }
-
-      const userData = await response.json();
-
-      // Check if user is admin
-      if (userData.role !== 'admin') {
-        // Sign out if not admin
-        await auth.signOut();
-        setError(t.loginError);
-        setIsLoading(false);
+      if (!result.success) {
+        setError(result.error || t.loginError);
         return;
       }
 
-      // Fetch user data from backend
-      const { userService } = await import('../../services/apiService');
-      const me = await userService.getMe();
+      const adminUser = result.user;
+      updateUser(adminUser);
 
-      if (!me) {
-        throw new Error('Failed to fetch user profile');
-      }
-
-      // Store auth token in sessionManager (auth hook checks this)
-      sessionManager.setSessionData('authToken', idToken);
-      sessionManager.setSessionData('userData', JSON.stringify(me));
-      sessionManager.setSessionData('userRole', me.role);
-      sessionManager.setSessionData('isAuthenticated', 'true');
-
-      // Also store in localStorage for API interceptor
-      localStorage.setItem('authToken', idToken);
-      localStorage.setItem('userData', JSON.stringify(me));
-      localStorage.setItem('userRole', me.role);
-      localStorage.setItem('isAuthenticated', 'true');
-
-      // Force update auth context immediately - this sets isAuthenticated to true
-      updateUser(me);
-
-      // Small delay to ensure React state updates
-      await new Promise(resolve => setTimeout(resolve, 200));
-
-      // Force navigation - use window.location as fallback if navigate doesn't work
-        try {
+      try {
         navigate('/admin/dashboard', { replace: true });
-        // If still on login page after a moment, force reload
         setTimeout(() => {
           if (window.location.pathname === '/admin-login') {
             window.location.href = '/admin/dashboard';
           }
         }, 500);
       } catch (err) {
-        // Fallback to direct navigation
         window.location.href = '/admin/dashboard';
       }
     } catch (error) {

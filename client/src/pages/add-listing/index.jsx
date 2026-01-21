@@ -558,6 +558,10 @@ const AddListing = () => {
                 url: attachErr.config?.url,
                 method: attachErr.config?.method
               });
+              // Log full error response for debugging
+              if (attachErr.response?.data) {
+                console.error('Full error response:', JSON.stringify(attachErr.response.data, null, 2));
+              }
               failedAttachments++;
               // Continue with other images even if one fails
             }

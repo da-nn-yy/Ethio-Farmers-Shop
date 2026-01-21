@@ -129,24 +129,56 @@ export const AuthProvider = ({ children }) => {
     clearSessionData();
   };
 
-  const login = async (credentials) => {
+  const login = async (credentials = {}, options = {}) => {
+    const { email, password } = credentials || {};
+    const requiredRole = options.requiredRole || credentials.requiredRole || null;
+
     try {
       setLoading(true);
       setError(null);
 
-      // Enforce real auth: only proceed when backend returns a real user profile
-      const me = await userService.getMe();
+      if (!email || !password) {
+        throw new Error('Email and password are required');
+      }
 
+      const { auth } = await import('../firebase');
+      if (!auth) {
+        throw new Error('Authentication service unavailable');
+      }
+
+      const { signInWithEmailAndPassword, signOut } = await import('firebase/auth');
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+      const idToken = await firebaseUser.getIdToken();
+
+      // Persist token immediately so downstream requests carry it
+      sessionManager.setSessionData('authToken', idToken);
+      sessionManager.setSessionData('isAuthenticated', 'true');
+      localStorage.setItem('authToken', idToken);
+      localStorage.setItem('isAuthenticated', 'true');
+
+      const me = await userService.getMe();
       if (!me) {
-        throw new Error('Authentication failed');
+        await signOut(auth);
+        clearAuth();
+        throw new Error('Failed to fetch profile');
+      }
+
+      if (requiredRole && me.role !== requiredRole) {
+        await signOut(auth);
+        clearAuth();
+        return { success: false, error: 'Access denied for this role' };
       }
 
       setUser(me);
       setRole(me.role || null);
+      setToken(idToken);
       setIsAuthenticated(true);
-      sessionManager.setSessionData('isAuthenticated', 'true');
       sessionManager.setSessionData('userData', JSON.stringify(me));
       if (me.role) sessionManager.setSessionData('userRole', me.role);
+      localStorage.setItem('userData', JSON.stringify(me));
+      if (me.role) localStorage.setItem('userRole', me.role);
+
       return { success: true, user: me };
     } catch (error) {
       console.error('Login error:', error);
@@ -175,6 +207,13 @@ export const AuthProvider = ({ children }) => {
         const auth = getAuth();
         await signInWithEmailAndPassword(auth, email, password);
 
+        const idToken = await auth.currentUser?.getIdToken();
+        if (idToken) {
+          setToken(idToken);
+          sessionManager.setSessionData('authToken', idToken);
+          localStorage.setItem('authToken', idToken);
+        }
+
         // After Firebase sign-in, fetch user profile to confirm real account
         const me = await userService.getMe();
         if (me) {
@@ -184,6 +223,8 @@ export const AuthProvider = ({ children }) => {
           sessionManager.setSessionData('isAuthenticated', 'true');
           sessionManager.setSessionData('userData', JSON.stringify(me));
           if (me.role) sessionManager.setSessionData('userRole', me.role);
+          localStorage.setItem('userData', JSON.stringify(me));
+          if (me.role) localStorage.setItem('userRole', me.role);
         }
       } catch (_) {
         // Auto-login failed; user must sign in manually
@@ -203,9 +244,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      const { auth } = await import('../firebase');
+      if (auth) {
+        const { signOut } = await import('firebase/auth');
+        await signOut(auth);
+      }
+    } catch (_) {}
+
     clearAuth();
-    // Call logout service
     authService.logout();
   };
 
