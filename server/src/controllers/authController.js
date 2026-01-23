@@ -119,6 +119,17 @@ export const registerAdmin = async (req, res) => {
     }
 
     // Create admin user in MySQL
+    // Normalize adminRole to match ENUM('superadmin','manager','moderator')
+    const normalizedAdminRole = (() => {
+      const requested = (adminRole || '').toLowerCase();
+      if (requested === 'superadmin') return 'superadmin';
+      if (requested === 'moderator') return 'moderator';
+      if (requested === 'manager') return 'manager';
+      // Common alias from UI: "admin" → use manager as safe default
+      if (requested === 'admin') return 'manager';
+      return 'manager';
+    })();
+
     const [result] = await pool.query(
       `INSERT INTO users (firebase_uid, email, full_name, phone, role, status)
        VALUES (?, ?, ?, ?, 'admin', 'active')`,
@@ -131,7 +142,7 @@ export const registerAdmin = async (req, res) => {
     await pool.query(
       `INSERT INTO admins (user_id, role, status)
        VALUES (?, ?, 'active')`,
-      [userId, adminRole]
+      [userId, normalizedAdminRole]
     );
 
     // Create admin profile if needed
@@ -151,19 +162,19 @@ export const registerAdmin = async (req, res) => {
       await pool.query(
         `INSERT INTO admin_profiles (user_id, admin_role, permissions)
          VALUES (?, ?, ?)`,
-        [userId, adminRole, JSON.stringify({
+        [userId, normalizedAdminRole, JSON.stringify({
           canManageUsers: true,
           canManageListings: true,
           canManageOrders: true,
           canViewAnalytics: true,
-          canManageSettings: adminRole === 'superadmin'
+          canManageSettings: normalizedAdminRole === 'superadmin'
         })]
       );
     } catch (profileError) {
       console.log('Admin profile creation skipped:', profileError.message);
     }
 
-    console.log(`New admin registered: ${email} with role: ${adminRole}`);
+    console.log(`New admin registered: ${email} with role: ${normalizedAdminRole}`);
 
     res.status(201).json({
       success: true,
