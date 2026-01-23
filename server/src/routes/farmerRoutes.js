@@ -12,6 +12,7 @@ import {
   bulkUpdateListingStatus,
   bulkDeleteListings,
   uploadImage,
+  getUploadedImages,
   addListingImage,
   deleteFarmerListing
 } from "../controllers/farmerController.js";
@@ -67,6 +68,7 @@ router.get('/reviews', getFarmerReviews);
 
 // Image upload
 router.post('/upload-image', upload.single('image'), handleUploadError, uploadImage);
+router.get('/uploaded-images', getUploadedImages); // Fetch uploaded images
 // Accept either multipart (file) or JSON { url } for adding images
 router.post('/listings/:id/images', conditionalSingleUpload('image'), handleUploadError, addListingImage);
 
