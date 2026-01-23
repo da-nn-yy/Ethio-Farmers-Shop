@@ -5,6 +5,7 @@ import Card from '../../components/ui/Card.jsx';
 import Icon from '../../components/AppIcon.jsx';
 import Button from '../../components/ui/Button.jsx';
 import { adminService } from '../../services/apiService.js';
+import { getListingImages } from '../../utils/imageUtils';
 
 const mockListings = [
   {
@@ -315,14 +316,23 @@ const AdminListings = () => {
             <p className="text-slate-600 dark:text-slate-400">No listings found</p>
           </div>
         ) : (
-          filteredListings.map((listing) => (
-            <Card key={listing.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+          filteredListings.map((listing) => {
+            const listingImages = getListingImages(listing);
+            const primaryImage = listingImages[0] || '/assets/images/no_image.png';
+            
+            return (
+              <Card key={listing.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
-                <img src={listing.image} alt={listing.title} className="w-full h-48 object-cover" />
+                <img src={primaryImage} alt={listing.title} className="w-full h-48 object-cover" onError={(e) => { e.target.src = '/assets/images/no_image.png'; }} />
                 <div className="absolute top-4 right-4">{getStatusBadge(listing.status)}</div>
                 {listing.verified && (
                   <div className="absolute top-4 left-4">
                     <Icon name="CheckCircle" size={20} className="text-green-500 bg-white rounded-full" />
+                  </div>
+                )}
+                {listingImages.length > 1 && (
+                  <div className="absolute bottom-2 left-2 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                    {listingImages.length} images
                   </div>
                 )}
               </div>
@@ -401,8 +411,9 @@ const AdminListings = () => {
                   <Button variant="ghost" size="sm" iconName="MoreHorizontal" />
                 </div>
               </div>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         )}
       </div>
     </AdminPage>

@@ -3,7 +3,7 @@ import { farmerService } from '../../services/apiService';
 import Icon from '../AppIcon';
 import Button from './Button';
 
-const UploadedImagesGallery = ({ 
+const UploadedImagesGallery = ({
   onSelectImage,
   currentLanguage = 'en',
   className = '',
@@ -26,8 +26,8 @@ const UploadedImagesGallery = ({
       setImages(response.images || []);
     } catch (err) {
       console.error('Error loading uploaded images:', err);
-      setError(currentLanguage === 'am' 
-        ? 'ምስሎችን ማስተካከል አልተሳካም' 
+      setError(currentLanguage === 'am'
+        ? 'ምስሎችን ማስተካከል አልተሳካም'
         : 'Failed to load images');
     } finally {
       setLoading(false);
@@ -93,14 +93,14 @@ const UploadedImagesGallery = ({
     return (
       <div className={`text-center p-8 ${className}`}>
         <Icon name="Image" size={48} className="mx-auto mb-4 text-gray-400" />
-        <p className="text-text-secondary mb-4">
-          {currentLanguage === 'am' 
-            ? 'ምንም የተጭኑ ምስሎች የሉም' 
+        <p className="mb-4 text-text-secondary">
+          {currentLanguage === 'am'
+            ? 'ምንም የተጭኑ ምስሎች የሉም'
             : 'No uploaded images yet'}
         </p>
         <p className="text-sm text-text-secondary">
-          {currentLanguage === 'am' 
-            ? 'አዲስ ምስል ለመጫን የምስል ማስገቢያ ቦታን ይጠቀሙ' 
+          {currentLanguage === 'am'
+            ? 'አዲስ ምስል ለመጫን የምስል ማስገቢያ ቦታን ይጠቀሙ'
             : 'Use the image upload area to upload new images'}
         </p>
       </div>
@@ -112,7 +112,7 @@ const UploadedImagesGallery = ({
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-text-primary">
           {currentLanguage === 'am' ? 'የተጭኑ ምስሎች' : 'Uploaded Images'}
-          <span className="text-sm text-text-secondary ml-2">
+          <span className="ml-2 text-sm text-text-secondary">
             ({images.length})
           </span>
         </h3>
@@ -137,11 +137,11 @@ const UploadedImagesGallery = ({
             }`}
           >
             {/* Image */}
-            <div className="aspect-square overflow-hidden bg-gray-100">
+            <div className="overflow-hidden bg-gray-100 aspect-square">
               <img
                 src={image.url}
                 alt={image.originalname}
-                className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                className="object-cover w-full h-full transition-transform group-hover:scale-105"
                 onError={(e) => {
                   console.log('Image failed to load:', image.url);
                   e.target.src = '/assets/images/no_image.png';
@@ -150,12 +150,12 @@ const UploadedImagesGallery = ({
             </div>
 
             {/* Overlay Info */}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/60 transition-all duration-200">
-              <div className="absolute bottom-0 left-0 right-0 p-2 transform translate-y-full group-hover:translate-y-0 transition-transform">
-                <p className="text-white text-xs truncate mb-1" title={image.originalname}>
+            <div className="absolute inset-0 transition-all duration-200 bg-black/0 group-hover:bg-black/60">
+              <div className="absolute bottom-0 left-0 right-0 p-2 transition-transform transform translate-y-full group-hover:translate-y-0">
+                <p className="mb-1 text-xs text-white truncate" title={image.originalname}>
                   {image.originalname}
                 </p>
-                <div className="flex items-center justify-between text-white text-xs">
+                <div className="flex items-center justify-between text-xs text-white">
                   <span>{formatFileSize(image.size)}</span>
                   <span>{formatDate(image.createdAt)}</span>
                 </div>
@@ -164,7 +164,7 @@ const UploadedImagesGallery = ({
 
             {/* Select Button */}
             {showSelectButton && (
-              <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="absolute transition-opacity opacity-0 top-2 right-2 group-hover:opacity-100">
                 <Button
                   variant={selectedImage === image.id ? "primary" : "outline"}
                   size="sm"
@@ -172,7 +172,7 @@ const UploadedImagesGallery = ({
                   className="bg-white/90 hover:bg-white"
                   iconName={selectedImage === image.id ? "Check" : "Plus"}
                 >
-                  {selectedImage === image.id 
+                  {selectedImage === image.id
                     ? (currentLanguage === 'am' ? 'ተመርጧል' : 'Selected')
                     : (currentLanguage === 'am' ? 'ምረጥ' : 'Select')
                   }
@@ -182,7 +182,7 @@ const UploadedImagesGallery = ({
 
             {/* Selected Indicator */}
             {selectedImage === image.id && (
-              <div className="absolute top-2 left-2 bg-primary text-white rounded-full p-1">
+              <div className="absolute p-1 text-white rounded-full top-2 left-2 bg-primary">
                 <Icon name="Check" size={16} />
               </div>
             )}

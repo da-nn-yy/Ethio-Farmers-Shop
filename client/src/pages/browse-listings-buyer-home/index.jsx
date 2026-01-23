@@ -104,26 +104,34 @@ const BrowseListingsBuyerHome = () => {
         // Prefer public listings for unauthenticated visibility
         const publicRes = await listingService.getPublicListings();
         if (publicRes && Array.isArray(publicRes.listings)) {
-          const transformedListings = publicRes.listings.map(listing => ({
-            id: listing.id,
-            name: listing.name,
-            nameAm: listing.category,
-            pricePerKg: parseFloat(listing.pricePerKg || 0),
-            availableQuantity: parseFloat(listing.availableQuantity || 0),
-            image: listing.image || getDefaultImage(listing.category),
-            freshness: 'Fresh from farm',
-            category: listing.category,
-            farmer: {
-              id: listing.farmerUserId,
-              name: listing.farmerName,
-              avatar: listing.farmerAvatar,
-              location: listing.location,
-              rating: 4.5,
-              reviewCount: 50,
-              phone: '+251900000000',
-              isVerified: true
-            }
-          }));
+          const transformedListings = publicRes.listings.map(listing => {
+            const candidateImages = listing.images || listing.image_urls || listing.imageUrls || listing.uploadedImages || listing.uploaded_images || [];
+            const firstImage = Array.isArray(candidateImages)
+              ? (typeof candidateImages[0] === 'string' ? candidateImages[0] : candidateImages[0]?.url || candidateImages[0]?.path)
+              : null;
+
+            return {
+              id: listing.id,
+              name: listing.name,
+              nameAm: listing.category,
+              pricePerKg: parseFloat(listing.pricePerKg || 0),
+              availableQuantity: parseFloat(listing.availableQuantity || 0),
+              image: listing.image || firstImage || getDefaultImage(listing.category),
+              images: candidateImages,
+              freshness: 'Fresh from farm',
+              category: listing.category,
+              farmer: {
+                id: listing.farmerUserId,
+                name: listing.farmerName,
+                avatar: listing.farmerAvatar,
+                location: listing.location,
+                rating: 4.5,
+                reviewCount: 50,
+                phone: '+251900000000',
+                isVerified: true
+              }
+            };
+          });
           setListings(transformedListings);
           setFilteredListings(transformedListings);
           setLastFetchTime(now);
@@ -135,26 +143,34 @@ const BrowseListingsBuyerHome = () => {
         // Fallback to authenticated endpoint if needed
         const response = await listingService.getActiveListings();
         if (response && response.listings && Array.isArray(response.listings)) {
-          const transformed = response.listings.map(listing => ({
-            id: listing.id,
-            name: listing.title || listing.name,
-            nameAm: listing.crop,
-            pricePerKg: parseFloat(listing.price_per_unit || listing.pricePerKg || 0),
-            availableQuantity: parseFloat(listing.quantity || listing.availableQuantity || 0),
-            image: listing.image || listing.images?.[0]?.url || getDefaultImage(listing.crop || listing.category),
-            freshness: 'Fresh from farm',
-            category: listing.crop || listing.category,
-            farmer: {
-              id: listing.farmer_user_id || listing.farmerUserId,
-              name: listing.farmer_name || listing.farmerName,
-              avatar: listing.farmer_avatar || listing.farmerAvatar || 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
-              location: `${listing.region || listing.location}, ${listing.woreda || ''}`,
-              rating: 4.5,
-              reviewCount: 50,
-              phone: listing.farmer_phone || '+251900000000',
-              isVerified: true
-            }
-          }));
+          const transformed = response.listings.map(listing => {
+            const candidateImages = listing.images || listing.image_urls || listing.imageUrls || listing.uploadedImages || listing.uploaded_images || [];
+            const firstImage = Array.isArray(candidateImages)
+              ? (typeof candidateImages[0] === 'string' ? candidateImages[0] : candidateImages[0]?.url || candidateImages[0]?.path)
+              : null;
+
+            return {
+              id: listing.id,
+              name: listing.title || listing.name,
+              nameAm: listing.crop,
+              pricePerKg: parseFloat(listing.price_per_unit || listing.pricePerKg || 0),
+              availableQuantity: parseFloat(listing.quantity || listing.availableQuantity || 0),
+              image: listing.image || firstImage || getDefaultImage(listing.crop || listing.category),
+              images: candidateImages,
+              freshness: 'Fresh from farm',
+              category: listing.crop || listing.category,
+              farmer: {
+                id: listing.farmer_user_id || listing.farmerUserId,
+                name: listing.farmer_name || listing.farmerName,
+                avatar: listing.farmer_avatar || listing.farmerAvatar || 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
+                location: `${listing.region || listing.location}, ${listing.woreda || ''}`,
+                rating: 4.5,
+                reviewCount: 50,
+                phone: listing.farmer_phone || '+251900000000',
+                isVerified: true
+              }
+            };
+          });
           setListings(transformed);
           setFilteredListings(transformed);
           setLastFetchTime(now);
@@ -183,26 +199,34 @@ const BrowseListingsBuyerHome = () => {
     try {
       const publicRes = await listingService.getPublicListings();
       if (publicRes && Array.isArray(publicRes.listings)) {
-        const transformedListings = publicRes.listings.map(listing => ({
-          id: listing.id,
-          name: listing.name,
-          nameAm: listing.category,
-          pricePerKg: parseFloat(listing.pricePerKg || 0),
-          availableQuantity: parseFloat(listing.availableQuantity || 0),
-          image: listing.image || getDefaultImage(listing.category),
-          freshness: 'Fresh from farm',
-          category: listing.category,
-          farmer: {
-            id: listing.farmerUserId,
-            name: listing.farmerName,
-            avatar: listing.farmerAvatar,
-            location: listing.location,
-            rating: 4.5,
-            reviewCount: 50,
-            phone: '+251900000000',
-            isVerified: true
-          }
-        }));
+        const transformedListings = publicRes.listings.map(listing => {
+          const candidateImages = listing.images || listing.image_urls || listing.imageUrls || listing.uploadedImages || listing.uploaded_images || [];
+          const firstImage = Array.isArray(candidateImages)
+            ? (typeof candidateImages[0] === 'string' ? candidateImages[0] : candidateImages[0]?.url || candidateImages[0]?.path)
+            : null;
+
+          return {
+            id: listing.id,
+            name: listing.name,
+            nameAm: listing.category,
+            pricePerKg: parseFloat(listing.pricePerKg || 0),
+            availableQuantity: parseFloat(listing.availableQuantity || 0),
+            image: listing.image || firstImage || getDefaultImage(listing.category),
+            images: candidateImages,
+            freshness: 'Fresh from farm',
+            category: listing.category,
+            farmer: {
+              id: listing.farmerUserId,
+              name: listing.farmerName,
+              avatar: listing.farmerAvatar,
+              location: listing.location,
+              rating: 4.5,
+              reviewCount: 50,
+              phone: '+251900000000',
+              isVerified: true
+            }
+          };
+        });
         setListings(transformedListings);
         setFilteredListings(transformedListings);
         setLastFetchTime(Date.now());
@@ -216,26 +240,34 @@ const BrowseListingsBuyerHome = () => {
     try {
       const response = await listingService.getActiveListings();
       if (response && response.listings && Array.isArray(response.listings)) {
-        const transformedListings = response.listings.map(listing => ({
-          id: listing.id,
-          name: listing.title || listing.name,
-          nameAm: listing.crop,
-          pricePerKg: parseFloat(listing.price_per_unit || listing.pricePerKg || 0),
-          availableQuantity: parseFloat(listing.quantity || listing.availableQuantity || 0),
-          image: listing.image || listing.images?.[0]?.url || getDefaultImage(listing.crop || listing.category),
-          freshness: 'Fresh from farm',
-          category: listing.crop || listing.category,
-          farmer: {
-            id: listing.farmer_user_id || listing.farmerUserId,
-            name: listing.farmer_name || listing.farmerName,
-            avatar: listing.farmer_avatar || listing.farmerAvatar || 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
-            location: `${listing.region || listing.location}, ${listing.woreda || ''}`,
-            rating: 4.5,
-            reviewCount: 50,
-            phone: listing.farmer_phone || '+251900000000',
-            isVerified: true
-          }
-        }));
+        const transformedListings = response.listings.map(listing => {
+          const candidateImages = listing.images || listing.image_urls || listing.imageUrls || listing.uploadedImages || listing.uploaded_images || [];
+          const firstImage = Array.isArray(candidateImages)
+            ? (typeof candidateImages[0] === 'string' ? candidateImages[0] : candidateImages[0]?.url || candidateImages[0]?.path)
+            : null;
+
+          return {
+            id: listing.id,
+            name: listing.title || listing.name,
+            nameAm: listing.crop,
+            pricePerKg: parseFloat(listing.price_per_unit || listing.pricePerKg || 0),
+            availableQuantity: parseFloat(listing.quantity || listing.availableQuantity || 0),
+            image: listing.image || firstImage || getDefaultImage(listing.crop || listing.category),
+            images: candidateImages,
+            freshness: 'Fresh from farm',
+            category: listing.crop || listing.category,
+            farmer: {
+              id: listing.farmer_user_id || listing.farmerUserId,
+              name: listing.farmer_name || listing.farmerName,
+              avatar: listing.farmer_avatar || listing.farmerAvatar || 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg',
+              location: `${listing.region || listing.location}, ${listing.woreda || ''}`,
+              rating: 4.5,
+              reviewCount: 50,
+              phone: listing.farmer_phone || '+251900000000',
+              isVerified: true
+            }
+          };
+        });
         setListings(transformedListings);
         setFilteredListings(transformedListings);
         setLastFetchTime(Date.now());
