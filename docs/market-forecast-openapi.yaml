@@ -1,0 +1,189 @@
+openapi: 3.0.3
+info:
+  title: Market Forecast API
+  version: 0.1.0
+servers:
+  - url: https://api.example.com
+  - url: http://localhost:5000/api
+paths:
+  /market/trends:
+    get:
+      summary: Get historical market trends
+      parameters:
+        - in: query
+          name: crop
+          schema: { type: string }
+          required: true
+        - in: query
+          name: region
+          schema: { type: string }
+          required: true
+        - in: query
+          name: period
+          schema: { type: integer, default: 180, minimum: 7, maximum: 365 }
+          required: false
+      responses:
+        '200':
+          description: Historical series
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  series:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: { type: string, format: date }
+                        price: { type: number }
+                        volume: { type: number, nullable: true }
+                  meta:
+                    type: object
+                    properties:
+                      crop: { type: string }
+                      region: { type: string }
+                      period: { type: integer }
+  /market/forecasts:
+    get:
+      summary: Get market forecasts
+      parameters:
+        - in: query
+          name: crop
+          schema: { type: string }
+          required: true
+        - in: query
+          name: region
+          schema: { type: string }
+          required: true
+        - in: query
+          name: horizon
+          schema: { type: integer, enum: [7, 30, 90], default: 30 }
+          required: false
+        - in: query
+          name: version
+          schema: { type: string }
+          required: false
+      responses:
+        '200':
+          description: Forecast series
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  horizon: { type: integer }
+                  forecast:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: { type: string, format: date }
+                        price_pred: { type: number }
+                        lower: { type: number, nullable: true }
+                        upper: { type: number, nullable: true }
+                  model:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      version: { type: string }
+                      mape: { type: number, nullable: true }
+                      last_trained_at: { type: string, format: date-time, nullable: true }
+                  meta:
+                    type: object
+                    properties:
+                      crop: { type: string }
+                      region: { type: string }
+                      stale: { type: boolean, nullable: true }
+  /market/anomalies:
+    get:
+      summary: Get anomalies for a crop/region
+      parameters:
+        - in: query
+          name: crop
+          schema: { type: string }
+          required: true
+        - in: query
+          name: region
+          schema: { type: string }
+          required: true
+        - in: query
+          name: period
+          schema: { type: integer, default: 90, minimum: 7, maximum: 365 }
+          required: false
+      responses:
+        '200':
+          description: Anomaly list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  anomalies:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        date: { type: string, format: date }
+                        price: { type: number }
+                        score: { type: number }
+                        reason: { type: string, nullable: true }
+                  meta:
+                    type: object
+                    properties:
+                      crop: { type: string }
+                      region: { type: string }
+                      period: { type: integer }
+  /market/backtest:
+    post:
+      summary: Run backtest (admin-only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                crop: { type: string }
+                region: { type: string }
+                period: { type: integer, default: 180 }
+              required: [crop, region]
+      responses:
+        '200':
+          description: Backtest metrics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  metrics:
+                    type: object
+                    properties:
+                      mape: { type: number }
+                      mae: { type: number }
+                      rmse: { type: number }
+                  runs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        start: { type: string, format: date }
+                        end: { type: string, format: date }
+                        mape: { type: number }
+                  model:
+                    type: object
+                    properties:
+                      name: { type: string }
+                      version: { type: string }
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
