@@ -6,6 +6,7 @@ import InstagramStyleGallery from '../../../components/ui/InstagramStyleGallery'
 import Button from '../../../components/ui/Button';
 import FavoriteButton from '../../../components/FavoriteButton';
 import AddToCartButton from '../../../components/ui/AddToCartButton';
+import { getListingImages } from '../../../utils/imageUtils';
 
 const ProduceCard = ({
   listing,
@@ -77,7 +78,7 @@ const ProduceCard = ({
       {/* Image Section */}
       <div className="relative">
         <InstagramStyleGallery
-          images={listing?.images || (listing?.image ? [listing.image] : [])}
+          images={getListingImages(listing)}
           alt={currentLanguage === 'am' && listing?.nameAm ? listing?.nameAm : listing?.name || 'Product Image'}
           className="w-full"
           showFullscreen={true}

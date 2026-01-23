@@ -3,13 +3,14 @@ import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import ImageGallery from '../../../components/ui/ImageGallery';
 import Button from '../../../components/ui/Button';
+import { getListingImages } from '../../../utils/imageUtils';
 
-const ProduceListingCard = ({ 
-  listing, 
-  onEdit, 
-  onDuplicate, 
-  onToggleStatus, 
-  currentLanguage = 'en' 
+const ProduceListingCard = ({
+  listing,
+  onEdit,
+  onDuplicate,
+  onToggleStatus,
+  currentLanguage = 'en'
 }) => {
   const getStatusColor = (status) => {
     switch (status) {
@@ -57,19 +58,30 @@ const ProduceListingCard = ({
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden shadow-warm hover:shadow-warm-md transition-smooth">
       {/* Image Section */}
-      <div className="relative h-48 lg:h-56 overflow-hidden">
-        <ImageGallery
-          images={listing?.images || (listing?.image ? [listing.image] : [])}
-          alt={listing?.name || 'Product Image'}
-          className="w-full h-full"
-          showThumbnails={false}
-        />
-        <div className="absolute top-3 right-3">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(listing?.status)}`}>
-            {getStatusText(listing?.status)}
-          </span>
-        </div>
-      </div>
+      {(() => {
+        const listingImages = getListingImages(listing);
+        return (
+          <div className="relative h-48 lg:h-56 overflow-hidden bg-gray-100">
+            <ImageGallery
+              images={listingImages}
+              alt={listing?.name || 'Product Image'}
+              className="w-full h-full"
+              showThumbnails={false}
+            />
+            <div className="absolute top-3 right-3 z-10">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(listing?.status)}`}>
+                {getStatusText(listing?.status)}
+              </span>
+            </div>
+            {/* Image count badge if multiple images */}
+            {listingImages.length > 1 && (
+              <div className="absolute bottom-3 left-3 z-10 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                {listingImages.length} {currentLanguage === 'am' ? 'ምስሎች' : 'images'}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       {/* Content Section */}
       <div className="p-4 lg:p-5">
         <div className="flex items-start justify-between mb-3">
@@ -132,7 +144,7 @@ const ProduceListingCard = ({
             iconPosition="left"
             className="flex-1"
           >
-            {listing?.status === 'sold_out' 
+            {listing?.status === 'sold_out'
               ? (currentLanguage === 'am' ? 'እንደገና ንቁ አድርግ' : 'Reactivate')
               : (currentLanguage === 'am' ? 'ተሽጧል ምልክት አድርግ' : 'Mark Sold')
             }

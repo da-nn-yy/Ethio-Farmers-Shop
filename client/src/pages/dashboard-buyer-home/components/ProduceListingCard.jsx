@@ -1,9 +1,10 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 import Button from '../../../components/ui/Button';
+import ImageGallery from '../../../components/ui/ImageGallery';
+import { getListingImages } from '../../../utils/imageUtils';
 
 const ProduceListingCard = ({ listing, currentLanguage = 'en' }) => {
   const navigate = useNavigate();
@@ -17,22 +18,31 @@ const ProduceListingCard = ({ listing, currentLanguage = 'en' }) => {
     console.log('Contact farmer:', listing.farmer.name);
   };
 
+  const listingImages = getListingImages(listing);
+
   return (
     <div className="bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-shadow">
       <div className="relative">
-        <Image
-          src={listing.image}
-          alt={listing.name}
-          className="w-full h-48 object-cover"
+        <ImageGallery
+          images={listingImages}
+          alt={listing.name || 'Product Image'}
+          className="w-full h-48"
+          showThumbnails={false}
         />
         {listing.isOrganic && (
-          <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 text-xs rounded">
+          <div className="absolute top-2 left-2 z-10 bg-green-600 text-white px-2 py-1 text-xs rounded">
             {currentLanguage === 'en' ? 'Organic' : 'ኦርጋኒክ'}
           </div>
         )}
-        <button className="absolute top-2 right-2 p-2 bg-white/80 rounded-full hover:bg-white">
+        <button className="absolute top-2 right-2 z-10 p-2 bg-white/80 rounded-full hover:bg-white">
           <Icon name="Heart" className="w-4 h-4" />
         </button>
+        {/* Image count badge if multiple images */}
+        {listingImages.length > 1 && (
+          <div className="absolute bottom-2 left-2 z-10 bg-black/70 text-white px-2 py-1 rounded text-xs">
+            {listingImages.length} {currentLanguage === 'am' ? 'ምስሎች' : 'images'}
+          </div>
+        )}
       </div>
       
       <div className="p-4">
