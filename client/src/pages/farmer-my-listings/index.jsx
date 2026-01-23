@@ -5,6 +5,7 @@ import Button from '../../components/ui/Button';
 import Icon from '../../components/AppIcon';
 import InstagramStyleGallery from '../../components/ui/InstagramStyleGallery.jsx';
 import { farmerService } from '../../services/apiService';
+import { getListingImages } from '../../utils/imageUtils';
 
 const FarmerMyListings = () => {
   const navigate = useNavigate();
@@ -388,7 +389,7 @@ const FarmerMyListings = () => {
                   {/* Image */}
                   <div className="relative">
                     <InstagramStyleGallery
-                      images={listing?.images || (listing?.image ? [listing.image] : [])}
+                      images={getListingImages(listing)}
                       alt={listing.name || 'Product Image'}
                       className="w-full h-40"
                       showFullscreen={true}

@@ -1005,6 +1005,12 @@ export const farmerService = {
     return response.data;
   },
 
+  // Get uploaded images
+  getUploadedImages: async (params = {}) => {
+    const response = await apiClient.get('/farmers/uploaded-images', { params });
+    return response.data;
+  },
+
   // Add image to listing
   addListingImage: async (listingId, fileOrUrl) => {
     // Support either a File (upload first) or a direct URL

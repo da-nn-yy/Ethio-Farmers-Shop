@@ -319,7 +319,7 @@ const AdminListings = () => {
           filteredListings.map((listing) => {
             const listingImages = getListingImages(listing);
             const primaryImage = listingImages[0] || '/assets/images/no_image.png';
-            
+
             return (
               <Card key={listing.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               <div className="relative">
