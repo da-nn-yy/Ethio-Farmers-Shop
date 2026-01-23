@@ -185,28 +185,70 @@ export const getFarmerListings = async (req, res) => {
 
     const [listings] = await pool.query(query, params);
 
-    // Get all images for these listings (only for new schema)
-    let imagesByListing = {};
-    if (hasNewFarmerCol && hasTitleCol && hasPricePerUnit) {
-      const listingIds = listings.map(l => l.id);
+    // Get all images for these listings - ALWAYS try to get images
+    // Use Map for type-safe key matching (avoids string/number key issues)
+    const imagesByListing = new Map();
+    const listingIds = listings.map(l => Number(l.id)).filter(id => Number.isFinite(id) && id > 0);
 
-      if (listingIds.length > 0) {
+    if (listingIds.length > 0) {
+      try {
+        // Ensure listing_images table exists
+        await pool.query(`CREATE TABLE IF NOT EXISTS listing_images (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          listing_id INT NOT NULL,
+          url TEXT NOT NULL,
+          sort_order INT NOT NULL DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_images_listing (listing_id)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
+        // Use SQL JOIN for better performance and type safety
         const imagesQuery = `
-          SELECT listing_id, url, sort_order
-          FROM listing_images
-          WHERE listing_id IN (${listingIds.map(() => '?').join(',')})
-          ORDER BY listing_id, sort_order
+          SELECT 
+            li.listing_id,
+            li.url,
+            li.sort_order,
+            pl.id as listing_exists
+          FROM listing_images li
+          INNER JOIN produce_listings pl ON li.listing_id = pl.id
+          WHERE li.listing_id IN (${listingIds.map(() => '?').join(',')})
+          ORDER BY li.listing_id, li.sort_order
         `;
 
+        console.log('Fetching images for listings:', listingIds);
         const [imageRows] = await pool.query(imagesQuery, listingIds);
+        console.log('Found', imageRows.length, 'images for', listingIds.length, 'listings');
 
-        // Group images by listing_id and normalize URL
+        // Group images by listing_id with type-safe number keys
+        // normalizeImageUrl ensures URLs are properly formatted (works with both full URLs and relative paths)
         imageRows.forEach(img => {
-          if (!imagesByListing[img.listing_id]) {
-            imagesByListing[img.listing_id] = [];
+          const listingId = Number(img.listing_id);
+          if (!Number.isFinite(listingId) || listingId <= 0) {
+            console.warn('Invalid listing_id in image row:', img);
+            return;
           }
-          imagesByListing[img.listing_id].push(normalizeImageUrl(img.url));
+          
+          if (!imagesByListing.has(listingId)) {
+            imagesByListing.set(listingId, []);
+          }
+          // normalizeImageUrl handles both full URLs (stored like profile pictures) and relative paths
+          const imageUrl = normalizeImageUrl(img.url);
+          imagesByListing.get(listingId).push(imageUrl);
         });
+        
+        console.log('Images grouped by listing:', Array.from(imagesByListing.entries()).map(([id, images]) => ({
+          listingId: id,
+          count: images.length,
+          urls: images.slice(0, 2) // Show first 2 URLs for debugging
+        })));
+      } catch (imageError) {
+        console.error('Error fetching listing images:', imageError);
+        console.error('Image error details:', {
+          message: imageError.message,
+          code: imageError.code,
+          sqlState: imageError.sqlState
+        });
+        // Continue without images rather than failing completely
       }
     }
 
@@ -216,7 +258,11 @@ export const getFarmerListings = async (req, res) => {
       image: l.image
     })));
 
-    console.log('Images by listing:', imagesByListing);
+    console.log('Images by listing (Map size):', imagesByListing.size);
+    console.log('Images by listing (entries):', Array.from(imagesByListing.entries()).map(([id, imgs]) => ({
+      listingId: id,
+      imageCount: imgs.length
+    })));
 
     // Transform data to match frontend expectations
     const statusMapOut = {
@@ -228,7 +274,12 @@ export const getFarmerListings = async (req, res) => {
       inactive: 'inactive'
     };
     const transformedListings = listings.map(listing => {
-      const listingImages = imagesByListing[listing.id] || [];
+      // Type-safe lookup: ensure listing.id is a number and match with Map
+      const listingId = Number(listing.id);
+      const listingImages = (Number.isFinite(listingId) && imagesByListing.has(listingId))
+        ? imagesByListing.get(listingId)
+        : [];
+      
       return {
         id: listing.id,
         name: listing.name, // Selected as alias in query
@@ -481,7 +532,7 @@ export const createFarmerListing = async (req, res) => {
 
     const listingId = result.insertId;
 
-    // Add image if provided
+    // Add image if provided (for backward compatibility with single image field)
     if (image) {
       try {
         // Ensure listing_images table exists
@@ -494,29 +545,23 @@ export const createFarmerListing = async (req, res) => {
           INDEX idx_images_listing (listing_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-        // Store relative path if it's a full URL, otherwise store as-is
+        // Store relative path in database for uploaded files, keep external URLs as-is
         let imagePath = image;
         if (image.startsWith('http://') || image.startsWith('https://')) {
-          // Extract relative path from full URL (e.g., "http://localhost:5000/uploads/file.jpg" -> "uploads/file.jpg")
-          try {
-            const urlObj = new URL(image);
-            imagePath = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname;
-          } catch {
-            // If URL parsing fails, try simple string extraction
-            const match = image.match(/\/uploads\/[^\/]+$/);
-            if (match) {
-              imagePath = match[0].slice(1); // Remove leading slash
-            }
-          }
+          // External URL - store as-is
+          imagePath = image;
+        } else {
+          // Relative path - ensure it's properly formatted (remove leading slash)
+          imagePath = image.startsWith('/') ? image.slice(1) : image;
         }
 
         await pool.query(
           `INSERT INTO listing_images (listing_id, url, sort_order) VALUES (?, ?, 0)`,
           [listingId, imagePath]
         );
-        console.log('Primary image added to listing with sort_order 0:', imagePath);
+        console.log('✅ Primary image added to listing:', { listingId, imagePath });
       } catch (err) {
-        console.error('Error adding image to listing:', err);
+        console.error('❌ Error adding image to listing:', err);
         // Continue even if image insert fails
       }
     }
@@ -845,6 +890,83 @@ export const updateListingStatus = async (req, res) => {
   }
 };
 
+// Get uploaded images for farmer
+export const getUploadedImages = async (req, res) => {
+  try {
+    const uid = req.user?.uid;
+    if (!uid) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    let userId;
+    if (uid.startsWith('dev-uid-')) {
+      userId = req.user.id;
+    } else {
+      const [userRows] = await pool.query(
+        "SELECT id FROM users WHERE firebase_uid = ?",
+        [uid]
+      );
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      userId = userRows[0].id;
+    }
+
+    // Get query parameters
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+
+    // Fetch uploaded images from database
+    const [images] = await pool.query(
+      `SELECT 
+        id,
+        filename,
+        originalname,
+        url,
+        mimetype,
+        size,
+        created_at
+      FROM uploaded_images
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT ? OFFSET ?`,
+      [userId, limit, offset]
+    );
+
+    // Get total count for pagination
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) as total FROM uploaded_images WHERE user_id = ?`,
+      [userId]
+    );
+    const total = countResult[0]?.total || 0;
+
+    // Normalize URLs for response
+    const normalizedImages = images.map(img => ({
+      id: img.id,
+      filename: img.filename,
+      originalname: img.originalname,
+      url: normalizeImageUrl(img.url), // Normalize to full URL
+      mimetype: img.mimetype,
+      size: img.size,
+      createdAt: img.created_at
+    }));
+
+    res.json({
+      success: true,
+      images: normalizedImages,
+      pagination: {
+        total,
+        limit,
+        offset,
+        hasMore: offset + limit < total
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching uploaded images:", error);
+    res.status(500).json({ error: "Failed to fetch uploaded images" });
+  }
+};
+
 // Upload image for farmer
 export const uploadImage = async (req, res) => {
   try {
@@ -863,22 +985,76 @@ export const uploadImage = async (req, res) => {
       return res.status(400).json({ error: "No image file provided" });
     }
 
-    // Store relative path in database (will be normalized when read)
+    // Get user ID
+    const uid = req.user?.uid;
+    if (!uid) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    let userId;
+    if (uid.startsWith('dev-uid-')) {
+      userId = req.user.id;
+    } else {
+      const [userRows] = await pool.query(
+        "SELECT id FROM users WHERE firebase_uid = ?",
+        [uid]
+      );
+      if (userRows.length === 0) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      userId = userRows[0].id;
+    }
+
+    // Store relative path in database (e.g., "uploads/filename.jpg")
     const relativePath = `uploads/${req.file.filename}`;
+    
+    // Normalize URL for API response (converts relative to full URL)
+    const normalizedUrl = normalizeImageUrl(relativePath);
 
-    // Generate public URL for response (normalized)
-    const publicUrl = normalizeImageUrl(relativePath);
+    // Ensure uploaded_images table exists to track all uploads
+    try {
+      await pool.query(`CREATE TABLE IF NOT EXISTS uploaded_images (
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        user_id BIGINT NOT NULL,
+        filename VARCHAR(255) NOT NULL,
+        originalname VARCHAR(255) NOT NULL,
+        url TEXT NOT NULL,
+        mimetype VARCHAR(100),
+        size INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_uploaded_images_user (user_id),
+        INDEX idx_uploaded_images_filename (filename)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
-    console.log('Image uploaded successfully:', {
-      filename: req.file.filename,
-      relativePath,
-      publicUrl
-    });
+      // Save upload record to database
+      await pool.query(
+        `INSERT INTO uploaded_images (user_id, filename, originalname, url, mimetype, size) 
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [
+          userId,
+          req.file.filename,
+          req.file.originalname,
+          relativePath, // Store relative path in database
+          req.file.mimetype,
+          req.file.size
+        ]
+      );
+
+      console.log('✅ Image uploaded and saved to database:', {
+        userId,
+        filename: req.file.filename,
+        relativePath,
+        normalizedUrl
+      });
+    } catch (dbError) {
+      console.error('❌ Error saving upload to database:', dbError);
+      // Continue even if database save fails - file is still uploaded
+    }
 
     res.json({
       message: "Image uploaded successfully",
-      imageUrl: publicUrl, // Return public URL for immediate use
-      relativePath: relativePath, // Also return relative path for database storage
+      imageUrl: normalizedUrl, // Return normalized URL for frontend use
+      relativePath: relativePath, // Relative path stored in database
       filename: req.file.filename
     });
   } catch (error) {
@@ -1143,11 +1319,28 @@ export const addListingImage = async (req, res) => {
         console.log('Found user ID:', userId, 'for uid:', uid);
       }
 
-      // Verify user owns the listing (check both old and new schema)
-      const [listings] = await pool.query(
-        "SELECT * FROM produce_listings WHERE id = ? AND (farmer_user_id = ? OR farmer_id = ?)",
-        [listingId, userId, userId]
-      );
+      // Verify user owns the listing (check schema safely)
+      const hasFarmerUserId = await columnExists('produce_listings', 'farmer_user_id');
+      const hasFarmerId = await columnExists('produce_listings', 'farmer_id');
+
+      let ownershipQuery = "SELECT * FROM produce_listings WHERE id = ?";
+      const ownershipParams = [listingId];
+
+      if (hasFarmerUserId && hasFarmerId) {
+        ownershipQuery += " AND (farmer_user_id = ? OR farmer_id = ?)";
+        ownershipParams.push(userId, userId);
+      } else if (hasFarmerUserId) {
+        ownershipQuery += " AND farmer_user_id = ?";
+        ownershipParams.push(userId);
+      } else if (hasFarmerId) {
+        ownershipQuery += " AND farmer_id = ?";
+        ownershipParams.push(userId);
+      } else {
+        console.error('produce_listings table missing farmer owner columns');
+        return res.status(500).json({ error: "Database schema missing farmer owner columns" });
+      }
+
+      const [listings] = await pool.query(ownershipQuery, ownershipParams);
 
       if (listings.length === 0) {
         console.error('Listing not found or not authorized:', {
@@ -1172,34 +1365,24 @@ export const addListingImage = async (req, res) => {
     }
 
     // Determine image URL - either from file upload or direct URL
+    // Store relative paths for uploaded files, keep external URLs as-is
     let imageUrl;
     if (file && file.filename) {
-      // store relative path; readers normalize to absolute
+      // Store relative path for uploaded files (e.g., "uploads/filename.jpg")
       imageUrl = `uploads/${file.filename}`;
+      console.log('Storing relative path for uploaded file:', imageUrl);
     } else if (url) {
       const trimmedUrl = url.trim();
-      // If it's a full URL, extract the relative path for storage
+      // If it's an external URL (http/https), store it as-is
       if (trimmedUrl.startsWith('http://') || trimmedUrl.startsWith('https://')) {
-        try {
-          const urlObj = new URL(trimmedUrl);
-          // Extract path like "/uploads/file.jpg" -> "uploads/file.jpg"
-          imageUrl = urlObj.pathname.startsWith('/') ? urlObj.pathname.slice(1) : urlObj.pathname;
-          console.log('Extracted relative path from full URL:', { original: trimmedUrl, relative: imageUrl });
-        } catch (urlParseError) {
-          console.warn('Failed to parse URL, storing as-is:', urlParseError.message);
-          // Fallback: try to extract uploads path manually
-          const match = trimmedUrl.match(/\/uploads\/[^\/\s]+/);
-          if (match) {
-            imageUrl = match[0].slice(1); // Remove leading slash
-          } else {
-            imageUrl = trimmedUrl; // Store as-is if we can't parse it
-          }
-        }
-      } else {
-        // Already a relative path
         imageUrl = trimmedUrl;
+        console.log('Storing external URL as-is:', imageUrl);
+      } else {
+        // If it's a relative path, ensure it's properly formatted
+        // Remove leading slash if present, keep as relative path
+        imageUrl = trimmedUrl.startsWith('/') ? trimmedUrl.slice(1) : trimmedUrl;
+        console.log('Storing relative path:', imageUrl);
       }
-      console.log('Final imageUrl for storage:', imageUrl);
     } else {
       return res.status(400).json({ error: "No image file or URL provided" });
     }
@@ -1257,35 +1440,64 @@ export const addListingImage = async (req, res) => {
 
     try {
       if (hasSortOrder) {
-        await pool.query(
+        const [insertResult] = await pool.query(
           "INSERT INTO listing_images (listing_id, url, sort_order) VALUES (?, ?, ?)",
           [listingId, imageUrl, nextSortOrder]
         );
+        console.log('✅ Image successfully inserted into database:', {
+          imageId: insertResult.insertId,
+          listingId,
+          imageUrl,
+          sortOrder: nextSortOrder
+        });
       } else {
-        await pool.query(
+        const [insertResult] = await pool.query(
           "INSERT INTO listing_images (listing_id, url) VALUES (?, ?)",
           [listingId, imageUrl]
         );
-      }
-
-      if (hasSortOrder) {
-        console.log('Image successfully inserted into database with sort_order:', nextSortOrder);
-      } else {
-        console.log('Image successfully inserted into database (legacy listing_images without sort_order)');
+        console.log('✅ Image successfully inserted into database (legacy):', {
+          imageId: insertResult.insertId,
+          listingId,
+          imageUrl
+        });
       }
     } catch (insertError) {
-      console.error('Failed to insert image into database:', insertError);
+      console.error('❌ Failed to insert image into database:', insertError);
+      console.error('Insert error details:', {
+        code: insertError?.code,
+        message: insertError?.message,
+        sqlState: insertError?.sqlState,
+        sqlMessage: insertError?.sqlMessage
+      });
+      
       if (insertError?.code === 'ER_NO_SUCH_TABLE') {
-        return res.status(500).json({ error: 'listing_images table missing. Run server setup or migrations.' });
+        return res.status(500).json({ 
+          success: false,
+          error: 'listing_images table missing. Run server setup or migrations.' 
+        });
       }
-      return res.status(500).json({ error: 'Failed to save image', details: insertError.message });
+      return res.status(500).json({ 
+        success: false,
+        error: 'Failed to save image', 
+        details: process.env.NODE_ENV === 'development' ? insertError.message : undefined
+      });
     }
 
+    // Return success response with normalized URL
+    // normalizeImageUrl converts relative paths to full URLs, leaves external URLs as-is
+    const normalizedUrl = normalizeImageUrl(imageUrl);
+    console.log('✅ Image attachment complete:', {
+      listingId,
+      storedPath: imageUrl, // What's stored in database
+      normalizedUrl // What's returned to frontend
+    });
+    
     res.status(201).json({
+      success: true,
       message: "Image added to listing successfully",
       image: {
         listing_id: listingId,
-        url: normalizeImageUrl(imageUrl)
+        url: normalizedUrl // Normalized URL for frontend use
       }
     });
 

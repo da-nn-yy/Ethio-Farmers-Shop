@@ -5,18 +5,18 @@
 /**
  * Normalizes an image URL to a full URL
  * Handles both full URLs (http/https) and relative paths
- * 
+ *
  * @param {string|null|undefined} img - Image URL or path
  * @returns {string|null} - Normalized full URL or null
  */
 export const normalizeImageUrl = (img) => {
   if (!img) return null;
-  
+
   // If already a full URL, return as-is
   if (img.startsWith("http://") || img.startsWith("https://")) {
     return img;
   }
-  
+
   // If it's a relative path, convert to full URL
   const API_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:5000";
   // Remove leading slash if present
@@ -27,7 +27,7 @@ export const normalizeImageUrl = (img) => {
 /**
  * Gets all images from a listing object
  * Handles both listing.images array and listing.image single property
- * 
+ *
  * @param {Object} listing - Listing object
  * @returns {Array<string>} - Array of normalized image URLs
  */

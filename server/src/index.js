@@ -348,6 +348,19 @@ app.listen(port, async () => {
           UNIQUE KEY uq_user_avatar (user_id)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
 
+        await pool.query(`CREATE TABLE IF NOT EXISTS uploaded_images (
+          id INT PRIMARY KEY AUTO_INCREMENT,
+          user_id BIGINT NOT NULL,
+          filename VARCHAR(255) NOT NULL,
+          originalname VARCHAR(255) NOT NULL,
+          url TEXT NOT NULL,
+          mimetype VARCHAR(100),
+          size INT,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          INDEX idx_uploaded_images_user (user_id),
+          INDEX idx_uploaded_images_filename (filename)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4`);
+
         console.log('🧱 Ensured required tables exist');
       } catch (bootErr) {
         console.warn('⚠️  Failed ensuring tables:', bootErr.message);
