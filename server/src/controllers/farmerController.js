@@ -204,7 +204,7 @@ export const getFarmerListings = async (req, res) => {
 
         // Use SQL JOIN for better performance and type safety
         const imagesQuery = `
-          SELECT 
+          SELECT
             li.listing_id,
             li.url,
             li.sort_order,
@@ -227,7 +227,7 @@ export const getFarmerListings = async (req, res) => {
             console.warn('Invalid listing_id in image row:', img);
             return;
           }
-          
+
           if (!imagesByListing.has(listingId)) {
             imagesByListing.set(listingId, []);
           }
@@ -235,7 +235,7 @@ export const getFarmerListings = async (req, res) => {
           const imageUrl = normalizeImageUrl(img.url);
           imagesByListing.get(listingId).push(imageUrl);
         });
-        
+
         console.log('Images grouped by listing:', Array.from(imagesByListing.entries()).map(([id, images]) => ({
           listingId: id,
           count: images.length,
@@ -279,7 +279,7 @@ export const getFarmerListings = async (req, res) => {
       const listingImages = (Number.isFinite(listingId) && imagesByListing.has(listingId))
         ? imagesByListing.get(listingId)
         : [];
-      
+
       return {
         id: listing.id,
         name: listing.name, // Selected as alias in query
@@ -918,7 +918,7 @@ export const getUploadedImages = async (req, res) => {
 
     // Fetch uploaded images from database
     const [images] = await pool.query(
-      `SELECT 
+      `SELECT
         id,
         filename,
         originalname,
@@ -1007,7 +1007,7 @@ export const uploadImage = async (req, res) => {
 
     // Store relative path in database (e.g., "uploads/filename.jpg")
     const relativePath = `uploads/${req.file.filename}`;
-    
+
     // Normalize URL for API response (converts relative to full URL)
     const normalizedUrl = normalizeImageUrl(relativePath);
 
@@ -1028,7 +1028,7 @@ export const uploadImage = async (req, res) => {
 
       // Save upload record to database
       await pool.query(
-        `INSERT INTO uploaded_images (user_id, filename, originalname, url, mimetype, size) 
+        `INSERT INTO uploaded_images (user_id, filename, originalname, url, mimetype, size)
          VALUES (?, ?, ?, ?, ?, ?)`,
         [
           userId,
@@ -1284,15 +1284,15 @@ export const addListingImage = async (req, res) => {
       console.error('No user found in request');
       return res.status(401).json({ error: "User not authenticated" });
     }
-    
+
     if (!Number.isFinite(listingId) || listingId <= 0) {
       console.error('Invalid listing ID:', listingIdParam);
       return res.status(400).json({ error: "Invalid listing id" });
     }
-    
+
     if (!file && (!url || typeof url !== 'string' || url.trim().length === 0)) {
       console.error('No image file or URL provided');
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: "No image file or URL provided",
         details: "Either upload a file or provide a valid URL"
       });
@@ -1350,7 +1350,7 @@ export const addListingImage = async (req, res) => {
         });
         return res.status(404).json({ error: "Listing not found or not authorized" });
       }
-      
+
       console.log('Listing ownership verified:', {
         listingId,
         userId,
@@ -1469,16 +1469,16 @@ export const addListingImage = async (req, res) => {
         sqlState: insertError?.sqlState,
         sqlMessage: insertError?.sqlMessage
       });
-      
+
       if (insertError?.code === 'ER_NO_SUCH_TABLE') {
-        return res.status(500).json({ 
+        return res.status(500).json({
           success: false,
-          error: 'listing_images table missing. Run server setup or migrations.' 
+          error: 'listing_images table missing. Run server setup or migrations.'
         });
       }
-      return res.status(500).json({ 
+      return res.status(500).json({
         success: false,
-        error: 'Failed to save image', 
+        error: 'Failed to save image',
         details: process.env.NODE_ENV === 'development' ? insertError.message : undefined
       });
     }
@@ -1491,7 +1491,7 @@ export const addListingImage = async (req, res) => {
       storedPath: imageUrl, // What's stored in database
       normalizedUrl // What's returned to frontend
     });
-    
+
     res.status(201).json({
       success: true,
       message: "Image added to listing successfully",
@@ -1514,12 +1514,12 @@ export const addListingImage = async (req, res) => {
       hasUrl: !!req.body?.url,
       url: req.body?.url
     });
-    
+
     // Provide more specific error messages
     let errorMessage = "Failed to add image to listing";
     let statusCode = 500;
     let errorDetails = undefined;
-    
+
     if (error?.code === 'ER_NO_SUCH_TABLE') {
       errorMessage = 'Database table missing';
       statusCode = 500;
@@ -1535,22 +1535,22 @@ export const addListingImage = async (req, res) => {
     } else {
       errorDetails = error?.message;
     }
-    
+
     const response = {
       success: false,
       error: errorMessage
     };
-    
+
     // Always include details in development, optionally in production
     if (errorDetails) {
       response.details = errorDetails;
     }
-    
+
     if (process.env.NODE_ENV === 'development') {
       response.stack = error?.stack;
       response.errorCode = error?.code;
     }
-    
+
     res.status(statusCode).json(response);
   }
 };
