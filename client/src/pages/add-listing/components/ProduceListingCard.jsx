@@ -4,12 +4,12 @@ import Image from '../../../components/AppImage';
 import ImageGallery from '../../../components/ui/ImageGallery';
 import Button from '../../../components/ui/Button';
 
-const ProduceListingCard = ({ 
-  listing, 
-  onEdit, 
-  onDuplicate, 
-  onToggleStatus, 
-  currentLanguage = 'en' 
+const ProduceListingCard = ({
+  listing,
+  onEdit,
+  onDuplicate,
+  onToggleStatus,
+  currentLanguage = 'en'
 }) => {
   const getStatusColor = (status) => {
     switch (status) {
@@ -23,6 +23,8 @@ const ProduceListingCard = ({
         return 'bg-muted text-muted-foreground';
     }
   };
+
+
 
   const getStatusText = (status) => {
     if (currentLanguage === 'am') {
@@ -55,26 +57,37 @@ const ProduceListingCard = ({
   };
 
   return (
-    <div className="bg-card border border-border rounded-lg overflow-hidden shadow-warm hover:shadow-warm-md transition-smooth">
+    <div className="overflow-hidden border rounded-lg bg-card border-border shadow-warm hover:shadow-warm-md transition-smooth">
       {/* Image Section */}
-      <div className="relative h-48 lg:h-56 overflow-hidden">
-        <ImageGallery
-          images={listing?.images || (listing?.image ? [listing.image] : [])}
-          alt={listing?.name || 'Product Image'}
-          className="w-full h-full"
-          showThumbnails={false}
-        />
-        <div className="absolute top-3 right-3">
-          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(listing?.status)}`}>
-            {getStatusText(listing?.status)}
-          </span>
-        </div>
-      </div>
+      {(() => {
+        const listingImages = getListingImages(listing);
+        return (
+          <div className="relative h-48 overflow-hidden lg:h-56 bg-gray-100">
+            <ImageGallery
+              images={listingImages}
+              alt={listing?.name || 'Product Image'}
+              className="w-full h-full"
+              showThumbnails={false}
+            />
+            <div className="absolute top-3 right-3 z-10">
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(listing?.status)}`}>
+                {getStatusText(listing?.status)}
+              </span>
+            </div>
+            {/* Image count badge if multiple images */}
+            {listingImages.length > 1 && (
+              <div className="absolute bottom-3 left-3 z-10 bg-black/70 text-white px-2 py-1 rounded text-xs">
+                {listingImages.length} {currentLanguage === 'am' ? 'ምስሎች' : 'images'}
+              </div>
+            )}
+          </div>
+        );
+      })()}
       {/* Content Section */}
       <div className="p-4 lg:p-5">
         <div className="flex items-start justify-between mb-3">
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-text-primary mb-1">
+            <h3 className="mb-1 text-lg font-semibold text-text-primary">
               {currentLanguage === 'am' && listing?.nameAm ? listing?.nameAm : listing?.name}
             </h3>
             <p className="text-sm text-text-secondary">
@@ -132,7 +145,7 @@ const ProduceListingCard = ({
             iconPosition="left"
             className="flex-1"
           >
-            {listing?.status === 'sold_out' 
+            {listing?.status === 'sold_out'
               ? (currentLanguage === 'am' ? 'እንደገና ንቁ አድርግ' : 'Reactivate')
               : (currentLanguage === 'am' ? 'ተሽጧል ምልክት አድርግ' : 'Mark Sold')
             }
