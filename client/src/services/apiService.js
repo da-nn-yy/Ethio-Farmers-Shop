@@ -867,6 +867,27 @@ export const dashboardService = {
   }
 };
 
+// Market Forecast Service (forecasts + raw trends)
+export const marketForecastService = {
+  // Get raw market trends (from market_series)
+  getTrends: async (params = {}) => {
+    const response = await apiClient.get('/market/trends', { params });
+    return response.data;
+  },
+
+  // Get forecasts (from market_forecasts)
+  getForecasts: async (params = {}) => {
+    const response = await apiClient.get('/market/forecasts', { params });
+    return response.data;
+  },
+
+  // Get anomalies (optional)
+  getAnomalies: async (params = {}) => {
+    const response = await apiClient.get('/market/anomalies', { params });
+    return response.data;
+  }
+};
+
 // Image Upload Service
 export const imageService = {
   // Upload single image
