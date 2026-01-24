@@ -14,6 +14,7 @@ import notificationRoutes from "./notificationRoutes.js";
 import chatRoutes from "./chatRoutes.js";
 import paymentRoutes from "./paymentRoutes.js";
 import marketTrendsRoutes from "./marketTrendsRoutes.js";
+import marketForecastRoutes from "./marketForecastRoutes.js";
 
 // Public/General routes
 import listingRoutes from "./listingRoutes.js";
@@ -53,6 +54,7 @@ router.use('/notifications', notificationRoutes);
 router.use('/chat', chatRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/market-trends', marketTrendsRoutes);
+router.use('/market', marketForecastRoutes);
 
 // ============================================
 // LEGACY ROUTES (Backward compatibility)
